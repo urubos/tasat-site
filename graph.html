@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Idea-Story Graph — Extrapolated Futures Archive</title>
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+
+#graph-container {
+  width: 100%; height: 75vh; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px;
+  position: relative; overflow: hidden;
+}
+#graph-container svg { width: 100%; height: 100%; }
+.node-label { font-size: 8px; fill: var(--text-muted); pointer-events: none; opacity: 0.85; }
+.idea-label { font-size: 11px; fill: var(--text); font-weight: 600; pointer-events: none; }
+.link { stroke: var(--border); stroke-opacity: 0.4; }
+.legend { display: flex; flex-wrap: wrap; gap: 0.8rem; margin: 1rem 0; }
+.legend-item { display: flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: var(--text-muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+.graph-stats { color: var(--text-muted); font-size: 0.85rem; margin: 0.5rem 0; }
+.zoom-controls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 10; }
+.zoom-btn { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.zoom-btn:hover { background: var(--accent); color: #fff; }
+</style>
+</head>
+<body>
+<a class="back-link" href="index.html">&larr; Back to catalog</a>
+<h1>Idea-Story Relationship Graph</h1>
+<p class="subtitle">Top 30 ideas by story count, showing up to 12 stories each.
+Large colored nodes are ideas (colored by primary domain). Small grey nodes are stories. Click any node to view its detail page.</p>
+
+<div class="filters" style="margin-bottom:0.5rem">
+  <div class="filter-group">
+    <label>Filter by Domain</label>
+    <select id="domain-filter" onchange="filterGraph()">
+      <option value="">All Domains</option>
+    </select>
+  </div>
+</div>
+
+<div class="graph-stats">
+  Showing <span id="node-count">266</span> nodes (30 ideas + 236 stories) and <span id="link-count">257</span> links.
+  Total catalog: 682 ideas, 1874 stories.
+</div>
+
+<div id="graph-container">
+  <div class="zoom-controls">
+    <button class="zoom-btn" onclick="zoomIn()" title="Zoom in">+</button>
+    <button class="zoom-btn" onclick="zoomOut()" title="Zoom out">&minus;</button>
+    <button class="zoom-btn" onclick="zoomReset()" title="Reset view">&#8634;</button>
+  </div>
+  <svg id="graph-svg"><g id="graph-g"></g></svg>
+</div>
+
+<div class="legend" id="legend"></div>
+
+<footer>
+  Extrapolated Futures Archive
+</footer>
+
+<script>
+(function() {
+  const data = {"nodes": [{"id": "space-colonization-governance", "label": "Space Colonization Governance", "type": "idea", "size": 20, "domains": ["space", "governance"], "url": "ideas/space-colonization-governance.html"}, {"id": "nuclear-risk-scenario", "label": "Nuclear Risk Scenario", "type": "idea", "size": 13.8, "domains": ["energy-physics", "existential-risk"], "url": "ideas/nuclear-risk-scenario.html"}, {"id": "interstellar-mission-governance", "label": "Interstellar Mission Governance", "type": "idea", "size": 11.7, "domains": ["space", "governance"], "url": "ideas/interstellar-mission-governance.html"}, {"id": "ai-control-problem", "label": "AI Control Problem", "type": "idea", "size": 10.8, "domains": ["ai-ml", "existential-risk"], "url": "ideas/ai-control-problem.html"}, {"id": "first-contact-protocols", "label": "First Contact Protocols", "type": "idea", "size": 10.8, "domains": ["first-contact", "governance"], "url": "ideas/first-contact-protocols.html"}, {"id": "pandemic-response-failure", "label": "Pandemic Response Failure", "type": "idea", "size": 10.2, "domains": ["pandemics", "governance"], "url": "ideas/pandemic-response-failure.html"}, {"id": "authoritarian-governance", "label": "Authoritarian Governance Model", "type": "idea", "size": 9.3, "domains": ["governance", "social-engineering"], "url": "ideas/authoritarian-governance.html"}, {"id": "genetic-engineering-ethics", "label": "Genetic Engineering Ethics", "type": "idea", "size": 9.3, "domains": ["biotech", "ethics-philosophy"], "url": "ideas/genetic-engineering-ethics.html"}, {"id": "psychohistory", "label": "Mathematical Prediction of Civilization ", "type": "idea", "size": 9.0, "domains": ["ai-ml", "governance", "economics"], "url": "ideas/psychohistory.html"}, {"id": "future-warfare", "label": "Future Warfare Scenario", "type": "idea", "size": 8.7, "domains": ["warfare", "governance"], "url": "ideas/future-warfare.html"}, {"id": "virtual-reality-identity", "label": "Virtual Reality and Identity", "type": "idea", "size": 8.7, "domains": ["vr-simulation", "ethics-philosophy"], "url": "ideas/virtual-reality-identity.html"}, {"id": "accidental-time-travel-intervention", "label": "Accidental Time Travel Historical Interv", "type": "idea", "size": 8.4, "domains": ["time-travel", "ethics-philosophy"], "url": "ideas/accidental-time-travel-intervention.html"}, {"id": "alien-guided-evolution", "label": "Alien-Guided Human Evolution", "type": "idea", "size": 8.4, "domains": ["first-contact", "existential-risk", "ethics-philosophy"], "url": "ideas/alien-guided-evolution.html"}, {"id": "audience-driven-survival-economy", "label": "Audience-Driven Survival Economy", "type": "idea", "size": 8.4, "domains": ["economics", "comms-info", "social-engineering", "surveillance"], "url": "ideas/audience-driven-survival-economy.html"}, {"id": "corporate-alien-planet-harvesting", "label": "Corporate Alien Planet Harvesting", "type": "idea", "size": 8.4, "domains": ["economics", "first-contact", "existential-risk", "governance"], "url": "ideas/corporate-alien-planet-harvesting.html"}, {"id": "gameified-survival-dungeon", "label": "Gameified Survival Dungeon", "type": "idea", "size": 8.4, "domains": ["vr-simulation", "ethics-philosophy", "social-engineering"], "url": "ideas/gameified-survival-dungeon.html"}, {"id": "population-control-regime", "label": "Population Control Regime", "type": "idea", "size": 8.4, "domains": ["governance", "surveillance", "ethics-philosophy"], "url": "ideas/population-control-regime.html"}, {"id": "robot-autonomy-rights", "label": "Robot Autonomy and Rights", "type": "idea", "size": 8.4, "domains": ["robotics", "ethics-philosophy"], "url": "ideas/robot-autonomy-rights.html"}, {"id": "temporal-paradox-causality", "label": "Temporal Paradox and Causality", "type": "idea", "size": 8.4, "domains": ["time-travel", "ethics-philosophy"], "url": "ideas/temporal-paradox-causality.html"}, {"id": "alien-megastructure-exploration", "label": "Alien Megastructure Exploration", "type": "idea", "size": 8.1, "domains": ["space", "first-contact"], "url": "ideas/alien-megastructure-exploration.html"}, {"id": "biological-caste-system", "label": "Biological Caste System", "type": "idea", "size": 8.1, "domains": ["social-engineering", "governance", "ethics-philosophy"], "url": "ideas/biological-caste-system.html"}, {"id": "galactic-pawn", "label": "Humanity as Galactic Pawn", "type": "idea", "size": 8.1, "domains": ["first-contact", "governance", "space"], "url": "ideas/galactic-pawn.html"}, {"id": "telepathic-dynasty", "label": "Telepathic Dynasty Defense", "type": "idea", "size": 8.1, "domains": ["comms-info", "biotech", "warfare"], "url": "ideas/telepathic-dynasty.html"}, {"id": "telepathic-symbiont-defense", "label": "Telepathic Symbiont Planetary Defense", "type": "idea", "size": 8.1, "domains": ["biotech", "first-contact", "governance"], "url": "ideas/telepathic-symbiont-defense.html"}, {"id": "totalitarian-spectacle-games", "label": "Totalitarian Spectacle Games", "type": "idea", "size": 8.1, "domains": ["governance", "social-engineering", "comms-info"], "url": "ideas/totalitarian-spectacle-games.html"}, {"id": "absurdist-cosmic-bureaucracy", "label": "Absurdist Cosmic Bureaucracy", "type": "idea", "size": 7.8, "domains": ["governance", "ethics-philosophy"], "url": "ideas/absurdist-cosmic-bureaucracy.html"}, {"id": "biological-infiltration", "label": "Biological Infiltration Warfare", "type": "idea", "size": 7.8, "domains": ["biotech", "warfare", "ethics-philosophy"], "url": "ideas/biological-infiltration.html"}, {"id": "child-combatant-ethics", "label": "Child Combatant with Advanced Technology", "type": "idea", "size": 7.8, "domains": ["warfare", "ethics-philosophy", "existential-risk"], "url": "ideas/child-combatant-ethics.html"}, {"id": "metaphysical-authority-rebellion", "label": "Rebellion Against Metaphysical Authority", "type": "idea", "size": 7.8, "domains": ["ethics-philosophy", "existential-risk", "governance"], "url": "ideas/metaphysical-authority-rebellion.html"}, {"id": "alien-biodome-dependency", "label": "Alien Biodome Creating Dependency", "type": "idea", "size": 7.5, "domains": ["first-contact", "medicine", "economics"], "url": "ideas/alien-biodome-dependency.html"}, {"id": "the-ending-fire-el-arifi", "label": "The Ending Fire", "type": "story", "size": 3, "url": "stories/the-ending-fire-el-arifi.html"}, {"id": "worlds-within-phillips", "label": "Worlds Within", "type": "story", "size": 3, "url": "stories/worlds-within-phillips.html"}, {"id": "the-death-cure-dashner", "label": "The Death Cure", "type": "story", "size": 3, "url": "stories/the-death-cure-dashner.html"}, {"id": "count-zero-gibson", "label": "Count Zero", "type": "story", "size": 3, "url": "stories/count-zero-gibson.html"}, {"id": "the-man-in-the-high-castle-dick", "label": "The Man in the High Castle", "type": "story", "size": 3, "url": "stories/the-man-in-the-high-castle-dick.html"}, {"id": "chasm-city-reynolds", "label": "Chasm City", "type": "story", "size": 3, "url": "stories/chasm-city-reynolds.html"}, {"id": "maddaddam-atwood", "label": "MaddAddam", "type": "story", "size": 3, "url": "stories/maddaddam-atwood.html"}, {"id": "the-time-machine-wells", "label": "The Time Machine", "type": "story", "size": 3, "url": "stories/the-time-machine-wells.html"}, {"id": "sixth-column-heinlein", "label": "Sixth Column", "type": "story", "size": 3, "url": "stories/sixth-column-heinlein.html"}, {"id": "solaris-lem", "label": "Solaris", "type": "story", "size": 3, "url": "stories/solaris-lem.html"}, {"id": "ancillary-sword-leckie", "label": "Ancillary Sword", "type": "story", "size": 3, "url": "stories/ancillary-sword-leckie.html"}, {"id": "mockingjay-collins", "label": "Mockingjay", "type": "story", "size": 3, "url": "stories/mockingjay-collins.html"}, {"id": "among-the-enemy-haddix", "label": "Among the enemy", "type": "story", "size": 3, "url": "stories/among-the-enemy-haddix.html"}, {"id": "moreta-mccaffrey", "label": "Moreta", "type": "story", "size": 3, "url": "stories/moreta-mccaffrey.html"}, {"id": "cibola-burn-corey", "label": "Cibola burn", "type": "story", "size": 3, "url": "stories/cibola-burn-corey.html"}, {"id": "the-hitchhiker-s-guide-to-the-galaxy-adams", "label": "The Hitchhiker's Guide to the ", "type": "story", "size": 3, "url": "stories/the-hitchhiker-s-guide-to-the-galaxy-adams.html"}, {"id": "all-good-things-friedman", "label": "All Good Things\u2026", "type": "story", "size": 3, "url": "stories/all-good-things-friedman.html"}, {"id": "ringworld-s-children-niven", "label": "Ringworld's Children", "type": "story", "size": 3, "url": "stories/ringworld-s-children-niven.html"}, {"id": "the-city-of-gold-and-lead-youd", "label": "The CITY OF GOLD AND LEAD", "type": "story", "size": 3, "url": "stories/the-city-of-gold-and-lead-youd.html"}, {"id": "the-eye-of-the-bedlam-bride-dinniman", "label": "The Eye of the Bedlam Bride", "type": "story", "size": 3, "url": "stories/the-eye-of-the-bedlam-bride-dinniman.html"}, {"id": "glass-sword-aveyard", "label": "Glass Sword", "type": "story", "size": 3, "url": "stories/glass-sword-aveyard.html"}, {"id": "city-of-golden-shadow-williams", "label": "City of Golden Shadow", "type": "story", "size": 3, "url": "stories/city-of-golden-shadow-williams.html"}, {"id": "the-neutronium-alchemist-hamilton", "label": "The Neutronium Alchemist", "type": "story", "size": 3, "url": "stories/the-neutronium-alchemist-hamilton.html"}, {"id": "shadow-of-the-hegemon-card", "label": "Shadow of the Hegemon", "type": "story", "size": 3, "url": "stories/shadow-of-the-hegemon-card.html"}, {"id": "foundation-s-fear-benford", "label": "Foundation's Fear", "type": "story", "size": 3, "url": "stories/foundation-s-fear-benford.html"}, {"id": "stand-on-zanzibar-brunner", "label": "Stand on Zanzibar", "type": "story", "size": 3, "url": "stories/stand-on-zanzibar-brunner.html"}, {"id": "timeline-crichton", "label": "Timeline", "type": "story", "size": 3, "url": "stories/timeline-crichton.html"}, {"id": "the-lincoln-hunters-tucker", "label": "The Lincoln hunters", "type": "story", "size": 3, "url": "stories/the-lincoln-hunters-tucker.html"}, {"id": "endymion-simmons", "label": "Endymion", "type": "story", "size": 3, "url": "stories/endymion-simmons.html"}, {"id": "nightflyers-martin", "label": "Nightflyers", "type": "story", "size": 3, "url": "stories/nightflyers-martin.html"}, {"id": "first-meetings-card", "label": "First Meetings: Three Stories ", "type": "story", "size": 3, "url": "stories/first-meetings-card.html"}, {"id": "the-secret-commonwealth-pullman", "label": "The Secret Commonwealth", "type": "story", "size": 3, "url": "stories/the-secret-commonwealth-pullman.html"}, {"id": "and-another-thing-colfer", "label": "And Another Thing\u2026", "type": "story", "size": 3, "url": "stories/and-another-thing-colfer.html"}, {"id": "ender-s-game-card", "label": "Ender's Game", "type": "story", "size": 3, "url": "stories/ender-s-game-card.html"}, {"id": "foundation-and-chaos-bear", "label": "Foundation and Chaos", "type": "story", "size": 3, "url": "stories/foundation-and-chaos-bear.html"}, {"id": "star-trek-3-blish", "label": "STAR TREK 3", "type": "story", "size": 3, "url": "stories/star-trek-3-blish.html"}, {"id": "the-running-man-king", "label": "The Running Man", "type": "story", "size": 3, "url": "stories/the-running-man-king.html"}, {"id": "among-the-brave-haddix", "label": "Among the Brave", "type": "story", "size": 3, "url": "stories/among-the-brave-haddix.html"}, {"id": "breed-to-come-norton", "label": "Breed to Come", "type": "story", "size": 3, "url": "stories/breed-to-come-norton.html"}, {"id": "ringworld-niven", "label": "Ringworld", "type": "story", "size": 3, "url": "stories/ringworld-niven.html"}, {"id": "blue-mars-robinson", "label": "Blue Mars", "type": "story", "size": 3, "url": "stories/blue-mars-robinson.html"}, {"id": "red-queen-aveyard", "label": "Red Queen", "type": "story", "size": 3, "url": "stories/red-queen-aveyard.html"}, {"id": "saturn-bova", "label": "Saturn", "type": "story", "size": 3, "url": "stories/saturn-bova.html"}, {"id": "time-and-again-finney", "label": "Time and Again", "type": "story", "size": 3, "url": "stories/time-and-again-finney.html"}, {"id": "a-clockwork-orange-burgess", "label": "A Clockwork Orange", "type": "story", "size": 3, "url": "stories/a-clockwork-orange-burgess.html"}, {"id": "eon-bear", "label": "Eon", "type": "story", "size": 3, "url": "stories/eon-bear.html"}, {"id": "starship-troopers-heinlein", "label": "Starship Troopers", "type": "story", "size": 3, "url": "stories/starship-troopers-heinlein.html"}, {"id": "foundation-s-triumph-brin", "label": "Foundation's Triumph", "type": "story", "size": 3, "url": "stories/foundation-s-triumph-brin.html"}, {"id": "the-turing-option-harrison", "label": "The Turing option", "type": "story", "size": 3, "url": "stories/the-turing-option-harrison.html"}, {"id": "the-butchers-masquerade-dinniman", "label": "The Butcher's Masquerade", "type": "story", "size": 3, "url": "stories/the-butchers-masquerade-dinniman.html"}, {"id": "children-of-the-mind-card", "label": "Children of the Mind", "type": "story", "size": 3, "url": "stories/children-of-the-mind-card.html"}, {"id": "damia-mccaffrey", "label": "Damia", "type": "story", "size": 3, "url": "stories/damia-mccaffrey.html"}, {"id": "dragonflight-mccaffrey", "label": "Dragonflight", "type": "story", "size": 3, "url": "stories/dragonflight-mccaffrey.html"}, {"id": "dungeon-crawler-carl-dinniman", "label": "Dungeon Crawler Carl", "type": "story", "size": 3, "url": "stories/dungeon-crawler-carl-dinniman.html"}, {"id": "la-belle-sauvage-pullman", "label": "La Belle Sauvage", "type": "story", "size": 3, "url": "stories/la-belle-sauvage-pullman.html"}, {"id": "among-the-barons-haddix", "label": "Among the Barons", "type": "story", "size": 3, "url": "stories/among-the-barons-haddix.html"}, {"id": "the-ballad-of-songbirds-and-snakes-collins", "label": "The Ballad of Songbirds and Sn", "type": "story", "size": 3, "url": "stories/the-ballad-of-songbirds-and-snakes-collins.html"}, {"id": "the-city-who-fought-mccaffrey", "label": "The city who fought", "type": "story", "size": 3, "url": "stories/the-city-who-fought-mccaffrey.html"}, {"id": "across-the-sea-of-suns-benford", "label": "Across the Sea of Suns", "type": "story", "size": 3, "url": "stories/across-the-sea-of-suns-benford.html"}, {"id": "a-closed-and-common-orbit-chambers", "label": "A Closed and Common Orbit", "type": "story", "size": 3, "url": "stories/a-closed-and-common-orbit-chambers.html"}, {"id": "great-sky-river-benford", "label": "Great sky river", "type": "story", "size": 3, "url": "stories/great-sky-river-benford.html"}, {"id": "3001-clarke", "label": "3001: The Final Odyssey", "type": "story", "size": 3, "url": "stories/3001-clarke.html"}, {"id": "2010-odyssey-two-clarke", "label": "2010, odyssey two", "type": "story", "size": 3, "url": "stories/2010-odyssey-two-clarke.html"}, {"id": "pegasus-in-space-mccaffrey", "label": "Pegasus in Space", "type": "story", "size": 3, "url": "stories/pegasus-in-space-mccaffrey.html"}, {"id": "elfangor-s-secret-applegate", "label": "Elfangor's Secret", "type": "story", "size": 3, "url": "stories/elfangor-s-secret-applegate.html"}, {"id": "the-iron-heel-london", "label": "The Iron Heel", "type": "story", "size": 3, "url": "stories/the-iron-heel-london.html"}, {"id": "old-man-s-war-scalzi", "label": "Old Man\u2019s War", "type": "story", "size": 3, "url": "stories/old-man-s-war-scalzi.html"}, {"id": "magnificat-may", "label": "Magnificat", "type": "story", "size": 3, "url": "stories/magnificat-may.html"}, {"id": "sea-of-silver-light-williams", "label": "Sea of Silver Light", "type": "story", "size": 3, "url": "stories/sea-of-silver-light-williams.html"}, {"id": "ice-crown-norton", "label": "Ice Crown", "type": "story", "size": 3, "url": "stories/ice-crown-norton.html"}, {"id": "eternity-bear", "label": "Eternity", "type": "story", "size": 3, "url": "stories/eternity-bear.html"}, {"id": "the-cat-who-walks-through-walls-heinlein", "label": "The cat who walks through wall", "type": "story", "size": 3, "url": "stories/the-cat-who-walks-through-walls-heinlein.html"}, {"id": "dragon-s-kin-mccaffrey", "label": "Dragon's Kin", "type": "story", "size": 3, "url": "stories/dragon-s-kin-mccaffrey.html"}, {"id": "the-sunlit-man-sanderson", "label": "The Sunlit Man", "type": "story", "size": 3, "url": "stories/the-sunlit-man-sanderson.html"}, {"id": "the-dungeon-anarchists-cookbook-dinniman", "label": "The Dungeon Anarchist's Cookbo", "type": "story", "size": 3, "url": "stories/the-dungeon-anarchists-cookbook-dinniman.html"}, {"id": "animorphs-the-reaction-applegate", "label": "Animorphs - The Reaction", "type": "story", "size": 3, "url": "stories/animorphs-the-reaction-applegate.html"}, {"id": "to-say-nothing-of-the-dog-willis", "label": "To Say Nothing of the Dog", "type": "story", "size": 3, "url": "stories/to-say-nothing-of-the-dog-willis.html"}, {"id": "the-ministry-of-time-bradley", "label": "The Ministry of Time", "type": "story", "size": 3, "url": "stories/the-ministry-of-time-bradley.html"}, {"id": "chapterhouse-dune-herbert", "label": "Chapterhouse Dune", "type": "story", "size": 3, "url": "stories/chapterhouse-dune-herbert.html"}, {"id": "ender-in-exile-card", "label": "Ender in Exile", "type": "story", "size": 3, "url": "stories/ender-in-exile-card.html"}, {"id": "ice-kavan", "label": "Ice", "type": "story", "size": 3, "url": "stories/ice-kavan.html"}, {"id": "the-dark-forest-the-three-body-problem-series-book-2-None", "label": "The Dark Forest (The Three-Bod", "type": "story", "size": 3, "url": "stories/the-dark-forest-the-three-body-problem-series-book-2-None.html"}, {"id": "aurora-robinson", "label": "Aurora", "type": "story", "size": 3, "url": "stories/aurora-robinson.html"}, {"id": "the-naked-god-hamilton", "label": "The Naked God", "type": "story", "size": 3, "url": "stories/the-naked-god-hamilton.html"}, {"id": "babel-17-delany", "label": "Babel-17", "type": "story", "size": 3, "url": "stories/babel-17-delany.html"}, {"id": "ancillary-justice-leckie", "label": "Ancillary Justice", "type": "story", "size": 3, "url": "stories/ancillary-justice-leckie.html"}, {"id": "the-battle-drum-el-arifi", "label": "The Battle Drum", "type": "story", "size": 3, "url": "stories/the-battle-drum-el-arifi.html"}, {"id": "ender-s-shadow-card", "label": "Ender's Shadow", "type": "story", "size": 3, "url": "stories/ender-s-shadow-card.html"}, {"id": "prime-directive-reeves-stevens", "label": "Prime Directive", "type": "story", "size": 3, "url": "stories/prime-directive-reeves-stevens.html"}, {"id": "david-starr-space-ranger-asimov", "label": "David Starr - Space Ranger", "type": "story", "size": 3, "url": "stories/david-starr-space-ranger-asimov.html"}, {"id": "foundation-s-edge-asimov", "label": "Foundation's Edge", "type": "story", "size": 3, "url": "stories/foundation-s-edge-asimov.html"}, {"id": "all-clear-willis", "label": "All Clear", "type": "story", "size": 3, "url": "stories/all-clear-willis.html"}, {"id": "shadow-puppets-card", "label": "Shadow Puppets", "type": "story", "size": 3, "url": "stories/shadow-puppets-card.html"}, {"id": "the-caves-of-steel-asimov", "label": "The Caves of Steel", "type": "story", "size": 3, "url": "stories/the-caves-of-steel-asimov.html"}, {"id": "infinity-s-shore-brin", "label": "Infinity's shore", "type": "story", "size": 3, "url": "stories/infinity-s-shore-brin.html"}, {"id": "assault-on-the-gods-goldin", "label": "Assault on the Gods", "type": "story", "size": 3, "url": "stories/assault-on-the-gods-goldin.html"}, {"id": "catching-fire-collins", "label": "Catching Fire", "type": "story", "size": 3, "url": "stories/catching-fire-collins.html"}, {"id": "burning-bright-scott", "label": "Burning bright", "type": "story", "size": 3, "url": "stories/burning-bright-scott.html"}, {"id": "the-handmaid-s-tale-graphic-novel-nault", "label": "The Handmaid's Tale [Graphic N", "type": "story", "size": 3, "url": "stories/the-handmaid-s-tale-graphic-novel-nault.html"}, {"id": "the-rosewater-redemption-thompson", "label": "The Rosewater Redemption", "type": "story", "size": 3, "url": "stories/the-rosewater-redemption-thompson.html"}, {"id": "mostly-harmless-adams", "label": "Mostly Harmless", "type": "story", "size": 3, "url": "stories/mostly-harmless-adams.html"}, {"id": "children-of-time-tchaikovsky", "label": "Children of Time", "type": "story", "size": 3, "url": "stories/children-of-time-tchaikovsky.html"}, {"id": "the-rosewater-insurrection-thompson", "label": "The Rosewater Insurrection", "type": "story", "size": 3, "url": "stories/the-rosewater-insurrection-thompson.html"}, {"id": "carls-doomsday-scenario-dinniman", "label": "Carl's Doomsday Scenario", "type": "story", "size": 3, "url": "stories/carls-doomsday-scenario-dinniman.html"}, {"id": "the-last-man-shelley", "label": "The Last Man", "type": "story", "size": 3, "url": "stories/the-last-man-shelley.html"}, {"id": "the-skylark-of-space-smith", "label": "The Skylark of Space", "type": "story", "size": 3, "url": "stories/the-skylark-of-space-smith.html"}, {"id": "king-s-cage-aveyard", "label": "King's Cage", "type": "story", "size": 3, "url": "stories/king-s-cage-aveyard.html"}, {"id": "anvil-of-stars-bear", "label": "Anvil of Stars", "type": "story", "size": 3, "url": "stories/anvil-of-stars-bear.html"}, {"id": "american-war-akkad", "label": "American War", "type": "story", "size": 3, "url": "stories/american-war-akkad.html"}, {"id": "gray-lensman-smith", "label": "Gray Lensman", "type": "story", "size": 3, "url": "stories/gray-lensman-smith.html"}, {"id": "dragonquest-mccaffrey", "label": "Dragonquest", "type": "story", "size": 3, "url": "stories/dragonquest-mccaffrey.html"}, {"id": "dragonsinger-mccaffrey", "label": "Dragonsinger", "type": "story", "size": 3, "url": "stories/dragonsinger-mccaffrey.html"}, {"id": "the-amber-spyglass-pullman", "label": "The Amber Spyglass", "type": "story", "size": 3, "url": "stories/the-amber-spyglass-pullman.html"}, {"id": "the-gate-of-the-feral-gods-dinniman", "label": "The Gate of the Feral Gods", "type": "story", "size": 3, "url": "stories/the-gate-of-the-feral-gods-dinniman.html"}, {"id": "oryx-and-crake-atwood", "label": "Oryx and Crake", "type": "story", "size": 3, "url": "stories/oryx-and-crake-atwood.html"}, {"id": "among-the-hidden-haddix", "label": "Among the Hidden", "type": "story", "size": 3, "url": "stories/among-the-hidden-haddix.html"}, {"id": "northern-lights-pullman", "label": "Northern Lights", "type": "story", "size": 3, "url": "stories/northern-lights-pullman.html"}, {"id": "saturn-s-children-stross", "label": "Saturn's Children", "type": "story", "size": 3, "url": "stories/saturn-s-children-stross.html"}, {"id": "ash-ock-hinz", "label": "Ash Ock", "type": "story", "size": 3, "url": "stories/ash-ock-hinz.html"}, {"id": "dawn-butler", "label": "Dawn", "type": "story", "size": 3, "url": "stories/dawn-butler.html"}, {"id": "final-strife-el-arifi", "label": "Final Strife", "type": "story", "size": 3, "url": "stories/final-strife-el-arifi.html"}, {"id": "all-judgment-fled-white", "label": "All judgment fled", "type": "story", "size": 3, "url": "stories/all-judgment-fled-white.html"}, {"id": "star-wars-legacy-of-the-force-betrayal-allston", "label": "Star Wars - Legacy of the Forc", "type": "story", "size": 3, "url": "stories/star-wars-legacy-of-the-force-betrayal-allston.html"}, {"id": "in-the-light-of-sigma-draconis-a-woman-of-the-iron-people-part-1-arnason", "label": "In the Light of Sigma Draconis", "type": "story", "size": 3, "url": "stories/in-the-light-of-sigma-draconis-a-woman-of-the-iron-people-part-1-arnason.html"}, {"id": "a-fire-upon-the-deep-vinge", "label": "A Fire upon the Deep", "type": "story", "size": 3, "url": "stories/a-fire-upon-the-deep-vinge.html"}, {"id": "the-garden-of-rama-clarke", "label": "The Garden of Rama", "type": "story", "size": 3, "url": "stories/the-garden-of-rama-clarke.html"}, {"id": "animorphs-the-escape-applegate", "label": "Animorphs - The Escape", "type": "story", "size": 3, "url": "stories/animorphs-the-escape-applegate.html"}, {"id": "blood-music-bear", "label": "Blood Music", "type": "story", "size": 3, "url": "stories/blood-music-bear.html"}, {"id": "double-star-heinlein", "label": "Double Star", "type": "story", "size": 3, "url": "stories/double-star-heinlein.html"}, {"id": "animorphs-the-android-applegate", "label": "Animorphs - The Android", "type": "story", "size": 3, "url": "stories/animorphs-the-android-applegate.html"}, {"id": "absolution-gap-reynolds", "label": "Absolution gap", "type": "story", "size": 3, "url": "stories/absolution-gap-reynolds.html"}, {"id": "madeleine-l-engle-s-time-quartet-boxed-set-4-vols-l-engle", "label": "Madeleine L'Engle's Time Quart", "type": "story", "size": 3, "url": "stories/madeleine-l-engle-s-time-quartet-boxed-set-4-vols-l-engle.html"}, {"id": "aelita-tolstoy", "label": "\u0410\u044d\u043b\u0438\u0442\u0430 (Aelita)", "type": "story", "size": 3, "url": "stories/aelita-tolstoy.html"}, {"id": "captain-underpants-and-the-invasion-of-the-incredibly-naughty-cafeteria-ladies-from-outer-space-pilkey", "label": "Captain Underpants and the Inv", "type": "story", "size": 3, "url": "stories/captain-underpants-and-the-invasion-of-the-incredibly-naughty-cafeteria-ladies-from-outer-space-pilkey.html"}, {"id": "otherness-brin", "label": "Otherness", "type": "story", "size": 3, "url": "stories/otherness-brin.html"}, {"id": "dragonsblood-mccaffrey", "label": "Dragonsblood", "type": "story", "size": 3, "url": "stories/dragonsblood-mccaffrey.html"}, {"id": "sunrise-on-the-reaping-collins", "label": "Sunrise on the Reaping", "type": "story", "size": 3, "url": "stories/sunrise-on-the-reaping-collins.html"}, {"id": "the-rose-field-pullman", "label": "The Rose Field", "type": "story", "size": 3, "url": "stories/the-rose-field-pullman.html"}, {"id": "up-the-line-silverberg", "label": "Up the Line", "type": "story", "size": 3, "url": "stories/up-the-line-silverberg.html"}, {"id": "brightness-reef-brin", "label": "Brightness reef", "type": "story", "size": 3, "url": "stories/brightness-reef-brin.html"}, {"id": "redshirts-scalzi", "label": "Redshirts", "type": "story", "size": 3, "url": "stories/redshirts-scalzi.html"}, {"id": "a-parade-of-horribles-dinniman", "label": "A Parade of Horribles", "type": "story", "size": 3, "url": "stories/a-parade-of-horribles-dinniman.html"}, {"id": "the-fall-of-hyperion-simmons", "label": "The Fall of Hyperion", "type": "story", "size": 3, "url": "stories/the-fall-of-hyperion-simmons.html"}, {"id": "2001-clarke", "label": "2001: A Space Odyssey", "type": "story", "size": 3, "url": "stories/2001-clarke.html"}, {"id": "the-fever-code-dashner", "label": "The Fever Code", "type": "story", "size": 3, "url": "stories/the-fever-code-dashner.html"}, {"id": "johnny-and-the-dead-pratchett", "label": "Johnny and the Dead", "type": "story", "size": 3, "url": "stories/johnny-and-the-dead-pratchett.html"}, {"id": "animorphs-the-exposed-applegate", "label": "Animorphs - The Exposed", "type": "story", "size": 3, "url": "stories/animorphs-the-exposed-applegate.html"}, {"id": "do-androids-dream-of-electric-sheep-dick", "label": "Do Androids Dream of Electric ", "type": "story", "size": 3, "url": "stories/do-androids-dream-of-electric-sheep-dick.html"}, {"id": "jurassic-park-crichton", "label": "Jurassic Park", "type": "story", "size": 3, "url": "stories/jurassic-park-crichton.html"}, {"id": "blue-remembered-earth-reynolds", "label": "Blue remembered Earth", "type": "story", "size": 3, "url": "stories/blue-remembered-earth-reynolds.html"}, {"id": "between-planets-heinlein", "label": "Between Planets", "type": "story", "size": 3, "url": "stories/between-planets-heinlein.html"}, {"id": "prelude-to-foundation-asimov", "label": "Prelude to Foundation", "type": "story", "size": 3, "url": "stories/prelude-to-foundation-asimov.html"}, {"id": "so-long-and-thanks-for-all-the-fish-adams", "label": "So long, and thanks for all th", "type": "story", "size": 3, "url": "stories/so-long-and-thanks-for-all-the-fish-adams.html"}, {"id": "dark-light-macleod", "label": "Dark light", "type": "story", "size": 3, "url": "stories/dark-light-macleod.html"}, {"id": "forward-the-foundation-asimov", "label": "Forward the Foundation", "type": "story", "size": 3, "url": "stories/forward-the-foundation-asimov.html"}, {"id": "blackout-willis", "label": "Blackout", "type": "story", "size": 3, "url": "stories/blackout-willis.html"}, {"id": "the-poison-master-williams", "label": "The Poison Master", "type": "story", "size": 3, "url": "stories/the-poison-master-williams.html"}, {"id": "a-i-artificial-intelligence-spielberg", "label": "A.I. Artificial Intelligence", "type": "story", "size": 3, "url": "stories/a-i-artificial-intelligence-spielberg.html"}, {"id": "armageddon-patterson", "label": "Armageddon", "type": "story", "size": 3, "url": "stories/armageddon-patterson.html"}, {"id": "the-complete-robot-asimov", "label": "The Complete Robot", "type": "story", "size": 3, "url": "stories/the-complete-robot-asimov.html"}, {"id": "second-stage-lensmen-smith", "label": "Second Stage Lensmen", "type": "story", "size": 3, "url": "stories/second-stage-lensmen-smith.html"}, {"id": "fahrenheit-451-bradbury", "label": "Fahrenheit 451", "type": "story", "size": 3, "url": "stories/fahrenheit-451-bradbury.html"}, {"id": "among-the-impostors-haddix", "label": "Among the Impostors", "type": "story", "size": 3, "url": "stories/among-the-impostors-haddix.html"}, {"id": "river-of-blue-fire-williams", "label": "River of Blue Fire", "type": "story", "size": 3, "url": "stories/river-of-blue-fire-williams.html"}, {"id": "life-the-universe-and-everything-adams", "label": "Life, the Universe and Everyth", "type": "story", "size": 3, "url": "stories/life-the-universe-and-everything-adams.html"}, {"id": "the-currents-of-space-asimov", "label": "The Currents of Space", "type": "story", "size": 3, "url": "stories/the-currents-of-space-asimov.html"}, {"id": "galactic-patrol-smith", "label": "Galactic Patrol", "type": "story", "size": 3, "url": "stories/galactic-patrol-smith.html"}, {"id": "the-foundation-trilogy-asimov", "label": "The Foundation Trilogy", "type": "story", "size": 3, "url": "stories/the-foundation-trilogy-asimov.html"}, {"id": "2061-clarke", "label": "2061: Odyssey Three", "type": "story", "size": 3, "url": "stories/2061-clarke.html"}, {"id": "the-time-traveler-s-wife-niffenegger", "label": "The Time Traveler's Wife", "type": "story", "size": 3, "url": "stories/the-time-traveler-s-wife-niffenegger.html"}, {"id": "mona-lisa-overdrive-gibson", "label": "Mona Lisa Overdrive", "type": "story", "size": 3, "url": "stories/mona-lisa-overdrive-gibson.html"}, {"id": "pegasus-in-flight-mccaffrey", "label": "Pegasus in Flight", "type": "story", "size": 3, "url": "stories/pegasus-in-flight-mccaffrey.html"}, {"id": "first-lensman-smith", "label": "First Lensman", "type": "story", "size": 3, "url": "stories/first-lensman-smith.html"}, {"id": "fail-safe-burdick", "label": "Fail-safe", "type": "story", "size": 3, "url": "stories/fail-safe-burdick.html"}, {"id": "this-inevitable-ruin-dinniman", "label": "This Inevitable Ruin", "type": "story", "size": 3, "url": "stories/this-inevitable-ruin-dinniman.html"}, {"id": "crisis-on-conshelf-ten-hughes", "label": "Crisis on Conshelf Ten", "type": "story", "size": 3, "url": "stories/crisis-on-conshelf-ten-hughes.html"}, {"id": "the-rowan-mccaffrey", "label": "The Rowan", "type": "story", "size": 3, "url": "stories/the-rowan-mccaffrey.html"}, {"id": "amongst-the-betrayed-haddix", "label": "Amongst the Betrayed", "type": "story", "size": 3, "url": "stories/amongst-the-betrayed-haddix.html"}, {"id": "a-world-out-of-time-niven", "label": "A world out of time", "type": "story", "size": 3, "url": "stories/a-world-out-of-time-niven.html"}, {"id": "only-you-can-save-mankind-pratchett", "label": "Only You Can Save Mankind", "type": "story", "size": 3, "url": "stories/only-you-can-save-mankind-pratchett.html"}, {"id": "white-plague-can-herbert", "label": "White Plague Can", "type": "story", "size": 3, "url": "stories/white-plague-can-herbert.html"}, {"id": "the-margarets-tepper", "label": "The Margarets", "type": "story", "size": 3, "url": "stories/the-margarets-tepper.html"}, {"id": "rendezvous-with-rama-clarke", "label": "Rendezvous with Rama", "type": "story", "size": 3, "url": "stories/rendezvous-with-rama-clarke.html"}, {"id": "the-door-into-summer-heinlein", "label": "The Door into Summer", "type": "story", "size": 3, "url": "stories/the-door-into-summer-heinlein.html"}, {"id": "astro-boy-tezuka", "label": "Astro boy", "type": "story", "size": 3, "url": "stories/astro-boy-tezuka.html"}, {"id": "war-storm-aveyard", "label": "War Storm", "type": "story", "size": 3, "url": "stories/war-storm-aveyard.html"}, {"id": "the-ringworld-engineers-niven", "label": "The Ringworld Engineers", "type": "story", "size": 3, "url": "stories/the-ringworld-engineers-niven.html"}, {"id": "dreamsnake-mcintyre", "label": "Dreamsnake", "type": "story", "size": 3, "url": "stories/dreamsnake-mcintyre.html"}, {"id": "man-plus-pohl", "label": "Man Plus", "type": "story", "size": 3, "url": "stories/man-plus-pohl.html"}, {"id": "second-foundation-asimov", "label": "Second Foundation", "type": "story", "size": 3, "url": "stories/second-foundation-asimov.html"}, {"id": "heaven-s-reach-brin", "label": "Heaven's reach", "type": "story", "size": 3, "url": "stories/heaven-s-reach-brin.html"}, {"id": "the-hitch-hiker-s-guide-to-the-galaxy-adams", "label": "The Hitch Hiker's Guide to the", "type": "story", "size": 3, "url": "stories/the-hitch-hiker-s-guide-to-the-galaxy-adams.html"}, {"id": "the-subtle-knife-pullman", "label": "The Subtle Knife", "type": "story", "size": 3, "url": "stories/the-subtle-knife-pullman.html"}, {"id": "jack-the-bodiless-may", "label": "Jack the Bodiless", "type": "story", "size": 3, "url": "stories/jack-the-bodiless-may.html"}, {"id": "nineteen-eighty-four-orwell", "label": "Nineteen Eighty-Four", "type": "story", "size": 3, "url": "stories/nineteen-eighty-four-orwell.html"}, {"id": "foundation-and-empire-asimov", "label": "Foundation and Empire", "type": "story", "size": 3, "url": "stories/foundation-and-empire-asimov.html"}, {"id": "dragonsong-mccaffrey", "label": "Dragonsong", "type": "story", "size": 3, "url": "stories/dragonsong-mccaffrey.html"}, {"id": "prey-crichton", "label": "Prey", "type": "story", "size": 3, "url": "stories/prey-crichton.html"}, {"id": "invaders-from-the-infinite-campbell", "label": "Invaders from the Infinite", "type": "story", "size": 3, "url": "stories/invaders-from-the-infinite-campbell.html"}, {"id": "clay-s-ark-butler", "label": "Clay's ark", "type": "story", "size": 3, "url": "stories/clay-s-ark-butler.html"}, {"id": "diamond-mask-may", "label": "Diamond Mask", "type": "story", "size": 3, "url": "stories/diamond-mask-may.html"}, {"id": "city-simak", "label": "City", "type": "story", "size": 3, "url": "stories/city-simak.html"}, {"id": "feet-of-clay-pratchett", "label": "Feet of Clay", "type": "story", "size": 3, "url": "stories/feet-of-clay-pratchett.html"}, {"id": "johnny-and-the-bomb-pratchett", "label": "Johnny and the Bomb", "type": "story", "size": 3, "url": "stories/johnny-and-the-bomb-pratchett.html"}, {"id": "android-at-arms-norton", "label": "Android at Arms", "type": "story", "size": 3, "url": "stories/android-at-arms-norton.html"}, {"id": "mother-of-storms-barnes", "label": "Mother of storms", "type": "story", "size": 3, "url": "stories/mother-of-storms-barnes.html"}, {"id": "the-long-cosmos-pratchett", "label": "The Long Cosmos", "type": "story", "size": 3, "url": "stories/the-long-cosmos-pratchett.html"}, {"id": "mountain-of-black-glass-williams", "label": "Mountain of Black Glass", "type": "story", "size": 3, "url": "stories/mountain-of-black-glass-williams.html"}, {"id": "star-trek-2-blish", "label": "Star Trek 2", "type": "story", "size": 3, "url": "stories/star-trek-2-blish.html"}, {"id": "the-x-files-anderson", "label": "The X-Files", "type": "story", "size": 3, "url": "stories/the-x-files-anderson.html"}, {"id": "ammonite-griffith", "label": "Ammonite", "type": "story", "size": 3, "url": "stories/ammonite-griffith.html"}, {"id": "all-the-weyrs-of-pern-mccaffrey", "label": "All the Weyrs of Pern", "type": "story", "size": 3, "url": "stories/all-the-weyrs-of-pern-mccaffrey.html"}, {"id": "the-hunger-games-collins", "label": "The Hunger Games", "type": "story", "size": 3, "url": "stories/the-hunger-games-collins.html"}, {"id": "the-risen-empire-westerfeld", "label": "The Risen Empire", "type": "story", "size": 3, "url": "stories/the-risen-empire-westerfeld.html"}, {"id": "redemption-ark-reynolds", "label": "Redemption Ark", "type": "story", "size": 3, "url": "stories/redemption-ark-reynolds.html"}, {"id": "blade-runner-burroughs", "label": "Blade runner", "type": "story", "size": 3, "url": "stories/blade-runner-burroughs.html"}, {"id": "foundation-asimov", "label": "Foundation", "type": "story", "size": 3, "url": "stories/foundation-asimov.html"}, {"id": "the-ghost-brigades-scalzi", "label": "The Ghost Brigades", "type": "story", "size": 3, "url": "stories/the-ghost-brigades-scalzi.html"}, {"id": "where-late-the-sweet-birds-sang-wilhelm", "label": "Where Late the Sweet Birds San", "type": "story", "size": 3, "url": "stories/where-late-the-sweet-birds-sang-wilhelm.html"}, {"id": "the-handmaid-s-tale-atwood", "label": "The Handmaid's Tale", "type": "story", "size": 3, "url": "stories/the-handmaid-s-tale-atwood.html"}, {"id": "the-ringworld-throne-niven", "label": "The Ringworld throne", "type": "story", "size": 3, "url": "stories/the-ringworld-throne-niven.html"}, {"id": "damia-s-children-mccaffrey", "label": "Damia's Children", "type": "story", "size": 3, "url": "stories/damia-s-children-mccaffrey.html"}, {"id": "grass-tepper", "label": "Grass", "type": "story", "size": 3, "url": "stories/grass-tepper.html"}, {"id": "startide-rising-brin", "label": "Startide Rising", "type": "story", "size": 3, "url": "stories/startide-rising-brin.html"}, {"id": "the-robots-of-dawn-asimov", "label": "The Robots of Dawn", "type": "story", "size": 3, "url": "stories/the-robots-of-dawn-asimov.html"}, {"id": "a-swiftly-tilting-planet-time-quintet-3-l-engle", "label": "A Swiftly Tilting Planet (Time", "type": "story", "size": 3, "url": "stories/a-swiftly-tilting-planet-time-quintet-3-l-engle.html"}, {"id": "the-reality-dysfunction-hamilton", "label": "The Reality Dysfunction", "type": "story", "size": 3, "url": "stories/the-reality-dysfunction-hamilton.html"}, {"id": "cinder-meyer", "label": "Cinder", "type": "story", "size": 3, "url": "stories/cinder-meyer.html"}, {"id": "flow-my-tears-the-policeman-said-dick", "label": "Flow my tears, the policeman s", "type": "story", "size": 3, "url": "stories/flow-my-tears-the-policeman-said-dick.html"}, {"id": "judas-unchained-hamilton", "label": "Judas Unchained", "type": "story", "size": 3, "url": "stories/judas-unchained-hamilton.html"}, {"id": "sundiver-brin", "label": "Sundiver", "type": "story", "size": 3, "url": "stories/sundiver-brin.html"}, {"id": "the-year-of-the-quiet-sun-tucker", "label": "The Year of the Quiet Sun", "type": "story", "size": 3, "url": "stories/the-year-of-the-quiet-sun-tucker.html"}, {"id": "captive-universe-harrison", "label": "Captive universe", "type": "story", "size": 3, "url": "stories/captive-universe-harrison.html"}, {"id": "brave-new-world-huxley", "label": "Brave New World", "type": "story", "size": 3, "url": "stories/brave-new-world-huxley.html"}, {"id": "rosewater-thompson", "label": "Rosewater", "type": "story", "size": 3, "url": "stories/rosewater-thompson.html"}, {"id": "navigator-baxter", "label": "Navigator", "type": "story", "size": 3, "url": "stories/navigator-baxter.html"}], "links": [{"source": "space-colonization-governance", "target": "absolution-gap-reynolds"}, {"source": "space-colonization-governance", "target": "ammonite-griffith"}, {"source": "space-colonization-governance", "target": "ash-ock-hinz"}, {"source": "space-colonization-governance", "target": "blue-mars-robinson"}, {"source": "space-colonization-governance", "target": "blue-remembered-earth-reynolds"}, {"source": "space-colonization-governance", "target": "brightness-reef-brin"}, {"source": "space-colonization-governance", "target": "chapterhouse-dune-herbert"}, {"source": "space-colonization-governance", "target": "children-of-the-mind-card"}, {"source": "space-colonization-governance", "target": "children-of-time-tchaikovsky"}, {"source": "space-colonization-governance", "target": "cibola-burn-corey"}, {"source": "space-colonization-governance", "target": "crisis-on-conshelf-ten-hughes"}, {"source": "space-colonization-governance", "target": "david-starr-space-ranger-asimov"}, {"source": "nuclear-risk-scenario", "target": "a-swiftly-tilting-planet-time-quintet-3-l-engle"}, {"source": "nuclear-risk-scenario", "target": "ash-ock-hinz"}, {"source": "nuclear-risk-scenario", "target": "blood-music-bear"}, {"source": "nuclear-risk-scenario", "target": "city-simak"}, {"source": "nuclear-risk-scenario", "target": "dawn-butler"}, {"source": "nuclear-risk-scenario", "target": "dreamsnake-mcintyre"}, {"source": "nuclear-risk-scenario", "target": "eon-bear"}, {"source": "nuclear-risk-scenario", "target": "fail-safe-burdick"}, {"source": "nuclear-risk-scenario", "target": "ice-kavan"}, {"source": "nuclear-risk-scenario", "target": "madeleine-l-engle-s-time-quartet-boxed-set-4-vols-l-engle"}, {"source": "nuclear-risk-scenario", "target": "man-plus-pohl"}, {"source": "nuclear-risk-scenario", "target": "mother-of-storms-barnes"}, {"source": "interstellar-mission-governance", "target": "a-world-out-of-time-niven"}, {"source": "interstellar-mission-governance", "target": "across-the-sea-of-suns-benford"}, {"source": "interstellar-mission-governance", "target": "all-good-things-friedman"}, {"source": "interstellar-mission-governance", "target": "assault-on-the-gods-goldin"}, {"source": "interstellar-mission-governance", "target": "aurora-robinson"}, {"source": "interstellar-mission-governance", "target": "eternity-bear"}, {"source": "interstellar-mission-governance", "target": "in-the-light-of-sigma-draconis-a-woman-of-the-iron-people-part-1-arnason"}, {"source": "interstellar-mission-governance", "target": "nightflyers-martin"}, {"source": "interstellar-mission-governance", "target": "prime-directive-reeves-stevens"}, {"source": "interstellar-mission-governance", "target": "redshirts-scalzi"}, {"source": "interstellar-mission-governance", "target": "star-trek-2-blish"}, {"source": "interstellar-mission-governance", "target": "star-trek-3-blish"}, {"source": "ai-control-problem", "target": "a-closed-and-common-orbit-chambers"}, {"source": "ai-control-problem", "target": "a-fire-upon-the-deep-vinge"}, {"source": "ai-control-problem", "target": "a-i-artificial-intelligence-spielberg"}, {"source": "ai-control-problem", "target": "all-the-weyrs-of-pern-mccaffrey"}, {"source": "ai-control-problem", "target": "ancillary-justice-leckie"}, {"source": "ai-control-problem", "target": "prey-crichton"}, {"source": "ai-control-problem", "target": "the-cat-who-walks-through-walls-heinlein"}, {"source": "ai-control-problem", "target": "the-long-cosmos-pratchett"}, {"source": "ai-control-problem", "target": "the-risen-empire-westerfeld"}, {"source": "ai-control-problem", "target": "ancillary-sword-leckie"}, {"source": "ai-control-problem", "target": "the-turing-option-harrison"}, {"source": "ai-control-problem", "target": "the-complete-robot-asimov"}, {"source": "first-contact-protocols", "target": "across-the-sea-of-suns-benford"}, {"source": "first-contact-protocols", "target": "aelita-tolstoy"}, {"source": "first-contact-protocols", "target": "all-judgment-fled-white"}, {"source": "first-contact-protocols", "target": "armageddon-patterson"}, {"source": "first-contact-protocols", "target": "captain-underpants-and-the-invasion-of-the-incredibly-naughty-cafeteria-ladies-from-outer-space-pilkey"}, {"source": "first-contact-protocols", "target": "damia-mccaffrey"}, {"source": "first-contact-protocols", "target": "ender-s-game-card"}, {"source": "first-contact-protocols", "target": "great-sky-river-benford"}, {"source": "first-contact-protocols", "target": "invaders-from-the-infinite-campbell"}, {"source": "first-contact-protocols", "target": "otherness-brin"}, {"source": "first-contact-protocols", "target": "solaris-lem"}, {"source": "first-contact-protocols", "target": "the-dark-forest-the-three-body-problem-series-book-2-None"}, {"source": "pandemic-response-failure", "target": "american-war-akkad"}, {"source": "pandemic-response-failure", "target": "blade-runner-burroughs"}, {"source": "pandemic-response-failure", "target": "breed-to-come-norton"}, {"source": "pandemic-response-failure", "target": "chasm-city-reynolds"}, {"source": "pandemic-response-failure", "target": "clay-s-ark-butler"}, {"source": "pandemic-response-failure", "target": "grass-tepper"}, {"source": "pandemic-response-failure", "target": "star-wars-legacy-of-the-force-betrayal-allston"}, {"source": "pandemic-response-failure", "target": "the-fever-code-dashner"}, {"source": "pandemic-response-failure", "target": "the-last-man-shelley"}, {"source": "pandemic-response-failure", "target": "the-x-files-anderson"}, {"source": "pandemic-response-failure", "target": "white-plague-can-herbert"}, {"source": "pandemic-response-failure", "target": "redemption-ark-reynolds"}, {"source": "authoritarian-governance", "target": "a-clockwork-orange-burgess"}, {"source": "authoritarian-governance", "target": "fahrenheit-451-bradbury"}, {"source": "authoritarian-governance", "target": "flow-my-tears-the-policeman-said-dick"}, {"source": "authoritarian-governance", "target": "nineteen-eighty-four-orwell"}, {"source": "authoritarian-governance", "target": "saturn-bova"}, {"source": "authoritarian-governance", "target": "sixth-column-heinlein"}, {"source": "authoritarian-governance", "target": "the-handmaid-s-tale-atwood"}, {"source": "authoritarian-governance", "target": "the-handmaid-s-tale-graphic-novel-nault"}, {"source": "authoritarian-governance", "target": "the-iron-heel-london"}, {"source": "authoritarian-governance", "target": "the-man-in-the-high-castle-dick"}, {"source": "authoritarian-governance", "target": "the-running-man-king"}, {"source": "genetic-engineering-ethics", "target": "blood-music-bear"}, {"source": "genetic-engineering-ethics", "target": "brave-new-world-huxley"}, {"source": "genetic-engineering-ethics", "target": "jurassic-park-crichton"}, {"source": "genetic-engineering-ethics", "target": "oryx-and-crake-atwood"}, {"source": "genetic-engineering-ethics", "target": "stand-on-zanzibar-brunner"}, {"source": "genetic-engineering-ethics", "target": "startide-rising-brin"}, {"source": "genetic-engineering-ethics", "target": "the-reality-dysfunction-hamilton"}, {"source": "genetic-engineering-ethics", "target": "where-late-the-sweet-birds-sang-wilhelm"}, {"source": "genetic-engineering-ethics", "target": "maddaddam-atwood"}, {"source": "genetic-engineering-ethics", "target": "the-neutronium-alchemist-hamilton"}, {"source": "genetic-engineering-ethics", "target": "the-naked-god-hamilton"}, {"source": "psychohistory", "target": "forward-the-foundation-asimov"}, {"source": "psychohistory", "target": "foundation-and-chaos-bear"}, {"source": "psychohistory", "target": "foundation-and-empire-asimov"}, {"source": "psychohistory", "target": "foundation-asimov"}, {"source": "psychohistory", "target": "foundation-s-edge-asimov"}, {"source": "psychohistory", "target": "foundation-s-fear-benford"}, {"source": "psychohistory", "target": "foundation-s-triumph-brin"}, {"source": "psychohistory", "target": "second-foundation-asimov"}, {"source": "psychohistory", "target": "the-foundation-trilogy-asimov"}, {"source": "psychohistory", "target": "prelude-to-foundation-asimov"}, {"source": "future-warfare", "target": "babel-17-delany"}, {"source": "future-warfare", "target": "between-planets-heinlein"}, {"source": "future-warfare", "target": "blood-music-bear"}, {"source": "future-warfare", "target": "double-star-heinlein"}, {"source": "future-warfare", "target": "old-man-s-war-scalzi"}, {"source": "future-warfare", "target": "starship-troopers-heinlein"}, {"source": "future-warfare", "target": "the-city-who-fought-mccaffrey"}, {"source": "future-warfare", "target": "the-currents-of-space-asimov"}, {"source": "future-warfare", "target": "the-ghost-brigades-scalzi"}, {"source": "virtual-reality-identity", "target": "burning-bright-scott"}, {"source": "virtual-reality-identity", "target": "city-of-golden-shadow-williams"}, {"source": "virtual-reality-identity", "target": "mona-lisa-overdrive-gibson"}, {"source": "virtual-reality-identity", "target": "mother-of-storms-barnes"}, {"source": "virtual-reality-identity", "target": "count-zero-gibson"}, {"source": "virtual-reality-identity", "target": "river-of-blue-fire-williams"}, {"source": "virtual-reality-identity", "target": "mountain-of-black-glass-williams"}, {"source": "virtual-reality-identity", "target": "sea-of-silver-light-williams"}, {"source": "virtual-reality-identity", "target": "worlds-within-phillips"}, {"source": "accidental-time-travel-intervention", "target": "johnny-and-the-bomb-pratchett"}, {"source": "accidental-time-travel-intervention", "target": "only-you-can-save-mankind-pratchett"}, {"source": "accidental-time-travel-intervention", "target": "johnny-and-the-dead-pratchett"}, {"source": "accidental-time-travel-intervention", "target": "timeline-crichton"}, {"source": "accidental-time-travel-intervention", "target": "to-say-nothing-of-the-dog-willis"}, {"source": "accidental-time-travel-intervention", "target": "up-the-line-silverberg"}, {"source": "accidental-time-travel-intervention", "target": "the-year-of-the-quiet-sun-tucker"}, {"source": "accidental-time-travel-intervention", "target": "navigator-baxter"}, {"source": "alien-guided-evolution", "target": "2001-clarke"}, {"source": "alien-guided-evolution", "target": "2010-odyssey-two-clarke"}, {"source": "alien-guided-evolution", "target": "2061-clarke"}, {"source": "alien-guided-evolution", "target": "3001-clarke"}, {"source": "alien-guided-evolution", "target": "first-lensman-smith"}, {"source": "alien-guided-evolution", "target": "galactic-patrol-smith"}, {"source": "alien-guided-evolution", "target": "gray-lensman-smith"}, {"source": "alien-guided-evolution", "target": "second-stage-lensmen-smith"}, {"source": "audience-driven-survival-economy", "target": "dungeon-crawler-carl-dinniman"}, {"source": "audience-driven-survival-economy", "target": "carls-doomsday-scenario-dinniman"}, {"source": "audience-driven-survival-economy", "target": "the-dungeon-anarchists-cookbook-dinniman"}, {"source": "audience-driven-survival-economy", "target": "the-gate-of-the-feral-gods-dinniman"}, {"source": "audience-driven-survival-economy", "target": "the-butchers-masquerade-dinniman"}, {"source": "audience-driven-survival-economy", "target": "the-eye-of-the-bedlam-bride-dinniman"}, {"source": "audience-driven-survival-economy", "target": "this-inevitable-ruin-dinniman"}, {"source": "audience-driven-survival-economy", "target": "a-parade-of-horribles-dinniman"}, {"source": "corporate-alien-planet-harvesting", "target": "dungeon-crawler-carl-dinniman"}, {"source": "corporate-alien-planet-harvesting", "target": "carls-doomsday-scenario-dinniman"}, {"source": "corporate-alien-planet-harvesting", "target": "the-dungeon-anarchists-cookbook-dinniman"}, {"source": "corporate-alien-planet-harvesting", "target": "the-gate-of-the-feral-gods-dinniman"}, {"source": "corporate-alien-planet-harvesting", "target": "the-butchers-masquerade-dinniman"}, {"source": "corporate-alien-planet-harvesting", "target": "the-eye-of-the-bedlam-bride-dinniman"}, {"source": "corporate-alien-planet-harvesting", "target": "this-inevitable-ruin-dinniman"}, {"source": "corporate-alien-planet-harvesting", "target": "a-parade-of-horribles-dinniman"}, {"source": "gameified-survival-dungeon", "target": "dungeon-crawler-carl-dinniman"}, {"source": "gameified-survival-dungeon", "target": "carls-doomsday-scenario-dinniman"}, {"source": "gameified-survival-dungeon", "target": "the-dungeon-anarchists-cookbook-dinniman"}, {"source": "gameified-survival-dungeon", "target": "the-gate-of-the-feral-gods-dinniman"}, {"source": "gameified-survival-dungeon", "target": "the-butchers-masquerade-dinniman"}, {"source": "gameified-survival-dungeon", "target": "the-eye-of-the-bedlam-bride-dinniman"}, {"source": "gameified-survival-dungeon", "target": "this-inevitable-ruin-dinniman"}, {"source": "gameified-survival-dungeon", "target": "a-parade-of-horribles-dinniman"}, {"source": "population-control-regime", "target": "among-the-barons-haddix"}, {"source": "population-control-regime", "target": "among-the-brave-haddix"}, {"source": "population-control-regime", "target": "among-the-enemy-haddix"}, {"source": "population-control-regime", "target": "among-the-hidden-haddix"}, {"source": "population-control-regime", "target": "among-the-impostors-haddix"}, {"source": "population-control-regime", "target": "amongst-the-betrayed-haddix"}, {"source": "population-control-regime", "target": "captive-universe-harrison"}, {"source": "population-control-regime", "target": "ice-crown-norton"}, {"source": "robot-autonomy-rights", "target": "android-at-arms-norton"}, {"source": "robot-autonomy-rights", "target": "astro-boy-tezuka"}, {"source": "robot-autonomy-rights", "target": "cinder-meyer"}, {"source": "robot-autonomy-rights", "target": "do-androids-dream-of-electric-sheep-dick"}, {"source": "robot-autonomy-rights", "target": "feet-of-clay-pratchett"}, {"source": "robot-autonomy-rights", "target": "saturn-s-children-stross"}, {"source": "robot-autonomy-rights", "target": "the-caves-of-steel-asimov"}, {"source": "robot-autonomy-rights", "target": "the-robots-of-dawn-asimov"}, {"source": "temporal-paradox-causality", "target": "blackout-willis"}, {"source": "temporal-paradox-causality", "target": "the-door-into-summer-heinlein"}, {"source": "temporal-paradox-causality", "target": "the-lincoln-hunters-tucker"}, {"source": "temporal-paradox-causality", "target": "the-ministry-of-time-bradley"}, {"source": "temporal-paradox-causality", "target": "the-time-machine-wells"}, {"source": "temporal-paradox-causality", "target": "the-time-traveler-s-wife-niffenegger"}, {"source": "temporal-paradox-causality", "target": "time-and-again-finney"}, {"source": "temporal-paradox-causality", "target": "all-clear-willis"}, {"source": "alien-megastructure-exploration", "target": "rendezvous-with-rama-clarke"}, {"source": "alien-megastructure-exploration", "target": "ringworld-niven"}, {"source": "alien-megastructure-exploration", "target": "ringworld-s-children-niven"}, {"source": "alien-megastructure-exploration", "target": "the-garden-of-rama-clarke"}, {"source": "alien-megastructure-exploration", "target": "the-ringworld-engineers-niven"}, {"source": "alien-megastructure-exploration", "target": "the-ringworld-throne-niven"}, {"source": "alien-megastructure-exploration", "target": "the-skylark-of-space-smith"}, {"source": "biological-caste-system", "target": "final-strife-el-arifi"}, {"source": "biological-caste-system", "target": "red-queen-aveyard"}, {"source": "biological-caste-system", "target": "the-battle-drum-el-arifi"}, {"source": "biological-caste-system", "target": "the-ending-fire-el-arifi"}, {"source": "biological-caste-system", "target": "glass-sword-aveyard"}, {"source": "biological-caste-system", "target": "king-s-cage-aveyard"}, {"source": "biological-caste-system", "target": "war-storm-aveyard"}, {"source": "galactic-pawn", "target": "dark-light-macleod"}, {"source": "galactic-pawn", "target": "endymion-simmons"}, {"source": "galactic-pawn", "target": "heaven-s-reach-brin"}, {"source": "galactic-pawn", "target": "infinity-s-shore-brin"}, {"source": "galactic-pawn", "target": "judas-unchained-hamilton"}, {"source": "galactic-pawn", "target": "sundiver-brin"}, {"source": "galactic-pawn", "target": "the-fall-of-hyperion-simmons"}, {"source": "telepathic-dynasty", "target": "damia-s-children-mccaffrey"}, {"source": "telepathic-dynasty", "target": "jack-the-bodiless-may"}, {"source": "telepathic-dynasty", "target": "pegasus-in-flight-mccaffrey"}, {"source": "telepathic-dynasty", "target": "pegasus-in-space-mccaffrey"}, {"source": "telepathic-dynasty", "target": "the-rowan-mccaffrey"}, {"source": "telepathic-dynasty", "target": "diamond-mask-may"}, {"source": "telepathic-dynasty", "target": "magnificat-may"}, {"source": "telepathic-symbiont-defense", "target": "dragon-s-kin-mccaffrey"}, {"source": "telepathic-symbiont-defense", "target": "dragonflight-mccaffrey"}, {"source": "telepathic-symbiont-defense", "target": "dragonquest-mccaffrey"}, {"source": "telepathic-symbiont-defense", "target": "dragonsblood-mccaffrey"}, {"source": "telepathic-symbiont-defense", "target": "dragonsinger-mccaffrey"}, {"source": "telepathic-symbiont-defense", "target": "dragonsong-mccaffrey"}, {"source": "telepathic-symbiont-defense", "target": "moreta-mccaffrey"}, {"source": "totalitarian-spectacle-games", "target": "catching-fire-collins"}, {"source": "totalitarian-spectacle-games", "target": "mockingjay-collins"}, {"source": "totalitarian-spectacle-games", "target": "the-ballad-of-songbirds-and-snakes-collins"}, {"source": "totalitarian-spectacle-games", "target": "the-death-cure-dashner"}, {"source": "totalitarian-spectacle-games", "target": "the-hunger-games-collins"}, {"source": "totalitarian-spectacle-games", "target": "sunrise-on-the-reaping-collins"}, {"source": "totalitarian-spectacle-games", "target": "the-sunlit-man-sanderson"}, {"source": "absurdist-cosmic-bureaucracy", "target": "and-another-thing-colfer"}, {"source": "absurdist-cosmic-bureaucracy", "target": "life-the-universe-and-everything-adams"}, {"source": "absurdist-cosmic-bureaucracy", "target": "mostly-harmless-adams"}, {"source": "absurdist-cosmic-bureaucracy", "target": "so-long-and-thanks-for-all-the-fish-adams"}, {"source": "absurdist-cosmic-bureaucracy", "target": "the-hitch-hiker-s-guide-to-the-galaxy-adams"}, {"source": "absurdist-cosmic-bureaucracy", "target": "the-hitchhiker-s-guide-to-the-galaxy-adams"}, {"source": "biological-infiltration", "target": "animorphs-the-android-applegate"}, {"source": "biological-infiltration", "target": "animorphs-the-escape-applegate"}, {"source": "biological-infiltration", "target": "animorphs-the-exposed-applegate"}, {"source": "biological-infiltration", "target": "animorphs-the-reaction-applegate"}, {"source": "biological-infiltration", "target": "elfangor-s-secret-applegate"}, {"source": "biological-infiltration", "target": "the-city-of-gold-and-lead-youd"}, {"source": "child-combatant-ethics", "target": "anvil-of-stars-bear"}, {"source": "child-combatant-ethics", "target": "ender-in-exile-card"}, {"source": "child-combatant-ethics", "target": "ender-s-shadow-card"}, {"source": "child-combatant-ethics", "target": "first-meetings-card"}, {"source": "child-combatant-ethics", "target": "shadow-of-the-hegemon-card"}, {"source": "child-combatant-ethics", "target": "shadow-puppets-card"}, {"source": "metaphysical-authority-rebellion", "target": "the-amber-spyglass-pullman"}, {"source": "metaphysical-authority-rebellion", "target": "northern-lights-pullman"}, {"source": "metaphysical-authority-rebellion", "target": "the-subtle-knife-pullman"}, {"source": "metaphysical-authority-rebellion", "target": "la-belle-sauvage-pullman"}, {"source": "metaphysical-authority-rebellion", "target": "the-secret-commonwealth-pullman"}, {"source": "metaphysical-authority-rebellion", "target": "the-rose-field-pullman"}, {"source": "alien-biodome-dependency", "target": "rosewater-thompson"}, {"source": "alien-biodome-dependency", "target": "the-rosewater-insurrection-thompson"}, {"source": "alien-biodome-dependency", "target": "the-rosewater-redemption-thompson"}, {"source": "alien-biodome-dependency", "target": "the-poison-master-williams"}, {"source": "alien-biodome-dependency", "target": "the-margarets-tepper"}]};
+  const colorMap = {"ai-ml": "#ff6b6b", "biotech": "#51cf66", "space": "#339af0", "first-contact": "#845ef7", "climate": "#20c997", "nanotech": "#fab005", "vr-simulation": "#f06595", "time-travel": "#ffd43b", "governance": "#ff922b", "economics": "#a9e34b", "comms-info": "#22b8cf", "warfare": "#f03e3e", "medicine": "#38d9a9", "robotics": "#748ffc", "energy-physics": "#e599f7", "surveillance": "#868e96", "social-engineering": "#da77f2", "pandemics": "#e64980", "existential-risk": "#c92a2a", "ethics-philosophy": "#82c91e"};
+  const domainLabels = {"ai-ml": "Artificial Intelligence and Machine Learning", "biotech": "Biotechnology and Genetic Engineering", "space": "Space Exploration and Colonization", "first-contact": "First Contact and Alien Civilizations", "climate": "Climate and Environmental Change", "nanotech": "Nanotechnology", "vr-simulation": "Virtual Reality and Simulation", "time-travel": "Time Travel and Temporal Mechanics", "governance": "Governance and Political Systems", "economics": "Economics and Resource Allocation", "comms-info": "Communication and Information Technology", "warfare": "Warfare and Weapons Technology", "medicine": "Medicine and Human Enhancement", "robotics": "Robotics and Automation", "energy-physics": "Energy and Physics", "surveillance": "Surveillance and Privacy", "social-engineering": "Social Engineering and Psychology", "pandemics": "Pandemics and Biological Threats", "existential-risk": "Existential Risk and Civilizational Collapse", "ethics-philosophy": "Ethics and Philosophy of Technology"};
+  const svg = document.getElementById('graph-svg');
+  const gEl = document.getElementById('graph-g');
+  const container = document.getElementById('graph-container');
+  const W = container.clientWidth, H = container.clientHeight;
+
+  // Zoom / pan state
+  let zoomLevel = 1, panX = 0, panY = 0;
+  let isPanning = false, panStartX = 0, panStartY = 0, panStartPX = 0, panStartPY = 0;
+
+  function applyTransform() {
+    gEl.setAttribute('transform', 'translate('+panX+','+panY+') scale('+zoomLevel+')');
+    // Re-render labels with updated zoom-aware sizing (debounced)
+    if (frame >= 300) scheduleRerender();
+  }
+
+  let rerenderTimer = null;
+  function scheduleRerender() {
+    if (rerenderTimer) clearTimeout(rerenderTimer);
+    rerenderTimer = setTimeout(function() { rerenderTimer = null; render(); }, 60);
+  }
+
+  // --- Label placement engine: grid collision avoidance ---
+  // Cell size scales with zoom so the grid adapts to current view density
+  let occupiedCells = new Set();
+  let cellSize = 12;
+
+  function cellKey(gx, gy) { return gx + ',' + gy; }
+
+  function markOccupied(x, y, w, h) {
+    const x0 = Math.floor(x / cellSize), x1 = Math.floor((x + w) / cellSize);
+    const y0 = Math.floor((y - h) / cellSize), y1 = Math.floor(y / cellSize);
+    for (let gx = x0; gx <= x1; gx++)
+      for (let gy = y0; gy <= y1; gy++)
+        occupiedCells.add(cellKey(gx, gy));
+  }
+
+  function isOccupied(x, y, w, h) {
+    const x0 = Math.floor(x / cellSize), x1 = Math.floor((x + w) / cellSize);
+    const y0 = Math.floor((y - h) / cellSize), y1 = Math.floor(y / cellSize);
+    for (let gx = x0; gx <= x1; gx++)
+      for (let gy = y0; gy <= y1; gy++)
+        if (occupiedCells.has(cellKey(gx, gy))) return true;
+    return false;
+  }
+
+  // Try 4 anchor positions around a node (E, N, W, S); return pos or null
+  function placeLabel(nx, ny, r, textW, textH) {
+    const pad = 2;
+    const anchors = [
+      { tx: nx + r + pad, ty: ny + textH * 0.35 },           // E
+      { tx: nx - textW/2, ty: ny - r - pad },                 // N
+      { tx: nx - r - pad - textW, ty: ny + textH * 0.35 },   // W
+      { tx: nx - textW/2, ty: ny + r + pad + textH },         // S
+    ];
+    for (let i = 0; i < anchors.length; i++) {
+      const a = anchors[i];
+      if (!isOccupied(a.tx, a.ty, textW, textH)) {
+        markOccupied(a.tx, a.ty, textW, textH);
+        return a;
+      }
+    }
+    return null;
+  }
+
+  // Fit zoom/pan to show all visible nodes centered
+  function fitToVisible() {
+    const vis = data.nodes.filter(isVisible);
+    if (vis.length === 0) return;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    vis.forEach(function(n) {
+      if (n.x < minX) minX = n.x;
+      if (n.x > maxX) maxX = n.x;
+      if (n.y < minY) minY = n.y;
+      if (n.y > maxY) maxY = n.y;
+    });
+    const bw = maxX - minX || 100;
+    const bh = maxY - minY || 100;
+    const pad = 60;
+    const scaleX = (W - pad * 2) / bw;
+    const scaleY = (H - pad * 2) / bh;
+    zoomLevel = Math.min(scaleX, scaleY, 5);
+    zoomLevel = Math.max(zoomLevel, 0.3);
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    panX = W / 2 - cx * zoomLevel;
+    panY = H / 2 - cy * zoomLevel;
+    applyTransform();
+  }
+
+  // Mouse wheel zoom
+  container.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    const rect = container.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    const factor = e.deltaY < 0 ? 1.15 : 1/1.15;
+    const newZoom = Math.max(0.2, Math.min(20, zoomLevel * factor));
+    // Adjust pan to zoom toward mouse position
+    panX = mx - (mx - panX) * (newZoom / zoomLevel);
+    panY = my - (my - panY) * (newZoom / zoomLevel);
+    zoomLevel = newZoom;
+    applyTransform();
+  });
+
+  // Pan with mouse drag
+  container.addEventListener('mousedown', function(e) {
+    if (e.target.closest('a')) return;
+    isPanning = true;
+    panStartX = e.clientX; panStartY = e.clientY;
+    panStartPX = panX; panStartPY = panY;
+    container.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mousemove', function(e) {
+    if (!isPanning) return;
+    panX = panStartPX + (e.clientX - panStartX);
+    panY = panStartPY + (e.clientY - panStartY);
+    applyTransform();
+  });
+  window.addEventListener('mouseup', function() {
+    isPanning = false;
+    container.style.cursor = 'grab';
+  });
+
+  // Touch support
+  let lastTouchDist = 0;
+  container.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) {
+      isPanning = true;
+      panStartX = e.touches[0].clientX; panStartY = e.touches[0].clientY;
+      panStartPX = panX; panStartPY = panY;
+    } else if (e.touches.length === 2) {
+      lastTouchDist = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY);
+    }
+  }, {passive: true});
+  container.addEventListener('touchmove', function(e) {
+    if (e.touches.length === 1 && isPanning) {
+      panX = panStartPX + (e.touches[0].clientX - panStartX);
+      panY = panStartPY + (e.touches[0].clientY - panStartY);
+      applyTransform();
+    } else if (e.touches.length === 2) {
+      const dist = Math.hypot(e.touches[1].clientX - e.touches[0].clientX, e.touches[1].clientY - e.touches[0].clientY);
+      if (lastTouchDist > 0) {
+        const factor = dist / lastTouchDist;
+        zoomLevel = Math.max(0.2, Math.min(20, zoomLevel * factor));
+        applyTransform();
+      }
+      lastTouchDist = dist;
+    }
+  }, {passive: true});
+  container.addEventListener('touchend', function() { isPanning = false; lastTouchDist = 0; });
+
+  // Zoom buttons
+  window.zoomIn = function() {
+    const cx = W/2, cy = H/2;
+    const factor = 1.4;
+    const newZoom = Math.min(20, zoomLevel * factor);
+    panX = cx - (cx - panX) * (newZoom / zoomLevel);
+    panY = cy - (cy - panY) * (newZoom / zoomLevel);
+    zoomLevel = newZoom;
+    applyTransform();
+  };
+  window.zoomOut = function() {
+    const cx = W/2, cy = H/2;
+    const factor = 1/1.4;
+    const newZoom = Math.max(0.2, zoomLevel * factor);
+    panX = cx - (cx - panX) * (newZoom / zoomLevel);
+    panY = cy - (cy - panY) * (newZoom / zoomLevel);
+    zoomLevel = newZoom;
+    applyTransform();
+  };
+  window.zoomReset = function() {
+    zoomLevel = 1; panX = 0; panY = 0;
+    applyTransform();
+  };
+
+  // Build legend and domain filter
+  const usedDomains = new Set();
+  data.nodes.forEach(n => { if (n.domains) n.domains.forEach(d => usedDomains.add(d)); });
+  const legend = document.getElementById('legend');
+  const domainSelect = document.getElementById('domain-filter');
+  Array.from(usedDomains).sort().forEach(d => {
+    const dlabel = domainLabels[d] || d;
+    const item = document.createElement('span');
+    item.className = 'legend-item';
+    const dot = document.createElement('span');
+    dot.className = 'legend-dot';
+    dot.style.background = colorMap[d] || '#58a6ff';
+    item.appendChild(dot);
+    item.appendChild(document.createTextNode(dlabel));
+    legend.appendChild(item);
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = dlabel;
+    domainSelect.appendChild(opt);
+  });
+
+  // Track visibility for domain filtering
+  let activeDomain = '';
+  window.filterGraph = function() {
+    activeDomain = domainSelect.value;
+    frame = 0;
+    pendingFit = true;
+    animate();
+  };
+  let pendingFit = false;
+
+  function isVisible(n) {
+    if (!activeDomain) return true;
+    if (n.type === 'idea') return n.domains && n.domains.indexOf(activeDomain) >= 0;
+    return data.links.some(l => {
+      const src = typeof l.source === 'object' ? l.source : nodeMap[l.source];
+      const tgt = typeof l.target === 'object' ? l.target : nodeMap[l.target];
+      if (!src || !tgt) return false;
+      if (tgt.id === n.id && src.type === 'idea' && isVisible(src)) return true;
+      if (src.id === n.id && tgt.type === 'idea' && isVisible(tgt)) return true;
+      return false;
+    });
+  }
+
+  // Index nodes
+  const nodeMap = {};
+  data.nodes.forEach((n, i) => {
+    n.x = W/2 + (Math.random()-0.5) * W * 0.6;
+    n.y = H/2 + (Math.random()-0.5) * H * 0.6;
+    n.vx = 0; n.vy = 0;
+    nodeMap[n.id] = n;
+  });
+
+  // Resolve links
+  data.links.forEach(l => {
+    l.source = nodeMap[l.source] || l.source;
+    l.target = nodeMap[l.target] || l.target;
+  });
+
+  function getColor(n) {
+    if (n.type === 'story') return '#8b949e';
+    if (n.domains && n.domains[0]) return colorMap[n.domains[0]] || '#58a6ff';
+    return '#58a6ff';
+  }
+
+  // Simple force simulation
+  function tick() {
+    const alpha = 0.3;
+    data.nodes.forEach(n => {
+      n.vx += (W/2 - n.x) * 0.001;
+      n.vy += (H/2 - n.y) * 0.001;
+    });
+    data.links.forEach(l => {
+      if (typeof l.source !== 'object' || typeof l.target !== 'object') return;
+      const dx = l.target.x - l.source.x, dy = l.target.y - l.source.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const targetDist = 80;
+      const force = (dist - targetDist) * 0.005;
+      const fx = dx/dist * force, fy = dy/dist * force;
+      l.source.vx += fx; l.source.vy += fy;
+      l.target.vx -= fx; l.target.vy -= fy;
+    });
+    for (let i = 0; i < data.nodes.length; i++) {
+      for (let j = i+1; j < data.nodes.length; j++) {
+        const a = data.nodes[i], b = data.nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+        const bothIdeas = a.type==='idea' && b.type==='idea';
+        const repulse = bothIdeas ? 800 : 120;
+        if (dist < 200) {
+          const force = repulse / (dist * dist);
+          a.vx -= dx/dist * force; a.vy -= dy/dist * force;
+          b.vx += dx/dist * force; b.vy += dy/dist * force;
+        }
+      }
+    }
+    data.nodes.forEach(n => {
+      n.vx *= 0.85; n.vy *= 0.85;
+      n.x += n.vx; n.y += n.vy;
+      n.x = Math.max(20, Math.min(W-20, n.x));
+      n.y = Math.max(20, Math.min(H-20, n.y));
+    });
+  }
+
+  function render() {
+    const invZ = 1 / zoomLevel;
+    cellSize = 6 * invZ; // grid resolution scales with zoom
+    occupiedCells = new Set();
+    let html = '';
+    let visNodes = 0, visLinks = 0;
+
+    // Pre-compute node degree for sort priority
+    const degree = {};
+    data.links.forEach(l => {
+      if (typeof l.source !== 'object' || typeof l.target !== 'object') return;
+      if (!isVisible(l.source) || !isVisible(l.target)) return;
+      degree[l.source.id] = (degree[l.source.id] || 0) + 1;
+      degree[l.target.id] = (degree[l.target.id] || 0) + 1;
+      visLinks++;
+    });
+
+    // Render links
+    data.links.forEach(l => {
+      if (typeof l.source !== 'object' || typeof l.target !== 'object') return;
+      if (!isVisible(l.source) || !isVisible(l.target)) return;
+      html += '<line class="link" x1="'+l.source.x+'" y1="'+l.source.y+'" x2="'+l.target.x+'" y2="'+l.target.y+'"/>';
+    });
+
+    // Collect visible nodes, sort: ideas first (by size desc), then stories by degree desc
+    const visibleNodes = data.nodes.filter(isVisible);
+    visibleNodes.sort(function(a, b) {
+      if (a.type === 'idea' && b.type !== 'idea') return -1;
+      if (a.type !== 'idea' && b.type === 'idea') return 1;
+      return (degree[b.id] || 0) - (degree[a.id] || 0);
+    });
+
+    // Render nodes; ideas get labels always, stories get labels via collision grid
+    const ideaFS = 11 * invZ;
+    const storyFS = 8 * invZ;
+    visibleNodes.forEach(function(n) {
+      const color = getColor(n);
+      const r = n.size || 4;
+      html += '<a href="'+n.url+'">';
+      html += '<circle cx="'+n.x+'" cy="'+n.y+'" r="'+r+'" fill="'+color+'" stroke="'+color+'" stroke-opacity="0.3" stroke-width="2">';
+      html += '<title>'+n.label+'</title></circle>';
+
+      // Reserve node circle in the grid
+      markOccupied(n.x - r, n.y + r, r * 2, r * 2);
+
+      if (n.type === 'idea') {
+        const tw = n.label.length * 6.5 * invZ;
+        const th = 12 * invZ;
+        const pos = placeLabel(n.x, n.y, r, tw, th);
+        if (pos) {
+          html += '<text x="'+pos.tx+'" y="'+pos.ty+'" class="idea-label" font-size="'+ideaFS+'">'+n.label+'</text>';
+        } else {
+          html += '<text x="'+(n.x+r+3)+'" y="'+(n.y+3)+'" class="idea-label" font-size="'+ideaFS+'">'+n.label+'</text>';
+        }
+      } else {
+        // All stories are label candidates; grid decides if there is room
+        const tw = n.label.length * 4.8 * invZ;
+        const th = 9 * invZ;
+        const pos = placeLabel(n.x, n.y, r, tw, th);
+        if (pos) {
+          html += '<text x="'+pos.tx+'" y="'+pos.ty+'" class="node-label" font-size="'+storyFS+'">'+n.label+'</text>';
+        }
+      }
+      html += '</a>';
+      visNodes++;
+    });
+    gEl.innerHTML = html;
+    const nc = document.getElementById('node-count');
+    const lc = document.getElementById('link-count');
+    if (nc) nc.textContent = visNodes;
+    if (lc) lc.textContent = visLinks;
+    // Apply transform without re-triggering render
+    gEl.setAttribute('transform', 'translate('+panX+','+panY+') scale('+zoomLevel+')');
+  }
+
+  // Run simulation
+  let frame = 0;
+  function animate() {
+    tick();
+    render();
+    frame++;
+    // Auto-fit after simulation settles (frame 80) on filter change
+    if (pendingFit && frame === 80) {
+      fitToVisible();
+      pendingFit = false;
+    }
+    if (frame < 300) requestAnimationFrame(animate);
+  }
+  container.style.cursor = 'grab';
+  animate();
+})();
+</script>
+</body>
+</html>

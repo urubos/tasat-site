@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Ringworld throne — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>The Ringworld throne</h1>
+<p class="subtitle"><a href="../index.html#search=Larry Niven" style="color:inherit">Larry Niven</a> &middot; 1996 &middot; <a class="tag" href="../index.html#type=novel">Novel</a></p>
+
+<p class="subtitle" style="font-size:0.9rem"><strong>Series:</strong> <a class="tag" href="../index.html#series=Ringworld">Ringworld</a> &mdash; #3</p><p class="subtitle" style="font-size:0.9rem"><strong>Universe:</strong> <a class="tag" href="../index.html#universe=Tales of Known Space">Tales of Known Space</a></p>
+
+
+<div class="detail-section">
+  <h3>Synopsis</h3>
+  <p>From back cover Del Rey paperback May 1997: *Come back to the Ringworld... the most astonishing feat of engineering ever encountered. A place of untold technological wonders, home to a myriad humanoid races, and world of some of the most beloved science-fiction stories ever written!* The human, Louis Wu; the puppeteer known as the Hindmost; Acolyte, so of the Kzin called Chmeee... legendary beings brought together once again in the defense of the Ringworld.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Ideas Explored</h3>
+  <ul class="related-list"><li><a href="../ideas/alien-megastructure-exploration.html">Alien Megastructure Exploration</a></li>
+</ul>
+</div>
+
+<div class="detail-section">
+  <h3>Metadata</h3>
+  <p><strong>Source:</strong> OpenLibrary</p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=Science fiction">Science fiction</a><a class="tag" href="../index.html#search=Ringworld (Imaginary place)">Ringworld (Imaginary place)</a><a class="tag" href="../index.html#search=Fiction">Fiction</a><a class="tag" href="../index.html#search=Fiction, science fiction, general">Fiction, science fiction, general</a><a class="tag" href="../index.html#search=Ringworld (imaginary place), fiction">Ringworld (imaginary place), fiction</a><a class="tag" href="../index.html#search=American Science fiction">American Science fiction</a></p>
+  <p><strong>isfdb_id:</strong> 3171</p><p><strong>openlibrary_id:</strong> OL510428W</p>
+</div>
+
+<div class="detail-section">
+  <h3>Find This Book</h3>
+  <p class="export-links"><a href="https://en.wikipedia.org/w/index.php?search=The+Ringworld+throne+Larry+Niven" target="_blank" rel="noopener">Wikipedia</a> &middot; <a href="https://www.amazon.com/s?k=The+Ringworld+throne+Larry+Niven&i=stripbooks" target="_blank" rel="noopener">Amazon</a> &middot; <a href="https://www.audible.com/search?keywords=The+Ringworld+throne+Larry+Niven" target="_blank" rel="noopener">Audible</a> &middot; <a href="https://books.google.com/books?q=The+Ringworld+throne+Larry+Niven" target="_blank" rel="noopener">Google Books</a> &middot; <a href="https://www.goodreads.com/search?q=The+Ringworld+throne+Larry+Niven" target="_blank" rel="noopener">Goodreads</a> &middot; <a href="https://openlibrary.org/works/OL510428W" target="_blank" rel="noopener">OpenLibrary</a></p>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+The+Ringworld+throne&entry-type=Story&entry-id=the-ringworld-throne-niven" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this story</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>
