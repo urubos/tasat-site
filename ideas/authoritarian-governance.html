@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Authoritarian Governance Model — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Authoritarian Governance Model</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>A society organized around total state control tests the long-term stability and human cost of authoritarian governance under various pressures.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Informs analysis of democratic backsliding, institutional capture, and resistance movements against authoritarian consolidation.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a><a class="tag" href="../index.html#domain=biotech">Biotechnology and Genetic Engineering</a><a class="tag" href="../index.html#domain=surveillance">Surveillance and Privacy</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a><a class="tag" href="../index.html#domain=comms-info">Communication and Information Technology</a><a class="tag" href="../index.html#domain=economics">Economics and Resource Allocation</a><a class="tag" href="../index.html#domain=medicine">Medicine and Human Enhancement</a><a class="tag" href="../index.html#domain=existential-risk">Existential Risk and Civilizational Collapse</a><a class="tag" href="../index.html#domain=first-contact">First Contact and Alien Civilizations</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=cautionary-tale">Cautionary tale</a><a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=satire">Satire / Social commentary</a><a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a><a class="tag" href="../index.html#scenario=utopian-vision">Utopian vision</a><a class="tag" href="../index.html#scenario=prediction">Prediction / Extrapolation</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=dystopian">Dystopian</a><a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=aspirational">Aspirational</a><a class="tag" href="../index.html#outcome=transformative">Transformative</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=authoritarianism">authoritarianism</a><a class="tag" href="../index.html#search=dystopia">dystopia</a><a class="tag" href="../index.html#search=political-control">political-control</a><a class="tag" href="../index.html#search=cognitive-elite-suppression">cognitive-elite-suppression</a><a class="tag" href="../index.html#search=cognitive-elite">cognitive-elite</a><a class="tag" href="../index.html#search=meritocracy-oligarchy">meritocracy-oligarchy</a><a class="tag" href="../index.html#search=normal-suppression">normal-suppression</a><a class="tag" href="../index.html#search=domestic-fascism">domestic-fascism</a><a class="tag" href="../index.html#search=democratic-backsliding">democratic-backsliding</a><a class="tag" href="../index.html#search=demagogue">demagogue</a><a class="tag" href="../index.html#search=institutional-capture">institutional-capture</a><a class="tag" href="../index.html#search=theocratic-dystopia-resistance">theocratic-dystopia-resistance</a><a class="tag" href="../index.html#search=theocracy">theocracy</a><a class="tag" href="../index.html#search=resistance">resistance</a><a class="tag" href="../index.html#search=whistleblowing">whistleblowing</a><a class="tag" href="../index.html#search=institutional-memory">institutional-memory</a><a class="tag" href="../index.html#search=totalitarian-moral-conformity">totalitarian-moral-conformity</a><a class="tag" href="../index.html#search=moral-conformity">moral-conformity</a><a class="tag" href="../index.html#search=subversive-humor">subversive-humor</a><a class="tag" href="../index.html#search=moral-policing">moral-policing</a><a class="tag" href="../index.html#search=underground-silo-controlled-society">underground-silo-controlled-society</a><a class="tag" href="../index.html#search=information-control">information-control</a><a class="tag" href="../index.html#search=underground-society">underground-society</a><a class="tag" href="../index.html#search=institutional-deception">institutional-deception</a><a class="tag" href="../index.html#search=science-as-religion-control">science-as-religion-control</a><a class="tag" href="../index.html#search=science-as-religion">science-as-religion</a><a class="tag" href="../index.html#search=technocratic-deception">technocratic-deception</a><a class="tag" href="../index.html#search=priesthood">priesthood</a><a class="tag" href="../index.html#search=counter-deception">counter-deception</a><a class="tag" href="../index.html#search=secular-religious-civilizational-conflict">secular-religious-civilizational-conflict</a><a class="tag" href="../index.html#search=secularism">secularism</a><a class="tag" href="../index.html#search=religious-decline">religious-decline</a><a class="tag" href="../index.html#search=antichrist">antichrist</a><a class="tag" href="../index.html#search=moral-vacuum">moral-vacuum</a><a class="tag" href="../index.html#search=organized-crime-as-government">organized-crime-as-government</a><a class="tag" href="../index.html#search=organized-crime">organized-crime</a><a class="tag" href="../index.html#search=alternative-governance">alternative-governance</a><a class="tag" href="../index.html#search=institutional-failure">institutional-failure</a><a class="tag" href="../index.html#search=institutional-evil-adaptation">institutional-evil-adaptation</a><a class="tag" href="../index.html#search=adaptive-evil">adaptive-evil</a><a class="tag" href="../index.html#search=regulatory-evasion">regulatory-evasion</a><a class="tag" href="../index.html#search=sophisticated-predator">sophisticated-predator</a><a class="tag" href="../index.html#search=institutional-adaptation">institutional-adaptation</a><a class="tag" href="../index.html#search=mandatory-death-age">mandatory-death-age</a><a class="tag" href="../index.html#search=mandatory-death">mandatory-death</a><a class="tag" href="../index.html#search=age-limit">age-limit</a><a class="tag" href="../index.html#search=youth-governance">youth-governance</a><a class="tag" href="../index.html#search=euthanasia">euthanasia</a><a class="tag" href="../index.html#search=lethal-touch-prisoner">lethal-touch-prisoner</a><a class="tag" href="../index.html#search=lethal-ability">lethal-ability</a><a class="tag" href="../index.html#search=preventive-detention">preventive-detention</a><a class="tag" href="../index.html#search=weaponized-person">weaponized-person</a><a class="tag" href="../index.html#search=overlapping-cities-ignore">overlapping-cities-ignore</a><a class="tag" href="../index.html#search=overlapping-cities">overlapping-cities</a><a class="tag" href="../index.html#search=selective-perception">selective-perception</a><a class="tag" href="../index.html#search=social-unseeing">social-unseeing</a><a class="tag" href="../index.html#search=breach">breach</a><a class="tag" href="../index.html#search=multi-millennial-dictatorship">multi-millennial-dictatorship</a><a class="tag" href="../index.html#search=multi-millennial-rule">multi-millennial-rule</a><a class="tag" href="../index.html#search=benevolent-tyrant">benevolent-tyrant</a><a class="tag" href="../index.html#search=golden-path">golden-path</a><a class="tag" href="../index.html#search=longtermist-governance">longtermist-governance</a><a class="tag" href="../index.html#search=revolutionary-betrayal">revolutionary-betrayal</a><a class="tag" href="../index.html#search=revolution">revolution</a><a class="tag" href="../index.html#search=power-corruption">power-corruption</a><a class="tag" href="../index.html#search=institutional-decay">institutional-decay</a><a class="tag" href="../index.html#search=totalitarianism">totalitarianism</a><a class="tag" href="../index.html#search=revolutionary-commune">revolutionary-commune</a><a class="tag" href="../index.html#search=mobile-society">mobile-society</a><a class="tag" href="../index.html#search=extraterritorial">extraterritorial</a><a class="tag" href="../index.html#search=perpetual-motion">perpetual-motion</a><a class="tag" href="../index.html#search=religious-monoculture-alternate-history">religious-monoculture-alternate-history</a><a class="tag" href="../index.html#search=religious-monoculture">religious-monoculture</a><a class="tag" href="../index.html#search=no-reformation">no-reformation</a><a class="tag" href="../index.html#search=alternate-history">alternate-history</a><a class="tag" href="../index.html#search=civilizational-hegemony-shift">civilizational-hegemony-shift</a><a class="tag" href="../index.html#search=civilizational-hegemony">civilizational-hegemony</a><a class="tag" href="../index.html#search=monoculture">monoculture</a><a class="tag" href="../index.html#search=global-governance">global-governance</a><a class="tag" href="../index.html#search=cultural-dominance">cultural-dominance</a><a class="tag" href="../index.html#search=class-constrained-politics">class-constrained-politics</a><a class="tag" href="../index.html#search=class-systems">class-systems</a><a class="tag" href="../index.html#search=political-reform">political-reform</a><a class="tag" href="../index.html#search=social-mobility">social-mobility</a><a class="tag" href="../index.html#search=imperial-cultural-assimilation">imperial-cultural-assimilation</a><a class="tag" href="../index.html#search=imperial-assimilation">imperial-assimilation</a><a class="tag" href="../index.html#search=cultural-preservation">cultural-preservation</a><a class="tag" href="../index.html#search=soft-power">soft-power</a><a class="tag" href="../index.html#search=small-state-diplomacy">small-state-diplomacy</a><a class="tag" href="../index.html#search=condemned-genius-advocacy">condemned-genius-advocacy</a><a class="tag" href="../index.html#search=condemned-genius">condemned-genius</a><a class="tag" href="../index.html#search=justice-vs-utility">justice-vs-utility</a><a class="tag" href="../index.html#search=state-punishment">state-punishment</a><a class="tag" href="../index.html#search=divine-alien-resistance">divine-alien-resistance</a><a class="tag" href="../index.html#search=divine-alien">divine-alien</a><a class="tag" href="../index.html#search=political-resistance">political-resistance</a><a class="tag" href="../index.html#search=paranoid-state">paranoid-state</a><a class="tag" href="../index.html#search=valis">valis</a><a class="tag" href="../index.html#search=metal-based-power-revolution">metal-based-power-revolution</a><a class="tag" href="../index.html#search=power-monopoly">power-monopoly</a><a class="tag" href="../index.html#search=metal-magic">metal-magic</a><a class="tag" href="../index.html#search=revolutionary-heist">revolutionary-heist</a><a class="tag" href="../index.html#search=magic-return-institutional-disruption">magic-return-institutional-disruption</a><a class="tag" href="../index.html#search=magic-return">magic-return</a><a class="tag" href="../index.html#search=institutional-disruption">institutional-disruption</a><a class="tag" href="../index.html#search=paradigm-shift">paradigm-shift</a><a class="tag" href="../index.html#search=miniature-civilization-survival">miniature-civilization-survival</a><a class="tag" href="../index.html#search=scale-mismatch">scale-mismatch</a><a class="tag" href="../index.html#search=adaptive-survival">adaptive-survival</a><a class="tag" href="../index.html#search=miniature-civilization">miniature-civilization</a><a class="tag" href="../index.html#search=hostile-infrastructure">hostile-infrastructure</a><a class="tag" href="../index.html#search=aristocrat-among-rebels">aristocrat-among-rebels</a><a class="tag" href="../index.html#search=class-exposure">class-exposure</a><a class="tag" href="../index.html#search=forced-empathy">forced-empathy</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (102)</h3>
+  <ul class="related-list"><li><a href="../stories/a-civil-campaign-bujold.html">A Civil Campaign</a> — Lois McMaster Bujold (1999)</li>
+<li><a href="../stories/a-clockwork-orange-burgess.html">A Clockwork Orange</a> — Anthony Burgess (1962)</li>
+<li><a href="../stories/a-dance-with-dragons-martin.html">A Dance With Dragons</a> — George R. R. Martin (2008)</li>
+<li><a href="../stories/a-deepness-in-the-sky-zones-of-thought-vinge.html">A Deepness in the Sky</a> — Vernor Vinge (1999)</li>
+<li><a href="../stories/a-memory-called-empire-martine.html">A Memory Called Empire</a> — Arkady Martine (2020)</li>
+<li><a href="../stories/a-wrinkle-in-time-l-engle.html">A Wrinkle in Time</a> — Madeleine L&#x27;Engle (1962)</li>
+<li><a href="../stories/all-these-things-i-ve-done-zevin.html">All these things I&#x27;ve done</a> — Gabrielle Zevin, Ilyana Kadushin (2011)</li>
+<li><a href="../stories/among-the-hidden-haddix.html">Among the Hidden</a> — Margaret Peterson Haddix (1998)</li>
+<li><a href="../stories/animal-farm-nineteen-eighty-four-orwell.html">Animal Farm / Nineteen Eighty-Four</a> — George Orwell (1978)</li>
+<li><a href="../stories/bear-head-tchaikovsky.html">Bear Head</a> — Adrian Tchaikovsky (2020)</li>
+<li><a href="../stories/carpe-jugulum-pratchett.html">Carpe Jugulum</a> — Terry Pratchett (1998)</li>
+<li><a href="../stories/catching-fire-collins.html">Catching Fire</a> — Suzanne Collins (2009)</li>
+<li><a href="../stories/champion-lu.html">Champion</a> — Marie Lu, Steven Kaplan, Mariel Stern (2013)</li>
+<li><a href="../stories/children-of-dune-herbert.html">Children of Dune</a> — Frank Herbert (1976)</li>
+<li><a href="../stories/chung-kuo-wingrove.html">Chung Kuo</a> — David Wingrove (1989)</li>
+<li><a href="../stories/defy-me-shatter-me-mafi.html">Defy Me (Shatter Me)</a> — Tahereh Mafi (2019)</li>
+<li><a href="../stories/delirium-oliver.html">Delirium</a> — Lauren Oliver (2011)</li>
+<li><a href="../stories/destinos-divididos-roth.html">Destinos divididos  </a> — Veronica Roth (2018)</li>
+<li><a href="../stories/diggers-pratchett.html">Diggers</a> — Terry Pratchett (1990)</li>
+<li><a href="../stories/divergent-roth.html">Divergent</a> — Veronica Roth (2010)</li>
+<li><a href="../stories/dune-herbert.html">Dune</a> — Frank Herbert (1965)</li>
+<li><a href="../stories/dune-messiah-herbert.html">Dune Messiah</a> — Frank Herbert (1969)</li>
+<li><a href="../stories/empire-of-the-atom-vogt.html">Empire of the Atom</a> — A. E. van Vogt (1957)</li>
+<li><a href="../stories/endymion-simmons.html">Endymion</a> — Dan Simmons (1995)</li>
+<li><a href="../stories/fahrenheit-451-bradbury.html">Fahrenheit 451</a> — Ray Bradbury (1953)</li>
+<li><a href="../stories/flow-my-tears-the-policeman-said-dick.html">Flow my tears, the policeman said</a> — Philip K. Dick (1974)</li>
+<li><a href="../stories/gather-darkness-leiber.html">Gather, darkness!</a> — Fritz Leiber, Jonathan Davis (1950)</li>
+<li><a href="../stories/gathering-blue-lowry.html">Gathering Blue</a> — Lois Lowry (2000)</li>
+<li><a href="../stories/god-emperor-of-dune-herbert.html">God Emperor of Dune</a> — Frank Herbert (1981)</li>
+<li><a href="../stories/iron-council-mi-ville.html">Iron Council</a> — China Miéville (2004)</li>
+<li><a href="../stories/it-can-t-happen-here-lewis.html">It Can&#x27;t Happen Here</a> — Sinclair Lewis (1935)</li>
+<li><a href="../stories/jonathan-strange-mr-norrell-clarke.html">Jonathan Strange &amp; Mr Norrell</a> — Susanna Clarke (2005)</li>
+<li><a href="../stories/la-belle-sauvage-pullman.html">La Belle Sauvage</a> — Philip Pullman (2017)</li>
+<li><a href="../stories/legend-lu.html">Legend</a> — Marie Lu (2011)</li>
+<li><a href="../stories/level-7-roshwald.html">Level 7</a> — Mordecai Roshwald (1959)</li>
+<li><a href="../stories/logan-s-run-nolan.html">Logan&#x27;s run</a> — William F. Nolan, George Clayton Johnson (1967)</li>
+<li><a href="../stories/lord-of-the-world-benson.html">Lord of the World</a> — Robert Hugh Benson, Simon Vance (1907)</li>
+<li><a href="../stories/mistborn-sanderson.html">Mistborn</a> — Brandon Sanderson (2001)</li>
+<li><a href="../stories/nicolae-lahaye.html">Nicolae</a> — Tim F. LaHaye, Jerry B. Jenkins (1997)</li>
+<li><a href="../stories/nineteen-eighty-four-orwell.html">Nineteen Eighty-Four</a> — George Orwell (1949)</li>
+<li><a href="../stories/nordenholt-s-million-stewart.html">Nordenholt&#x27;s Million</a> — Alfred Walter Stewart (1923)</li>
+<li><a href="../stories/our-friends-from-frolix-eight-dick.html">Our Friends from Frolix Eight</a> — Philip K. Dick (1970)</li>
+<li><a href="../stories/pandemonium-oliver.html">Pandemonium</a> — Lauren Oliver (2012)</li>
+<li><a href="../stories/parable-of-the-talents-butler.html">Parable of the Talents</a> — Octavia E. Butler (1998)</li>
+<li><a href="../stories/prodigy-lu.html">Prodigy</a> — Marie Lu (2012)</li>
+<li><a href="../stories/radio-free-albemuth-dick.html">Radio Free Albemuth</a> — Philip K. Dick, Philip K. Dick (1985)</li>
+<li><a href="../stories/revolt-in-2100-heinlein.html">Revolt in 2100</a> — Robert A. Heinlein (1953)</li>
+<li><a href="../stories/saturn-bova.html">Saturn</a> — Ben Bova (2003)</li>
+<li><a href="../stories/shatter-me-mafi.html">Shatter Me</a> — Tahereh Mafi (2011)</li>
+<li><a href="../stories/shift-howey.html">Shift</a> — Hugh Howey (2013)</li>
+<li><a href="../stories/sixth-column-heinlein.html">Sixth Column</a> — Robert A. Heinlein (1949)</li>
+<li><a href="../stories/small-gods-pratchett.html">Small Gods</a> — Terry Pratchett, Ray Friesen (1992)</li>
+<li><a href="../stories/soon-jenkins.html">Soon</a> — Jerry B. Jenkins (2003)</li>
+<li><a href="../stories/star-born-norton.html">Star Born</a> — Andre Norton (1957)</li>
+<li><a href="../stories/star-trek-the-next-generation-dark-mirror-duane.html">Star Trek The Next Generation - Dark Mirror</a> — Diane Duane (1993)</li>
+<li><a href="../stories/star-wars-death-star-reaves.html">Star Wars - Death Star</a> — Michael Reaves, Steve Perry (2007)</li>
+<li><a href="../stories/star-wars-episode-i-the-phantom-menace-brooks.html">Star Wars Episode I - The Phantom Menace</a> — Terry Brooks (1995)</li>
+<li><a href="../stories/star-wars-episode-ii-attack-of-the-clones-wrede.html">Star Wars Episode II - Attack of the Clones</a> — Patricia C. Wrede, Jonathan Hales, George Lucas (2002)</li>
+<li><a href="../stories/star-wars-episode-iii-revenge-of-the-sith-stover.html">Star Wars Episode III - Revenge of the Sith</a> — Matthew Woodring Stover (2005)</li>
+<li><a href="../stories/star-wars-episode-iii-revenge-of-the-sith-wrede.html">Star Wars Episode III - Revenge of the Sith</a> — Patricia C. Wrede, Salido Amoroto Ignacio, George Lucas (2005)</li>
+<li><a href="../stories/star-wars-from-the-adventures-of-luke-skywalker-lucas.html">Star Wars - From the Adventures of Luke Skywalker</a> — George Lucas, Alan Dean Foster (1976)</li>
+<li><a href="../stories/star-wars-legacy-of-the-force-exile-allston.html">Star Wars - Legacy of the Force - Exile</a> — Aaron Allston (2007)</li>
+<li><a href="../stories/star-wars-legacy-of-the-force-sacrifice-traviss.html">Star Wars - Legacy of the Force - Sacrifice</a> — Karen Traviss, Jeff Gurner (2007)</li>
+<li><a href="../stories/sunrise-on-the-reaping-collins.html">Sunrise on the Reaping</a> — Suzanne Collins (2025)</li>
+<li><a href="../stories/that-hideous-strength-lewis.html">That Hideous Strength</a> — C. S. Lewis (1945)</li>
+<li><a href="../stories/the-alien-years-silverberg.html">The alien years</a> — Robert Silverberg (1998)</li>
+<li><a href="../stories/the-alteration-amis.html">The Alteration</a> — Kingsley Amis (1976)</li>
+<li><a href="../stories/the-anome-vance.html">The Anome</a> — Jack Vance, Russell Letson (1973)</li>
+<li><a href="../stories/the-ask-and-the-answer-ness.html">The Ask and the Answer</a> — Patrick Ness (2009)</li>
+<li><a href="../stories/the-bachman-books-long-walk-rage-roadwork-running-man-king.html">The Bachman Books (Long Walk / Rage / Roadwork / Running Man)</a> — Stephen King (1985)</li>
+<li><a href="../stories/the-ballad-of-songbirds-and-snakes-collins.html">The Ballad of Songbirds and Snakes</a> — Suzanne Collins (2020)</li>
+<li><a href="../stories/the-brave-free-men-vance.html">The Brave Free Men</a> — Jack Vance (1973)</li>
+<li><a href="../stories/the-children-of-men-james.html">The Children of Men</a> — P. D. James (1992)</li>
+<li><a href="../stories/the-city-the-city-mi-ville.html">The City &amp; The City</a> — China Miéville (2009)</li>
+<li><a href="../stories/the-declaration-malley.html">The Declaration</a> — Gemma Malley (2007)</li>
+<li><a href="../stories/the-dream-compass-bredenberg.html">The Dream Compass</a> — Jeff Bredenberg (1991)</li>
+<li><a href="../stories/the-fireman-bradbury.html">The Fireman</a> — Ray Bradbury (1951)</li>
+<li><a href="../stories/the-handmaid-s-tale-atwood.html">The Handmaid&#x27;s Tale</a> — Margaret Atwood (1985)</li>
+<li><a href="../stories/the-handmaid-s-tale-graphic-novel-nault.html">The Handmaid&#x27;s Tale [Graphic Novel]</a> — Renee Nault (2019)</li>
+<li><a href="../stories/the-hunger-games-collins.html">The Hunger Games</a> — Suzanne Collins (2008)</li>
+<li><a href="../stories/the-iron-heel-london.html">The Iron Heel</a> — Jack London (1907)</li>
+<li><a href="../stories/the-longest-way-home-silverberg.html">The longest way home</a> — Robert Silverberg (2002)</li>
+<li><a href="../stories/the-man-in-the-high-castle-dick.html">The Man in the High Castle</a> — Philip K. Dick (1962)</li>
+<li><a href="../stories/the-man-who-japed-dick.html">The Man Who Japed</a> — Philip K. Dick (1956)</li>
+<li><a href="../stories/the-mind-cage-vogt.html">The Mind Cage</a> — A. E. van Vogt (1957)</li>
+<li><a href="../stories/the-rise-of-endymion-simmons.html">The Rise of Endymion</a> — Dan Simmons (1997)</li>
+<li><a href="../stories/the-running-man-king.html">The Running Man</a> — Stephen King (1982)</li>
+<li><a href="../stories/the-shape-of-things-to-come-wells.html">The Shape of Things to Come</a> — H. G. Wells (1933)</li>
+<li><a href="../stories/the-story-of-darth-vader-saunders.html">The Story of Darth Vader</a> — Catherine Saunders, Catherine Saunders, Saunders, Catherine, Kosara, Tori (2001)</li>
+<li><a href="../stories/the-sunlit-man-sanderson.html">The Sunlit Man</a> — Brandon Sanderson (2023)</li>
+<li><a href="../stories/the-syndic-kornbluth.html">The Syndic</a> — Cyril M. Kornbluth (1953)</li>
+<li><a href="../stories/the-telling-guin.html">The Telling</a> — Ursula K. Le Guin (2000)</li>
+<li><a href="../stories/the-testaments-atwood.html">The Testaments</a> — Margaret Atwood (2019)</li>
+<li><a href="../stories/the-time-hoppers-silverberg.html">The time-hoppers</a> — Robert Silverberg (1967)</li>
+<li><a href="../stories/unravel-me-mafi.html">Unravel me</a> — Tahereh Mafi (2013)</li>
+<li><a href="../stories/when-the-sleeper-awakes-wells.html">When the Sleeper Awakes</a> — H. G. Wells (1899)</li>
+<li><a href="../stories/wild-jack-youd.html">Wild Jack</a> — Sam Youd, John Christopher (1974)</li>
+<li><a href="../stories/winter-meyer.html">Winter</a> — Marissa Meyer (2015)</li>
+<li><a href="../stories/witch-wizard-patterson.html">Witch &amp; wizard</a> — James Patterson, Gabrielle Charbonnet (1999)</li>
+<li><a href="../stories/wolfbane-pohl.html">Wolfbane</a> — Frederik Pohl, Cyril M. Kornbluth (1959)</li>
+<li><a href="../stories/wool-howey.html">Wool</a> — Hugh Howey (2011)</li>
+<li><a href="../stories/world-war-z-brooks.html">World War Z</a> — Max Brooks (2006)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="designed-society.html">Rationally Designed Society</a></li>
+<li><a href="engineered-social-partition.html">Engineered Social Partition</a></li>
+<li><a href="intellectual-isolation.html">Intellectual Monastic Isolation</a></li>
+<li><a href="persecuted-ability-minority.html">Persecuted Ability Minority</a></li>
+<li><a href="weaponized-rhetoric.html">Weaponized Rhetoric</a></li>
+<li><a href="alien-virus-superpowers.html">Alien Virus Creating Superpowers</a></li>
+<li><a href="uncontrollable-breeding-species.html">First Contact with Uncontrollably Breeding Species</a></li>
+<li><a href="genetic-immortal-ruling-class.html">Genetic Immortal Ruling Class</a></li>
+<li><a href="totalitarian-spectacle-games.html">Totalitarian Spectacle Games</a></li>
+<li><a href="biological-caste-system.html">Biological Caste System</a></li>
+<li><a href="extraterrestrial-penal-colony.html">Extraterrestrial Penal Colony</a></li>
+<li><a href="true-name-power-system.html">True-Name Power System</a></li>
+<li><a href="faith-powered-deity.html">Faith-Powered Deity Reduced to Powerlessness</a></li>
+<li><a href="anti-technology-society.html">Anti-Technology Witch Hunt Society</a></li>
+<li><a href="population-control-regime.html">Population Control Regime</a></li>
+<li><a href="random-governance-lottery.html">Governance by Random Lottery</a></li>
+<li><a href="libertarian-frontier-governance.html">Libertarian Frontier Governance</a></li>
+<li><a href="financial-system-reform.html">Financial System Reform by Outsider</a></li>
+<li><a href="ancestral-guilt-persecution.html">Ancestral Guilt Persecution</a></li>
+<li><a href="reality-altering-dreams.html">Dreams That Alter Reality</a></li>
+<li><a href="legalized-human-consumption.html">Legalized Human Consumption</a></li>
+<li><a href="immortality-child-prohibition.html">Immortality Requires Child Prohibition</a></li>
+<li><a href="post-geographic-governance.html">Post-Geographic Governance System</a></li>
+<li><a href="metaphysical-authority-rebellion.html">Rebellion Against Metaphysical Authority</a></li>
+<li><a href="deconstructed-superhero-realpolitik.html">Deconstructed Superheroes in Geopolitics</a></li>
+<li><a href="child-combatant-ethics.html">Child Combatant with Advanced Technology</a></li>
+<li><a href="anarchist-utopia-vs-capitalism.html">Anarchist Utopia vs. Propertarian Society</a></li>
+<li><a href="technology-theft-across-civilizations.html">Cross-Civilization Technology Theft</a></li>
+<li><a href="survival-test-rite-of-passage.html">Survival Test as Rite of Passage</a></li>
+<li><a href="surveillance-tech-worker-ethics.html">Surveillance Technology Worker Ethics</a></li>
+<li><a href="post-scarcity-civilization-war.html">Post-Scarcity Civilization at War</a></li>
+<li><a href="alien-contact-spanning-millennia.html">Alien Contact Spanning Millennia</a></li>
+<li><a href="resource-monopoly-messianic-politics.html">Resource Monopoly and Messianic Politics</a></li>
+<li><a href="productive-withdrawal.html">Productive Class Withdrawal</a></li>
+<li><a href="cyborg-fairy-tale.html">Cyborg Fairy Tale Resistance</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/2228/dystopia" target="_blank" rel="noopener">dystopia</a> &middot; <a href="https://sfdictionary.com/view/1572/empathy" target="_blank" rel="noopener">empathy</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Authoritarian+Governance+Model&entry-type=Idea&entry-id=authoritarian-governance" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

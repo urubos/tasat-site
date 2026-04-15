@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Persecuted Ability Minority — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Persecuted Ability Minority</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>A minority group with innate abilities (psychic, magical, genetic) faces institutional persecution from a dominant authority (church, state), testing whether integration or separation is the viable path for communities whose capabilities threaten the power structure.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Models real-world dynamics of minority persecution, religious institutional power, and debates about whether enhanced individuals require protection or containment.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a><a class="tag" href="../index.html#domain=biotech">Biotechnology and Genetic Engineering</a><a class="tag" href="../index.html#domain=existential-risk">Existential Risk and Civilizational Collapse</a><a class="tag" href="../index.html#domain=medicine">Medicine and Human Enhancement</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=cautionary-tale">Cautionary tale</a><a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=dystopian">Dystopian</a><a class="tag" href="../index.html#outcome=transformative">Transformative</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=minority-persecution">minority-persecution</a><a class="tag" href="../index.html#search=institutional-power">institutional-power</a><a class="tag" href="../index.html#search=ability-discrimination">ability-discrimination</a><a class="tag" href="../index.html#search=integration-vs-separation">integration-vs-separation</a><a class="tag" href="../index.html#search=mutation-persecution">mutation-persecution</a><a class="tag" href="../index.html#search=post-nuclear-fundamentalism">post-nuclear-fundamentalism</a><a class="tag" href="../index.html#search=hidden-telepaths">hidden-telepaths</a><a class="tag" href="../index.html#search=post-nuclear-telepathic-children">post-nuclear-telepathic-children</a><a class="tag" href="../index.html#search=telepathic-mutation">telepathic-mutation</a><a class="tag" href="../index.html#search=generational-capability-gap">generational-capability-gap</a><a class="tag" href="../index.html#search=post-nuclear-evolution">post-nuclear-evolution</a><a class="tag" href="../index.html#search=post-war-psychic-elite">post-war-psychic-elite</a><a class="tag" href="../index.html#search=psychic-elite">psychic-elite</a><a class="tag" href="../index.html#search=secret-society">secret-society</a><a class="tag" href="../index.html#search=technocracy">technocracy</a><a class="tag" href="../index.html#search=covert-governance">covert-governance</a><a class="tag" href="../index.html#search=telepathic-healer-social-outcast">telepathic-healer-social-outcast</a><a class="tag" href="../index.html#search=telepathy">telepathy</a><a class="tag" href="../index.html#search=disability">disability</a><a class="tag" href="../index.html#search=social-obligation">social-obligation</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (65)</h3>
+  <ul class="related-list"><li><a href="../stories/assignment-in-eternity-heinlein.html">Assignment in Eternity</a> — Robert A. Heinlein (1953)</li>
+<li><a href="../stories/beggars-in-spain-kress.html">Beggars in Spain</a> — Nancy Kress (1991)</li>
+<li><a href="../stories/carve-the-mark-roth.html">Carve the Mark</a> — Veronica Roth (2016)</li>
+<li><a href="../stories/catspaw-vinge.html">Catspaw</a> — Joan D. Vinge (1988)</li>
+<li><a href="../stories/cinder-meyer.html">Cinder</a> — Marissa Meyer (2011)</li>
+<li><a href="../stories/darwin-s-children-bear.html">Darwin&#x27;s children</a> — Greg Bear, Jean-Daniel Brèque, Scott Brick (2001)</li>
+<li><a href="../stories/dead-as-a-doornail-harris.html">Dead as a doornail</a> — Charlaine Harris (2005)</li>
+<li><a href="../stories/deryni-checkmate-kurtz.html">Deryni Checkmate</a> — Katherine Kurtz (1972)</li>
+<li><a href="../stories/deryni-rising-chronicles-of-the-deryni-kurtz.html">DERYNI RISING (Chronicles of the Deryni)</a> — Katherine Kurtz (1970)</li>
+<li><a href="../stories/diamond-mask-may.html">Diamond Mask</a> — Julian May (1994)</li>
+<li><a href="../stories/doom-of-the-darksword-weis.html">Doom of the Darksword</a> — Margaret Weis, Tracy Hickman (1988)</li>
+<li><a href="../stories/down-dirty-martin.html">Down &amp; dirty</a> — George R. R. Martin, Wild Cards Trust (1988)</li>
+<li><a href="../stories/dreamfall-vinge.html">Dreamfall</a> — Joan D. Vinge (1996)</li>
+<li><a href="../stories/equal-rites-pratchett.html">Equal Rites</a> — Terry Pratchett (1987)</li>
+<li><a href="../stories/forging-the-darksword-weis.html">Forging the Darksword</a> — Margaret Weis (1988)</li>
+<li><a href="../stories/friday-heinlein.html">Friday</a> — Robert A. Heinlein (1982)</li>
+<li><a href="../stories/glass-sword-aveyard.html">Glass Sword</a> — Victoria Aveyard (2016)</li>
+<li><a href="../stories/heartsease-dickinson.html">Heartsease</a> — Peter Dickinson (1969)</li>
+<li><a href="../stories/high-deryni-kurtz.html">High Deryni</a> — Katherine Kurtz (1973)</li>
+<li><a href="../stories/how-long-til-black-future-month-jemisin.html">How Long &#x27;Til Black Future Month</a> — N. K. Jemisin, Michelle Charrier (2018)</li>
+<li><a href="../stories/ignite-me-mafi.html">Ignite Me</a> — Tahereh Mafi (2014)</li>
+<li><a href="../stories/in-the-afterlight-bracken.html">In The Afterlight</a> — Alexandra Bracken (2014)</li>
+<li><a href="../stories/jokers-wild-martin.html">Jokers Wild</a> — George R. R. Martin, Wild Cards Trust, Melinda Snodgrass (1987)</li>
+<li><a href="../stories/king-s-cage-aveyard.html">King&#x27;s Cage</a> — Victoria Aveyard (2017)</li>
+<li><a href="../stories/magnificat-may.html">Magnificat</a> — Julian May (1996)</li>
+<li><a href="../stories/miss-peregrine-s-home-for-peculiar-children-riggs.html">Miss Peregrine&#x27;s Home for Peculiar Children</a> — Ransom Riggs (2011)</li>
+<li><a href="../stories/mistborn-sanderson.html">Mistborn</a> — Brandon Sanderson (2001)</li>
+<li><a href="../stories/mutant-kuttner.html">Mutant</a> — Henry Kuttner (1953)</li>
+<li><a href="../stories/never-fade-bracken.html">Never fade</a> — Alexandra Bracken, Alexander Bracken (2013)</li>
+<li><a href="../stories/northern-lights-pullman.html">Northern Lights</a> — Philip Pullman (1995)</li>
+<li><a href="../stories/our-friends-from-frolix-eight-dick.html">Our Friends from Frolix Eight</a> — Philip K. Dick (1970)</li>
+<li><a href="../stories/pegasus-in-flight-mccaffrey.html">Pegasus in Flight</a> — Anne McCaffrey (1990)</li>
+<li><a href="../stories/psion-cat-vinge.html">Psion (Cat)</a> — Joan D. Vinge (1982)</li>
+<li><a href="../stories/renegades-meyer.html">Renegades</a> — Marissa Meyer (2017)</li>
+<li><a href="../stories/shatter-me-mafi.html">Shatter Me</a> — Tahereh Mafi (2011)</li>
+<li><a href="../stories/six-of-crows-bardugo.html">Six of Crows</a> — Leigh Bardugo (2015)</li>
+<li><a href="../stories/slan-vogt.html">SLAN</a> — A. E. van Vogt, Oliver Wyman, Kevin J. Anderson (1946)</li>
+<li><a href="../stories/soon-jenkins.html">Soon</a> — Jerry B. Jenkins (2003)</li>
+<li><a href="../stories/star-wars-ahsoka-johnston.html">Star Wars - Ahsoka</a> — E. K. Johnston (2016)</li>
+<li><a href="../stories/star-wars-children-of-the-jedi-hambly.html">Star Wars - Children of the Jedi</a> — Barbara Hambly (1995)</li>
+<li><a href="../stories/star-wars-episode-iii-revenge-of-the-sith-stover.html">Star Wars Episode III - Revenge of the Sith</a> — Matthew Woodring Stover (2005)</li>
+<li><a href="../stories/star-wars-episode-iii-revenge-of-the-sith-wrede.html">Star Wars Episode III - Revenge of the Sith</a> — Patricia C. Wrede, Salido Amoroto Ignacio, George Lucas (2005)</li>
+<li><a href="../stories/star-wars-jedi-academy-trilogy-jedi-search-anderson.html">Star Wars - Jedi Academy Trilogy - Jedi Search</a> — Kevin J. Anderson (1994)</li>
+<li><a href="../stories/the-book-eaters-dean.html">The Book Eaters</a> — Sunyi Dean (2022)</li>
+<li><a href="../stories/the-chrysalids-wyndham.html">The Chrysalids</a> — John Wyndham (1955)</li>
+<li><a href="../stories/the-darkest-minds-bracken.html">The Darkest Minds</a> — Alexandra Bracken, Amy McFadden, Montserrat Triviño Gonzalez (2012)</li>
+<li><a href="../stories/the-ear-the-eye-and-the-arm-farmer.html">The Ear, the Eye, and the Arm</a> — Nancy Farmer (1994)</li>
+<li><a href="../stories/the-ending-fire-el-arifi.html">The Ending Fire</a> — Saara El-Arifi (2024)</li>
+<li><a href="../stories/the-fifth-season-jemisin.html">The Fifth Season</a> — N. K. Jemisin (2016)</li>
+<li><a href="../stories/the-forgotten-door-key.html">The forgotten door</a> — Alexander Key (1965)</li>
+<li><a href="../stories/the-institute-king.html">The Institute</a> — Stephen King (2019)</li>
+<li><a href="../stories/the-obelisk-gate-jemisin.html">The Obelisk Gate</a> — N. K. Jemisin (2017)</li>
+<li><a href="../stories/the-secret-hour-westerfeld.html">The Secret Hour</a> — Scott Westerfeld (2004)</li>
+<li><a href="../stories/the-shadow-matrix-bradley.html">The Shadow Matrix</a> — Marion Zimmer Bradley (1997)</li>
+<li><a href="../stories/the-shattered-chain-bradley.html">The Shattered Chain</a> — Marion Zimmer Bradley (1976)</li>
+<li><a href="../stories/the-sioux-spaceman-norton.html">The Sioux Spaceman</a> — Andre Norton (1960)</li>
+<li><a href="../stories/the-stone-sky-jemisin.html">The Stone Sky</a> — N. K. Jemisin (2017)</li>
+<li><a href="../stories/the-whole-man-brunner.html">The Whole Man</a> — John Brunner (1964)</li>
+<li><a href="../stories/the-wizard-of-linn-vogt.html">The Wizard of Linn</a> — A. E. van Vogt (1962)</li>
+<li><a href="../stories/ultraviolet-anderson.html">Ultraviolet</a> — R. J. Anderson (2011)</li>
+<li><a href="../stories/unravel-me-mafi.html">Unravel me</a> — Tahereh Mafi (2013)</li>
+<li><a href="../stories/war-storm-aveyard.html">War Storm</a> — Victoria Aveyard (2018)</li>
+<li><a href="../stories/witch-wizard-patterson.html">Witch &amp; wizard</a> — James Patterson, Gabrielle Charbonnet (1999)</li>
+<li><a href="../stories/x-men-ellis.html">X-Men</a> — Warren Ellis, Tom DeFalco, Howard Mackie, Scott Lobdell, Larry Hama, Mark Waid, Jeph Loeb, Casey Jones, Randy Green, Rob Haynes, Carlos Pacheco, Jeff Matsuda, Herb Trimpe, Stefano Raffaele, Chris Bachalo, Val Semeiks, Andy Kubert, Joe Madureira, Ian Churchill, Anthony Castrillo (2005)</li>
+<li><a href="../stories/zeroes-westerfeld.html">Zeroes</a> — Scott Westerfeld, Margo Lanagan, Deborah Biancotti (2015)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="authoritarian-governance.html">Authoritarian Governance Model</a></li>
+<li><a href="designed-society.html">Rationally Designed Society</a></li>
+<li><a href="engineered-social-partition.html">Engineered Social Partition</a></li>
+<li><a href="extraterrestrial-penal-colony.html">Extraterrestrial Penal Colony</a></li>
+<li><a href="intellectual-isolation.html">Intellectual Monastic Isolation</a></li>
+<li><a href="multi-level-civilization-contact.html">Multi-Level Civilization Contact</a></li>
+<li><a href="population-control-regime.html">Population Control Regime</a></li>
+<li><a href="weaponized-rhetoric.html">Weaponized Rhetoric</a></li>
+<li><a href="engineered-happiness-dystopia.html">Engineered Happiness Dystopia</a></li>
+<li><a href="biological-caste-system.html">Biological Caste System</a></li>
+<li><a href="billion-year-human-history.html">Billion-Year Human Species History</a></li>
+<li><a href="isolated-evolutionary-hotspot.html">Isolated Evolutionary Hotspot</a></li>
+<li><a href="periodic-apocalypse-oppressed-saviors.html">Periodic Apocalypse with Oppressed Saviors</a></li>
+<li><a href="collective-ancestral-memory.html">Collective Ancestral Memory Bearer</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/73/mutation" target="_blank" rel="noopener">mutation</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Persecuted+Ability+Minority&entry-type=Idea&entry-id=persecuted-ability-minority" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

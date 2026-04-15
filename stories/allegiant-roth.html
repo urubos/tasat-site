@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Allegiant — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Allegiant</h1>
+<p class="subtitle"><a href="../index.html#search=Veronica Roth" style="color:inherit">Veronica Roth</a> &middot; 2001 &middot; <a class="tag" href="../index.html#type=novel">Novel</a></p>
+<p class="subtitle" style="font-size:0.9rem"><strong>Setting:</strong> near future (post-collapse Chicago)</p>
+<p class="subtitle" style="font-size:0.9rem"><strong>Series:</strong> <a class="tag" href="../index.html#series=Divergent">Divergent</a> &mdash; #3</p>
+
+
+<div class="detail-section">
+  <h3>Synopsis</h3>
+  <p>The faction-based society that Tris Prior once believed in is shattered -- fractured by violence and power struggles and scarred by loss and betrayal. So when offered a chance to explore the world past the limits she&#x27;s known, Tris is ready. Perhaps beyond the fence, she and Tobias will find a simple new life together, free from complicated lies, tangled loyalties, and painful memories. But Tris&#x27;s new reality is even more alarming than the one she left behind.</p>
+</div>
+
+
+
+<div class="detail-section">
+  <h3>Ideas Explored</h3>
+  <ul class="related-list"><li><a href="../ideas/engineered-social-partition.html">Engineered Social Partition</a></li>
+<li><a href="../ideas/genetic-engineering-ethics.html">Genetic Engineering Ethics</a></li>
+<li><a href="../ideas/identity-construction-experiment.html">Identity Construction Experiment</a></li>
+</ul>
+</div>
+
+
+
+<div class="detail-section">
+  <h3>Metadata</h3>
+  <p><strong>Source:</strong> OpenLibrary</p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=dystopian">dystopian</a><a class="tag" href="../index.html#search=young adult">young adult</a><a class="tag" href="../index.html#search=fiction">fiction</a><a class="tag" href="../index.html#search=dystopian fiction">dystopian fiction</a><a class="tag" href="../index.html#search=sci-fi">sci-fi</a><a class="tag" href="../index.html#search=science fiction">science fiction</a><a class="tag" href="../index.html#search=YA">YA</a><a class="tag" href="../index.html#search=dystopian YA">dystopian YA</a><a class="tag" href="../index.html#search=bestseller">bestseller</a><a class="tag" href="../index.html#search=future">future</a></p>
+  <p><strong>ISBN:</strong> 9780062287335 — Katherine Tegen Books, 2013, paperback, English</p><details style="margin:-0.5rem 0 0.5rem"><summary style="font-size:0.85rem;color:var(--text-muted);cursor:pointer">43 more editions</summary><ul style="font-size:0.85rem;color:var(--text-muted);margin:0.3rem 0;padding-left:1.2rem"><li style="margin:0.2rem 0">9781533001368 — CreateSpace Independent Publishing Platform, 2016, English</li><li style="margin:0.2rem 0">9780008662240 — HarperCollins Publishers Limited, 2024, English</li><li style="margin:0.2rem 0">9786068623535</li><li style="margin:0.2rem 0">9789720043832 — European Schoolbooks Ltd, 2015</li><li style="margin:0.2rem 0">9789176453193 — Modernista, 2015</li><li style="margin:0.2rem 0">9782092565247 — Cle International, 2016, paperback</li><li style="margin:0.2rem 0">9788427206861 — RBA, 2014</li><li style="margin:0.2rem 0">9788491870586 — RBA Bolsillo, 2018, paperback</li><li style="margin:0.2rem 0">9782897334758 — ADA, 2014, paperback</li><li style="margin:0.2rem 0">9780007545537 — Harper Collins UK, paperback</li><li style="margin:0.2rem 0">9781624063237 — Dreamscape Media, audiobook</li><li style="margin:0.2rem 0">9780007562084 — HarperCollins Children&#x27;s Books, 2014</li><li style="margin:0.2rem 0">9780007538072 — HarperCollins Children&#x27;s Books, 2014, paperback, English</li><li style="margin:0.2rem 0">9780007538010 — HarperCollins Publishers Limited, 2013, English</li><li style="margin:0.2rem 0">9780007444113 — HarperCollins Publishers Limited, 2013, English</li><li style="margin:0.2rem 0">9780007569502 — HarperCollins Publishers, 2014, English</li><li style="margin:0.2rem 0">9781484471234 — HarperCollins Publishers, 2016, English</li><li style="margin:0.2rem 0">9780062394989 — HarperCollins Publishers, 2015, English</li><li style="margin:0.2rem 0">9780062394996 — HarperCollins Publishers, 2015, English</li><li style="margin:0.2rem 0">9780008468965 — HarperCollins Publishers Limited, 2021, English</li><li style="margin:0.2rem 0">9780007444120 — HarperCollins Publishers Limited, 2013, English</li><li style="margin:0.2rem 0">9780063040533 — Katherine Tegen Books, 2021, paperback</li><li style="margin:0.2rem 0">9780008167165 — imusti, 2016, paperback</li><li style="margin:0.2rem 0">9780062420084 — Katherine Tegen Books, 2016, hardcover</li><li style="margin:0.2rem 0">9780062420091 — Katherine Tegen Books, 2016, paperback</li><li style="margin:0.2rem 0">9783570164198 — cbt, 2016, perfect paperback</li><li style="margin:0.2rem 0">9780062396969 — Katherine Tegen Books, 2015, paperback</li><li style="margin:0.2rem 0">9780062024077 — Katherine Tegen Books an imprint of HarperCollinsPublishers, 2016, paperback, English</li><li style="margin:0.2rem 0">9780007538027 — HarperCollins, 2015</li><li style="margin:0.2rem 0">9788579801860 — Rocco Jovens Leitores, 2014, por</li><li style="margin:0.2rem 0">9788324157495 — Amber, 2016, paperback, pol</li><li style="margin:0.2rem 0">9788427225053 — Molino, 2023, paperback, spa</li><li style="margin:0.2rem 0">9788416334582 — labutxaca, 2016, mass market paperback, cat</li><li style="margin:0.2rem 0">9786090114698 — Alma littera, 2014, lit</li><li style="margin:0.2rem 0">9783570311240 — cbt, 2016, ger</li><li style="margin:0.2rem 0">9786051424521 — Artemis Yayınları, 2014, paperback, tur</li><li style="margin:0.2rem 0">9789000334797 — van Goor, 2014, dut</li><li style="margin:0.2rem 0">9788324153091 — Amber, 2014, paperback, pol</li><li style="margin:0.2rem 0">9788324149605 — Wydawnictwo Amber, 2014, pol</li><li style="margin:0.2rem 0">9782092532300 — ADA Éditions, 2014, fre</li><li style="margin:0.2rem 0">9788413144832 — Ediciones B Mexico, 2022, spa</li><li style="margin:0.2rem 0">9787541138508 — Sichuan wen yi chu ban she, 2014, chi</li><li style="margin:0.2rem 0">9786051429427 — Artemis Yayınlar, 2016, paperback, tur</li></ul></details><p><strong>isfdb_id:</strong> 1632421</p><p><strong>openlibrary_id:</strong> OL16808471W</p>
+</div>
+
+<div class="detail-section">
+  <h3>Find This Book</h3>
+  <p class="export-links"><a href="https://en.wikipedia.org/w/index.php?search=Allegiant+Veronica+Roth" target="_blank" rel="noopener">Wikipedia</a> &middot; <a href="https://www.amazon.com/s?k=9780062287335&i=stripbooks" target="_blank" rel="noopener">Amazon</a> &middot; <a href="https://www.audible.com/search?keywords=Allegiant+Veronica+Roth" target="_blank" rel="noopener">Audible</a> &middot; <a href="https://books.google.com/books?vid=ISBN9780062287335" target="_blank" rel="noopener">Google Books</a> &middot; <a href="https://www.goodreads.com/search?q=9780062287335" target="_blank" rel="noopener">Goodreads</a> &middot; <a href="https://openlibrary.org/works/OL16808471W" target="_blank" rel="noopener">OpenLibrary</a></p>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Allegiant&entry-type=Story&entry-id=allegiant-roth" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this story</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

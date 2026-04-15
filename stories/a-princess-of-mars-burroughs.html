@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Princess of Mars — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>A Princess of Mars</h1>
+<p class="subtitle"><a href="../index.html#search=Edgar Rice Burroughs" style="color:inherit">Edgar Rice Burroughs</a> &middot; 1917 &middot; <a class="tag" href="../index.html#type=novel">Novel</a></p>
+<p class="subtitle" style="font-size:0.9rem"><strong>Setting:</strong> contemporary (transported to Mars)</p>
+<p class="subtitle" style="font-size:0.9rem"><strong>Series:</strong> <a class="tag" href="../index.html#series=Barsoom">Barsoom</a> &mdash; #1 (universe)</p>
+
+
+<div class="detail-section">
+  <h3>Synopsis</h3>
+  <p>I am a very old man; how old I do not know. Possibly I am a hundred, possibly more; but I cannot tell because I have never aged as other men, nor do I remember any childhood. So far as I can recollect I have always been a man, a man of about thirty. I appear today as I did forty years and more ago, and yet I feel that I cannot go on living forever; that some day I shall die the real death from which there is no resurrection.</p>
+</div>
+
+
+
+<div class="detail-section">
+  <h3>Ideas Explored</h3>
+  <ul class="related-list"><li><a href="../ideas/planetary-romance-adventure.html">Planetary Romance and Cultural Encounter</a></li>
+</ul>
+</div>
+
+
+
+<div class="detail-section">
+  <h3>Metadata</h3>
+  <p><strong>Source:</strong> OpenLibrary</p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=John Carter (Fictitious character)">John Carter (Fictitious character)</a><a class="tag" href="../index.html#search=Fiction">Fiction</a><a class="tag" href="../index.html#search=Classic Literature">Classic Literature</a><a class="tag" href="../index.html#search=Dejah Thoris (Fictitious character)">Dejah Thoris (Fictitious character)</a><a class="tag" href="../index.html#search=Princesses">Princesses</a><a class="tag" href="../index.html#search=Princesses in fiction">Princesses in fiction</a><a class="tag" href="../index.html#search=Science fiction">Science fiction</a><a class="tag" href="../index.html#search=Translations into Russian">Translations into Russian</a><a class="tag" href="../index.html#search=Fantasy">Fantasy</a><a class="tag" href="../index.html#search=Barsoom">Barsoom</a></p>
+  <p><strong>ISBN:</strong> 9781298660442 — Andesite Press, 2015, hardcover</p><details style="margin:-0.5rem 0 0.5rem"><summary style="font-size:0.85rem;color:var(--text-muted);cursor:pointer">42 more editions</summary><ul style="font-size:0.85rem;color:var(--text-muted);margin:0.3rem 0;padding-left:1.2rem"><li style="margin:0.2rem 0">9780554329659 — BiblioLife, 2008, hardcover</li><li style="margin:0.2rem 0">9781704704531 — Independently published, 2019, paperback</li><li style="margin:0.2rem 0">9781686216640 — Independently published, 2019, paperback</li><li style="margin:0.2rem 0">9781729023341 — Independently published, 2018, paperback</li><li style="margin:0.2rem 0">9781982963132 — Independently published, 2018, paperback</li><li style="margin:0.2rem 0">9781980674450 — Independently published, 2018, paperback</li><li style="margin:0.2rem 0">9781976992100 — Independently published, 2018, paperback</li><li style="margin:0.2rem 0">9781979104203 — Createspace Independent Publishing Platform, 2017, paperback</li><li style="margin:0.2rem 0">9781521301289 — Independently published, 2017, paperback</li><li style="margin:0.2rem 0">9781532895777 — Createspace Independent Publishing Platform, 2016, paperback</li><li style="margin:0.2rem 0">9781530548620 — Createspace Independent Publishing Platform, 2016, paperback</li><li style="margin:0.2rem 0">9781523881505 — CreateSpace Independent Publishing Platform, 2016, paperback</li><li style="margin:0.2rem 0">9781523839285 — CreateSpace Independent Publishing Platform, 2016, paperback</li><li style="margin:0.2rem 0">9781523285525 — CreateSpace Independent Publishing Platform, 2016, paperback</li><li style="margin:0.2rem 0">9781522816775 — CreateSpace Independent Publishing Platform, 2015, paperback</li><li style="margin:0.2rem 0">9781517708719 — Createspace Independent Publishing Platform, 2015, paperback</li><li style="margin:0.2rem 0">9781514165256 — CreateSpace Independent Publishing Platform, 2015, paperback</li><li style="margin:0.2rem 0">9781512087239 — CreateSpace Independent Publishing Platform, 2015, paperback</li><li style="margin:0.2rem 0">9781511559386 — CreateSpace Independent Publishing Platform, 2015, paperback</li><li style="margin:0.2rem 0">9781507648834 — Createspace Independent Publishing Platform, 2015, paperback</li><li style="margin:0.2rem 0">9781494996833 — CreateSpace Independent Publishing Platform, 2014, paperback</li><li style="margin:0.2rem 0">9781494489991 — Createspace Independent Publishing Platform, 2013, paperback</li><li style="margin:0.2rem 0">9780615872339 — Loki&#x27;s Publishing, 2013, paperback</li><li style="margin:0.2rem 0">9781492100133 — CreateSpace Independent Publishing Platform, 2013, paperback</li><li style="margin:0.2rem 0">9781490535623 — Createspace Independent Publishing Platform, 2013, paperback</li><li style="margin:0.2rem 0">9781484053904 — Createspace Independent Publishing Platform, 2013, paperback</li><li style="margin:0.2rem 0">9781781845776 — Total-E-Bound Publishing, 2013, paperback</li><li style="margin:0.2rem 0">9781480219618 — CreateSpace Independent Publishing Platform, 2012, paperback</li><li style="margin:0.2rem 0">9781475062182 — CreateSpace Independent Publishing Platform, 2012, paperback</li><li style="margin:0.2rem 0">9781477645901 — Createspace Independent Publishing Platform, 2012, paperback</li><li style="margin:0.2rem 0">9781475201086 — CreateSpace Independent Publishing Platform, 2012, paperback</li><li style="margin:0.2rem 0">9781475145960 — Dunda Books, 2012, paperback</li><li style="margin:0.2rem 0">9781434440662 — Wildside Press, 2012, paperback</li><li style="margin:0.2rem 0">9781434440020 — Wildside Press, 2012, paperback</li><li style="margin:0.2rem 0">9781466493285 — CreateSpace Independent Publishing Platform, 2011, paperback</li><li style="margin:0.2rem 0">9781466283824 — Createspace Independent Publishing Platform, 2011, paperback</li><li style="margin:0.2rem 0">9781466236813 — CreateSpace Independent Publishing Platform, 2011, paperback</li><li style="margin:0.2rem 0">9781257003143 — lulu.com, 2011, paperback</li><li style="margin:0.2rem 0">9781450582353 — CreateSpace Independent Publishing Platform, 2010, paperback</li><li style="margin:0.2rem 0">9781605890418 — Quill Pen Classics, 2010, paperback</li><li style="margin:0.2rem 0">9781450520423 — CreateSpace Independent Publishing Platform, 2010, paperback</li><li style="margin:0.2rem 0">9781450514774 — CreateSpace Independent Publishing Platform, 2010, paperback</li></ul></details><p><strong>isfdb_id:</strong> 21883</p><p><strong>openlibrary_id:</strong> OL1418187W</p>
+</div>
+
+<div class="detail-section">
+  <h3>Find This Book</h3>
+  <p class="export-links"><a href="https://en.wikipedia.org/w/index.php?search=A+Princess+of+Mars+Edgar+Rice+Burroughs" target="_blank" rel="noopener">Wikipedia</a> &middot; <a href="https://www.amazon.com/s?k=9781298660442&i=stripbooks" target="_blank" rel="noopener">Amazon</a> &middot; <a href="https://www.audible.com/search?keywords=A+Princess+of+Mars+Edgar+Rice+Burroughs" target="_blank" rel="noopener">Audible</a> &middot; <a href="https://books.google.com/books?vid=ISBN9781298660442" target="_blank" rel="noopener">Google Books</a> &middot; <a href="https://www.goodreads.com/search?q=9781298660442" target="_blank" rel="noopener">Goodreads</a> &middot; <a href="https://openlibrary.org/works/OL1418187W" target="_blank" rel="noopener">OpenLibrary</a></p>
+</div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+A+Princess+of+Mars&entry-type=Story&entry-id=a-princess-of-mars-burroughs" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this story</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

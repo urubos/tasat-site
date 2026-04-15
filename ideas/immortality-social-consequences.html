@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Immortality Social Consequences — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Immortality Social Consequences</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>Society grants immortality based on a point system measuring social contribution. The elite are immortal while the lower classes age and die normally. The story follows someone trying to game the system to achieve eternal life, exposing the corruption and arbitrary nature of who deserves to live forever.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Models the population ethics of radical life extension: if no one dies naturally, someone must decide who dies. Relevant to triage ethics, death panels, and whether utopian longevity creates dystopian allocation.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=medicine">Medicine and Human Enhancement</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a><a class="tag" href="../index.html#domain=economics">Economics and Resource Allocation</a><a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a><a class="tag" href="../index.html#scenario=prediction">Prediction / Extrapolation</a><a class="tag" href="../index.html#scenario=satire">Satire / Social commentary</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=dystopian">Dystopian</a><a class="tag" href="../index.html#outcome=catastrophic">Catastrophic</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=immortality">immortality</a><a class="tag" href="../index.html#search=existential-crisis">existential-crisis</a><a class="tag" href="../index.html#search=purpose">purpose</a><a class="tag" href="../index.html#search=immortality-ennui">immortality-ennui</a><a class="tag" href="../index.html#search=class-system">class-system</a><a class="tag" href="../index.html#search=meritocracy">meritocracy</a><a class="tag" href="../index.html#search=immortality-class-system">immortality-class-system</a><a class="tag" href="../index.html#search=death-culture">death-culture</a><a class="tag" href="../index.html#search=medical-ethics-inversion">medical-ethics-inversion</a><a class="tag" href="../index.html#search=anti-survival">anti-survival</a><a class="tag" href="../index.html#search=value-divergence">value-divergence</a><a class="tag" href="../index.html#search=death-cult-future">death-cult-future</a><a class="tag" href="../index.html#search=post-death">post-death</a><a class="tag" href="../index.html#search=licensed-killing">licensed-killing</a><a class="tag" href="../index.html#search=population-control">population-control</a><a class="tag" href="../index.html#search=death-ethics">death-ethics</a><a class="tag" href="../index.html#search=post-death-professional-killers">post-death-professional-killers</a><a class="tag" href="../index.html#search=rejuvenation">rejuvenation</a><a class="tag" href="../index.html#search=anti-aging">anti-aging</a><a class="tag" href="../index.html#search=generational-disruption">generational-disruption</a><a class="tag" href="../index.html#search=rejuvenation-technology">rejuvenation-technology</a><a class="tag" href="../index.html#search=cryogenic-preservation-cult">cryogenic-preservation-cult</a><a class="tag" href="../index.html#search=cryonics">cryonics</a><a class="tag" href="../index.html#search=wealth-privilege">wealth-privilege</a><a class="tag" href="../index.html#search=death-transcendence">death-transcendence</a><a class="tag" href="../index.html#search=death-cult-global-takeover">death-cult-global-takeover</a><a class="tag" href="../index.html#search=death-cult">death-cult</a><a class="tag" href="../index.html#search=memetic-contagion">memetic-contagion</a><a class="tag" href="../index.html#search=nihilism">nihilism</a><a class="tag" href="../index.html#search=religious-movement">religious-movement</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (16)</h3>
+  <ul class="related-list"><li><a href="../stories/altered-carbon-vol-1-morgan.html">Altered Carbon. Vol. 1</a> — Richard K. Morgan (2002)</li>
+<li><a href="../stories/down-and-out-in-the-magic-kingdom-doctorow.html">Down and out in the Magic Kingdom</a> — Cory Doctorow (2001)</li>
+<li><a href="../stories/dr-futurity-dick.html">Dr. Futurity</a> — Philip K. Dick, MacLeod Andrews (1960)</li>
+<li><a href="../stories/how-to-live-forever-clark.html">How to live forever</a> — Stephen R. L. Clark (1995)</li>
+<li><a href="../stories/messiah-vidal.html">Messiah</a> — Gore Vidal (1954)</li>
+<li><a href="../stories/misspent-youth-hamilton.html">Misspent Youth</a> — Peter F. Hamilton (2002)</li>
+<li><a href="../stories/now-and-forever-bradbury.html">Now and Forever</a> — Ray Bradbury (2007)</li>
+<li><a href="../stories/scythe-shusterman.html">Scythe</a> — Neal Shusterman (2016)</li>
+<li><a href="../stories/second-childhood-simak.html">Second Childhood</a> — Clifford D. Simak (1951)</li>
+<li><a href="../stories/the-bone-clocks-mitchell.html">The Bone Clocks</a> — David Mitchell (2014)</li>
+<li><a href="../stories/the-rise-of-endymion-simmons.html">The Rise of Endymion</a> — Dan Simmons (1997)</li>
+<li><a href="../stories/the-risen-empire-westerfeld.html">The Risen Empire</a> — Scott Westerfeld (2003)</li>
+<li><a href="../stories/to-live-forever-vance.html">To Live Forever</a> — Jack Vance (1956)</li>
+<li><a href="../stories/turnabout-haddix.html">Turnabout</a> — Margaret Peterson Haddix (2000)</li>
+<li><a href="../stories/war-surf-buckner.html">War Surf</a> — M. M. Buckner (2005)</li>
+<li><a href="../stories/zero-k-delillo.html">Zero K</a> — Don DeLillo (2010)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="immortality-child-prohibition.html">Immortality Requires Child Prohibition</a></li>
+<li><a href="productive-withdrawal.html">Productive Class Withdrawal</a></li>
+<li><a href="church-monopoly-on-resurrection.html">Church Monopoly on Resurrection Technology</a></li>
+<li><a href="resource-monopoly-messianic-politics.html">Resource Monopoly and Messianic Politics</a></li>
+<li><a href="body-rental-economy.html">Body Rental Economy</a></li>
+<li><a href="declining-superpower.html">Declining Superhuman Ability</a></li>
+<li><a href="engineered-social-partition.html">Engineered Social Partition</a></li>
+<li><a href="illness-driven-dimensional-escape.html">Illness-Driven Dimensional Escape</a></li>
+<li><a href="intellectual-isolation.html">Intellectual Monastic Isolation</a></li>
+<li><a href="persecuted-ability-minority.html">Persecuted Ability Minority</a></li>
+<li><a href="ancestral-guilt-persecution.html">Ancestral Guilt Persecution</a></li>
+<li><a href="deconstructed-superhero-realpolitik.html">Deconstructed Superheroes in Geopolitics</a></li>
+<li><a href="post-scarcity-civilization-war.html">Post-Scarcity Civilization at War</a></li>
+<li><a href="collective-ancestral-memory.html">Collective Ancestral Memory Bearer</a></li>
+<li><a href="vr-escape-from-dystopia.html">Virtual Reality as Mass Escape from Dystopia</a></li>
+<li><a href="weaponized-rhetoric.html">Weaponized Rhetoric</a></li>
+<li><a href="anti-literacy-society.html">Anti-Literacy Society</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/145/cryonics" target="_blank" rel="noopener">cryonics</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Immortality+Social+Consequences&entry-type=Idea&entry-id=immortality-social-consequences" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

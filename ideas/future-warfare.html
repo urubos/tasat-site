@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Future Warfare Scenario — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Future Warfare Scenario</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>New technologies or social structures transform the nature of armed conflict, testing whether existing laws of war and strategic doctrines remain viable.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Informs military doctrine evolution, autonomous weapons policy, and international humanitarian law in the face of novel capabilities.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=warfare">Warfare and Weapons Technology</a><a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=space">Space Exploration and Colonization</a><a class="tag" href="../index.html#domain=existential-risk">Existential Risk and Civilizational Collapse</a><a class="tag" href="../index.html#domain=economics">Economics and Resource Allocation</a><a class="tag" href="../index.html#domain=first-contact">First Contact and Alien Civilizations</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a><a class="tag" href="../index.html#domain=ai-ml">Artificial Intelligence and Machine Learning</a><a class="tag" href="../index.html#domain=comms-info">Communication and Information Technology</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a><a class="tag" href="../index.html#domain=energy-physics">Energy and Physics</a><a class="tag" href="../index.html#domain=vr-simulation">Virtual Reality and Simulation</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=prediction">Prediction / Extrapolation</a><a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=satire">Satire / Social commentary</a><a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=catastrophic">Catastrophic</a><a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=transformative">Transformative</a><a class="tag" href="../index.html#outcome=aspirational">Aspirational</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=future-warfare">future-warfare</a><a class="tag" href="../index.html#search=military-technology">military-technology</a><a class="tag" href="../index.html#search=strategy">strategy</a><a class="tag" href="../index.html#search=aerial-warfare-civilization-collapse">aerial-warfare-civilization-collapse</a><a class="tag" href="../index.html#search=aerial-warfare">aerial-warfare</a><a class="tag" href="../index.html#search=strategic-bombing">strategic-bombing</a><a class="tag" href="../index.html#search=civilizational-collapse">civilizational-collapse</a><a class="tag" href="../index.html#search=asteroid-weapon-invasion">asteroid-weapon-invasion</a><a class="tag" href="../index.html#search=asteroid-weapon">asteroid-weapon</a><a class="tag" href="../index.html#search=planetary-bombardment">planetary-bombardment</a><a class="tag" href="../index.html#search=alien-invasion">alien-invasion</a><a class="tag" href="../index.html#search=kinetic-impact">kinetic-impact</a><a class="tag" href="../index.html#search=arms-race-theater">arms-race-theater</a><a class="tag" href="../index.html#search=arms-race">arms-race</a><a class="tag" href="../index.html#search=military-industrial-complex">military-industrial-complex</a><a class="tag" href="../index.html#search=security-theater">security-theater</a><a class="tag" href="../index.html#search=technologically-superior-invasion">technologically-superior-invasion</a><a class="tag" href="../index.html#search=invasion">invasion</a><a class="tag" href="../index.html#search=colonialism">colonialism</a><a class="tag" href="../index.html#search=biological-warfare">biological-warfare</a><a class="tag" href="../index.html#search=technological-supremacy">technological-supremacy</a><a class="tag" href="../index.html#search=autonomous-weapons-personhood">autonomous-weapons-personhood</a><a class="tag" href="../index.html#search=autonomous-weapons">autonomous-weapons</a><a class="tag" href="../index.html#search=ai-personhood">ai-personhood</a><a class="tag" href="../index.html#search=military-ethics">military-ethics</a><a class="tag" href="../index.html#search=robot-rights">robot-rights</a><a class="tag" href="../index.html#search=lethal-autonomous-systems">lethal-autonomous-systems</a><a class="tag" href="../index.html#search=presumed-dead-strategic-advantage">presumed-dead-strategic-advantage</a><a class="tag" href="../index.html#search=information-warfare">information-warfare</a><a class="tag" href="../index.html#search=deception">deception</a><a class="tag" href="../index.html#search=military-strategy">military-strategy</a><a class="tag" href="../index.html#search=intelligence-failure">intelligence-failure</a><a class="tag" href="../index.html#search=soldier-to-diplomat-transition">soldier-to-diplomat-transition</a><a class="tag" href="../index.html#search=soldier-diplomat">soldier-diplomat</a><a class="tag" href="../index.html#search=role-transition">role-transition</a><a class="tag" href="../index.html#search=peace-seeking">peace-seeking</a><a class="tag" href="../index.html#search=institutional-reform">institutional-reform</a><a class="tag" href="../index.html#search=indoctrinated-soldier-awakening">indoctrinated-soldier-awakening</a><a class="tag" href="../index.html#search=indoctrination">indoctrination</a><a class="tag" href="../index.html#search=deradicalization">deradicalization</a><a class="tag" href="../index.html#search=moral-awakening">moral-awakening</a><a class="tag" href="../index.html#search=identity-crisis">identity-crisis</a><a class="tag" href="../index.html#search=military-cultural-suppression">military-cultural-suppression</a><a class="tag" href="../index.html#search=military-culture">military-culture</a><a class="tag" href="../index.html#search=identity-suppression">identity-suppression</a><a class="tag" href="../index.html#search=diversity">diversity</a><a class="tag" href="../index.html#search=institutional-monoculture">institutional-monoculture</a><a class="tag" href="../index.html#search=enemy-alliance-against-shared-threat">enemy-alliance-against-shared-threat</a><a class="tag" href="../index.html#search=enemy-alliance">enemy-alliance</a><a class="tag" href="../index.html#search=shared-threat">shared-threat</a><a class="tag" href="../index.html#search=temporary-cooperation">temporary-cooperation</a><a class="tag" href="../index.html#search=forced-global-disarmament">forced-global-disarmament</a><a class="tag" href="../index.html#search=forced-disarmament">forced-disarmament</a><a class="tag" href="../index.html#search=unilateral-enforcement">unilateral-enforcement</a><a class="tag" href="../index.html#search=peace-through-force">peace-through-force</a><a class="tag" href="../index.html#search=conspiracy-and-entropy">conspiracy-and-entropy</a><a class="tag" href="../index.html#search=conspiracy">conspiracy</a><a class="tag" href="../index.html#search=paranoia">paranoia</a><a class="tag" href="../index.html#search=entropy">entropy</a><a class="tag" href="../index.html#search=military-industrial">military-industrial</a><a class="tag" href="../index.html#search=scientist-weapon-moral-crisis">scientist-weapon-moral-crisis</a><a class="tag" href="../index.html#search=weapon-invention">weapon-invention</a><a class="tag" href="../index.html#search=scientist-ethics">scientist-ethics</a><a class="tag" href="../index.html#search=proliferation">proliferation</a><a class="tag" href="../index.html#search=dual-use">dual-use</a><a class="tag" href="../index.html#search=covert-military-training">covert-military-training</a><a class="tag" href="../index.html#search=gamification">gamification</a><a class="tag" href="../index.html#search=military-recruitment">military-recruitment</a><a class="tag" href="../index.html#search=simulation-reality">simulation-reality</a><a class="tag" href="../index.html#search=informed-consent">informed-consent</a><a class="tag" href="../index.html#search=survivor-to-commander">survivor-to-commander</a><a class="tag" href="../index.html#search=slave-trade">slave-trade</a><a class="tag" href="../index.html#search=trauma-driven-leadership">trauma-driven-leadership</a><a class="tag" href="../index.html#search=impenetrable-personal-shield">impenetrable-personal-shield</a><a class="tag" href="../index.html#search=personal-shield">personal-shield</a><a class="tag" href="../index.html#search=invulnerability">invulnerability</a><a class="tag" href="../index.html#search=asymmetric-power">asymmetric-power</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (59)</h3>
+  <ul class="related-list"><li><a href="../stories/a-matter-of-profit-bell.html">A matter of profit</a> — Hilari Bell (2003)</li>
+<li><a href="../stories/a-war-of-gifts-card.html">A War of Gifts</a> — Orson Scott Card (2006)</li>
+<li><a href="../stories/ante-la-bandera-face-au-drapeau-verne.html">Ante la bandera (Face au drapeau)</a> — Jules Verne (1897)</li>
+<li><a href="../stories/armada-cline.html">Armada</a> — Ernest Cline (2015)</li>
+<li><a href="../stories/ashes-of-victory-weber.html">Ashes of Victory</a> — David Weber (2000)</li>
+<li><a href="../stories/babel-17-delany.html">Babel-17</a> — Samuel R. Delany (1966)</li>
+<li><a href="../stories/behemoth-westerfeld.html">Behemoth</a> — Scott Westerfeld (2010)</li>
+<li><a href="../stories/between-planets-heinlein.html">Between Planets</a> — Robert A. Heinlein (1951)</li>
+<li><a href="../stories/bill-the-galactic-hero-harrison.html">Bill the Galactic Hero</a> — Harry Harrison (1965)</li>
+<li><a href="../stories/blood-music-bear.html">Blood Music</a> — Greg Bear (1985)</li>
+<li><a href="../stories/broken-angels-morgan.html">Broken Angels</a> — Richard K. Morgan (2003)</li>
+<li><a href="../stories/death-s-end-cixin.html">Death&#x27;s End (The Three-Body Problem Series Book 3)</a> — 刘慈欣 (2010)</li>
+<li><a href="../stories/dorsai-dickson.html">Dorsai!</a> — Gordon R. Dickson (1959)</li>
+<li><a href="../stories/double-star-heinlein.html">Double Star</a> — Robert A. Heinlein (1956)</li>
+<li><a href="../stories/exultant-baxter.html">Exultant</a> — Stephen Baxter (2004)</li>
+<li><a href="../stories/eyes-of-the-void-tchaikovsky.html">Eyes of the Void</a> — Adrian Tchaikovsky (2022)</li>
+<li><a href="../stories/footfall-niven.html">Footfall</a> — Larry Niven, Jerry Pournelle (1985)</li>
+<li><a href="../stories/forever-peace-haldeman.html">Forever Peace</a> — Joe Haldeman (1998)</li>
+<li><a href="../stories/gravity-s-rainbow-thomas.html">Gravity&#x27;s Rainbow</a> — Pynchon, Thomas (1973)</li>
+<li><a href="../stories/hardfought-bear.html">Hardfought</a> — Greg Bear, Ray Chase, Timothy Zahn (1988)</li>
+<li><a href="../stories/honor-among-enemies-weber.html">Honor Among Enemies</a> — David Weber (1996)</li>
+<li><a href="../stories/market-forces-morgan.html">Market Forces</a> — Richard K. Morgan (2004)</li>
+<li><a href="../stories/my-enemy-my-ally-duane.html">My Enemy, My Ally</a> — Diane Duane (1984)</li>
+<li><a href="../stories/obsidio-kaufman.html">Obsidio</a> — Amie Kaufman, Jay Kristoff (2018)</li>
+<li><a href="../stories/old-man-s-war-scalzi.html">Old Man’s War</a> — John Scalzi (2005)</li>
+<li><a href="../stories/on-basilisk-station-weber.html">On Basilisk Station</a> — David Weber (1993)</li>
+<li><a href="../stories/sassinak-mccaffrey.html">Sassinak</a> — Anne McCaffrey, Elizabeth Moon (1990)</li>
+<li><a href="../stories/seven-surrenders-palmer.html">Seven Surrenders</a> — Ada Palmer (2017)</li>
+<li><a href="../stories/shield-anderson.html">Shield</a> — Poul Anderson (1965)</li>
+<li><a href="../stories/sixth-column-heinlein.html">Sixth Column</a> — Robert A. Heinlein (1949)</li>
+<li><a href="../stories/soldier-ask-not-dickson.html">Soldier, Ask Not</a> — Gordon R. Dickson (1967)</li>
+<li><a href="../stories/some-desperate-glory-tesh.html">Some Desperate Glory</a> — Emily Tesh (2022)</li>
+<li><a href="../stories/star-guard-norton.html">Star Guard</a> — Andre Norton (1955)</li>
+<li><a href="../stories/star-wars-allston.html">Star Wars</a> — Aaron Allston (1998)</li>
+<li><a href="../stories/star-wars-jedi-trial-sherman.html">Star Wars - Jedi Trial</a> — David Sherman, Dan Cragg (2004)</li>
+<li><a href="../stories/star-wars-medstar-i-battle-surgeons-reaves.html">Star Wars - Medstar I - Battle Surgeons</a> — Michael Reaves, Steve Perry (2004)</li>
+<li><a href="../stories/star-wars-shatterpoint-stover.html">Star Wars - Shatterpoint</a> — Matthew Woodring Stover (2003)</li>
+<li><a href="../stories/star-wars-stackpole.html">Star Wars</a> — Michael A. Stackpole (1996)</li>
+<li><a href="../stories/starfist-sherman.html">Starfist</a> — David Sherman (2001)</li>
+<li><a href="../stories/starship-troopers-heinlein.html">Starship Troopers</a> — Robert A. Heinlein (1959)</li>
+<li><a href="../stories/t2-stirling.html">T2</a> — S. M. Stirling (2001)</li>
+<li><a href="../stories/the-brave-free-men-vance.html">The Brave Free Men</a> — Jack Vance (1973)</li>
+<li><a href="../stories/the-city-who-fought-mccaffrey.html">The city who fought</a> — Anne McCaffrey, S. M. Stirling (1993)</li>
+<li><a href="../stories/the-cole-protocol-buckell.html">The Cole Protocol</a> — Tobias S. Buckell, Eric Nylund (2008)</li>
+<li><a href="../stories/the-currents-of-space-asimov.html">The Currents of Space</a> — Isaac Asimov (1952)</li>
+<li><a href="../stories/the-forever-war-haldeman.html">The Forever War</a> — Joe Haldeman (1974)</li>
+<li><a href="../stories/the-gaslight-war-tchaikovsky.html">The Gaslight War</a> — Adrian Tchaikovsky (2025)</li>
+<li><a href="../stories/the-ghost-brigades-scalzi.html">The Ghost Brigades</a> — John Scalzi (2006)</li>
+<li><a href="../stories/the-honor-of-the-queen-weber.html">The Honor of the Queen</a> — David Weber (1993)</li>
+<li><a href="../stories/the-man-who-ended-war-godfrey.html">The man who ended war</a> — Hollis Godfrey (1908)</li>
+<li><a href="../stories/the-morcai-battalion-palmer.html">The Morcai Battalion</a> — Diana Palmer (1980)</li>
+<li><a href="../stories/the-naked-god-hamilton.html">The Naked God</a> — Peter F. Hamilton (1999)</li>
+<li><a href="../stories/the-neutronium-alchemist-hamilton.html">The Neutronium Alchemist</a> — Peter F. Hamilton (1997)</li>
+<li><a href="../stories/the-shape-of-things-to-come-wells.html">The Shape of Things to Come</a> — H. G. Wells (1933)</li>
+<li><a href="../stories/the-war-in-the-air-wells.html">The war in the air</a> — H. G. Wells (1908)</li>
+<li><a href="../stories/the-war-of-the-worlds-wells.html">The War of the Worlds</a> — H. G. Wells (1898)</li>
+<li><a href="../stories/the-zap-gun-dick.html">The Zap Gun</a> — Philip K. Dick (1974)</li>
+<li><a href="../stories/war-dogs-bear.html">War dogs</a> — Greg Bear (2014)</li>
+<li><a href="../stories/world-war-z-brooks.html">World War Z</a> — Max Brooks (2006)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="nuclear-wasteland-survival.html">Nuclear Wasteland Survival Dynamics</a></li>
+<li><a href="superhuman-power-ceiling.html">Superhuman Power Ceiling</a></li>
+<li><a href="technology-theft-across-civilizations.html">Cross-Civilization Technology Theft</a></li>
+<li><a href="uncontrollable-psychic-weapon.html">Uncontrollable Psychic Weapon</a></li>
+<li><a href="multi-phase-alien-invasion.html">Multi-Phase Alien Invasion Strategy</a></li>
+<li><a href="alien-technology-exploitation.html">Alien Legacy Technology Exploitation</a></li>
+<li><a href="micro-state-superpower-challenge.html">Micro-State Challenge to Superpower</a></li>
+<li><a href="alien-communication-barrier.html">Alien Communication Impossibility</a></li>
+<li><a href="autonomous-ai-beyond-human-values.html">Autonomous AI Beyond Human Values</a></li>
+<li><a href="interactive-strategic-decision.html">Interactive Strategic Decision-Making</a></li>
+<li><a href="cryptographic-power.html">Cryptographic Power Across Eras</a></li>
+<li><a href="bioengineered-warfare.html">Bioengineered Military Technology</a></li>
+<li><a href="deconstructed-superhero-realpolitik.html">Deconstructed Superheroes in Geopolitics</a></li>
+<li><a href="post-scarcity-civilization-war.html">Post-Scarcity Civilization at War</a></li>
+<li><a href="utopian-civilization-covert-intervention.html">Utopian Civilization&#x27;s Covert Interventions</a></li>
+<li><a href="multi-level-civilization-contact.html">Multi-Level Civilization Contact</a></li>
+<li><a href="sapience-classification-debate.html">Sapience Classification Debate</a></li>
+<li><a href="hereditary-destiny-weapon.html">Hereditary Destiny Weapon</a></li>
+<li><a href="child-combatant-ethics.html">Child Combatant with Advanced Technology</a></li>
+<li><a href="declining-empire-intelligence.html">Service and Intelligence in a Declining Empire</a></li>
+<li><a href="superhuman-villain-rule.html">World Ruled by Superpowered Villains</a></li>
+<li><a href="dynastic-competition-no-plot-armor.html">Dynastic Competition Without Safety Nets</a></li>
+<li><a href="biological-infiltration.html">Biological Infiltration Warfare</a></li>
+<li><a href="student-radicalization.html">Student Radicalization with Advanced Knowledge</a></li>
+<li><a href="planetary-telepathy-war.html">Planetary War with Involuntary Telepathy</a></li>
+<li><a href="weapons-as-check-on-tyranny.html">Weapons Shops as Check on Imperial Tyranny</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/108/shield" target="_blank" rel="noopener">shield</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Future+Warfare+Scenario&entry-type=Idea&entry-id=future-warfare" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

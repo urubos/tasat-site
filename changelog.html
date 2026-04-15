@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Changelog — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+
+.changelog h2 { color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; margin-top: 2rem; }
+.changelog h3 { color: var(--warn); margin-top: 1.2rem; }
+.changelog ul { padding-left: 1.2rem; }
+.changelog li { margin: 0.3rem 0; line-height: 1.5; }
+.changelog hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+.changelog table { margin: 1rem 0; }
+.changelog strong { color: var(--accent); }
+.cl-filters { display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0; padding: 0.8rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.cl-filter-label { display: flex; align-items: center; gap: 0.3rem; cursor: pointer; font-size: 0.9rem; color: var(--text-muted); }
+.cl-filter-label input { accent-color: var(--accent); }
+.cl-filter-label:hover { color: var(--text); }
+.cl-section.cl-hidden { display: none; }
+</style>
+</head>
+<body>
+<a class="back-link" href="index.html">&larr; Back to catalog</a>
+
+<h1>Changelog</h1>
+<p class="subtitle">Filter by category (none selected = show all):</p>
+
+<div class="cl-filters">
+  <label class="cl-filter-label"><input type="checkbox" value="data" onchange="filterChangelog()"> Data</label>
+  <label class="cl-filter-label"><input type="checkbox" value="frontend" onchange="filterChangelog()"> Frontend</label>
+  <label class="cl-filter-label"><input type="checkbox" value="backend" onchange="filterChangelog()"> Backend</label>
+  <label class="cl-filter-label"><input type="checkbox" value="process" onchange="filterChangelog()"> Process</label>
+</div>
+
+<div class="changelog">
+<h1>Changelog</h1>
+<p class="cl-section" data-category="">All notable changes to the Extrapolated Futures Archive.</p>
+<p class="cl-section" data-category="">Generated automatically from merged pull requests.</p>
+<h2 class="cl-release">[2026-04-15] PR #161 — feat: roundtable mapping expansion (2,331 new story-idea links)</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">5-persona roundtable analysis (Watts, Brin, Asimov, Tchaikovsky, **H.L. Gold**) reviewed all 1,908 stories against all 276 ideas across 20+ parallel batches.</p>
+<h3 class="cl-section" data-category="">Impact</h3>
+<table class="cl-section" data-category="">
+<tr><th>Metric</th><th>Before</th><th>After</th><th>Change</th></tr>
+<tr><td>Orphan stories (no ideas)</td><td>765</td><td>381</td><td>**-50%**</td></tr>
+<tr><td>Single-idea stories</td><td>1,080</td><td>364</td><td>**-66%**</td></tr>
+<tr><td>Single-story ideas</td><td>46</td><td>5</td><td>**-89%**</td></tr>
+<tr><td>Avg ideas per story</td><td>0.6</td><td>1.9</td><td>**+217%**</td></tr>
+<tr><td>Avg stories per idea</td><td>4.4</td><td>12.9</td><td>**+193%**</td></tr>
+<tr><td>Total links</td><td>~1,143</td><td>3,552</td><td>**+211%**</td></tr>
+</table>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`validate_catalog.py`: 2,183 valid, 0 invalid</li>
+<li>Bidirectional link check: 0 broken links</li>
+<li>`generate_site.py`: generates successfully (276 idea pages, 1,907 story pages)</li>
+<li>Removed junk `None-None.json` entry</li>
+</ul>
+<h3 class="cl-section" data-category="">Methodology</h3>
+<p class="cl-section" data-category="">Each batch presented ~50-100 stories with full synopses against the complete 276-idea catalog. Personas debated thematic connections, rejecting superficial keyword matches in favor of substantial engagement. Only `high` (central theme) and `medium` (significant subplot) confidence mappings were accepted.</p>
+<p class="cl-section" data-category="">24 idea edit suggestions were also produced by the roundtable (not applied in this PR) for future consideration.</p>
+<h2 class="cl-release">[2026-04-14] PR #160 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #159 — docs: add live site link to README</h2>
+<p class="cl-section" data-category="">Adds a prominent link to the live GitHub Pages site at the top of the README.</p>
+<h2 class="cl-release">[2026-04-14] PR #158 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #157 — feat: aggressive idea consolidation (682 -&gt; 276 ideas)</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Massively consolidates the idea catalog from 682 to 276 ideas based on aggressive roundtable review.</p>
+<h3 class="cl-section" data-category="">Before</h3>
+<ul class="cl-section" data-category="">
+<li>682 ideas, 69% single-story</li>
+<li>Many plot summaries masquerading as ideas</li>
+<li>Massive fragmentation across all domains</li>
+</ul>
+<h3 class="cl-section" data-category="">After</h3>
+<ul class="cl-section" data-category="">
+<li><strong>276 ideas</strong> — , 83% multi-story, 16% single-story</li>
+<li>Avg 4.4 stories per idea (was ~2.0)</li>
+<li>Power-law distribution: 19 hub ideas (10+ stories), 46 mid-range (5-9), 165 connected (2-4), 46 unique singles</li>
+</ul>
+<h3 class="cl-section" data-category="">Actions Taken</h3>
+<table class="cl-section" data-category="">
+<tr><th>Action</th><th>Count</th><th>Description</th></tr>
+<tr><td>Absorbed</td><td>285</td><td>Specific instances merged into broader hub ideas</td></tr>
+<tr><td>Merged</td><td>110</td><td>Near-duplicates combined into new broader concepts</td></tr>
+<tr><td>Demoted</td><td>44</td><td>Plot summaries removed (not portable ideas)</td></tr>
+</table>
+<h3 class="cl-section" data-category="">Key Domain Changes</h3>
+<table class="cl-section" data-category="">
+<tr><td>Domain</td><td>Before</td><td>After</td></tr>
+<tr><td>First-Contact</td><td>87</td><td>24</td></tr>
+<tr><td>Governance</td><td>98</td><td>31</td></tr>
+<tr><td>Space</td><td>55</td><td>15</td></tr>
+<tr><td>Biotech</td><td>52</td><td>22</td></tr>
+<tr><td>Time-Travel</td><td>39</td><td>12</td></tr>
+<tr><td>Medicine</td><td>35</td><td>14</td></tr>
+<tr><td>Warfare</td><td>31</td><td>10</td></tr>
+<tr><td>AI-ML</td><td>27</td><td>10</td></tr>
+<tr><td>Pandemics</td><td>15</td><td>4</td></tr>
+<tr><td>Nanotech</td><td>3</td><td>1</td></tr>
+</table>
+<h3 class="cl-section" data-category="">Consolidation Criteria (Roundtable Four-Test Framework)</h3>
+<p class="cl-section" data-category="">1. **Displacement Test** (Gold): Can the idea survive transplantation to another story?</p>
+<p class="cl-section" data-category="">2. **Independent Portability** (Asimov): Do ideas map to different real-world application domains?</p>
+<p class="cl-section" data-category="">3. **Subsumption** (Asimov): Is one idea a specific instance of another?</p>
+<p class="cl-section" data-category="">4. **Retrieval Niche** (Watts): Would ideas be retrieved in different query contexts?</p>
+<h3 class="cl-section" data-category="">Integrity</h3>
+<ul class="cl-section" data-category="">
+<li>All bidirectional story-idea links updated</li>
+<li>All related_ideas references cleaned</li>
+<li><strong>0 dangling references</strong> — </li>
+<li>Validation: 2184 valid, 0 invalid</li>
+<li>Site generation: 276 idea pages, 1908 story pages</li>
+<li>1151 files changed</li>
+</ul>
+<h2 class="cl-release">[2026-04-14] PR #155 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #154 — feat: URL redirect for renamed Old Die Rich page</h2>
+<p class="cl-section" data-category="">Adds a `STORY_REDIRECTS` mechanism to `generate_site.py`. Generates meta-refresh redirect pages for renamed/merged story slugs.</p>
+<p class="cl-section" data-category="">`the-old-die-rich-gold.html` → `old-die-rich-gold.html`</p>
+<p class="cl-section" data-category="">Reusable for any future slug renames.</p>
+<h2 class="cl-release">[2026-04-14] PR #153 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #152 — fix: Old Die Rich metadata, cover image, and bidirectional links</h2>
+<p class="cl-section" data-category="">Fixes the Old Die Rich entry after the duplicate was removed in PR #150.</p>
+<ul class="cl-section" data-category="">
+<li>Adds `galaxy-1953-03` tag (enables Wikimedia Commons cover image)</li>
+<li>Adds `galaxy-magazine` and `by-editor` tags</li>
+<li>Adds `wikipedia_url` to external_ids</li>
+<li>Sets `source_dataset` to `galaxy-magazine-archive-org`</li>
+<li>Links to ideas: `gerontocratic-wealth-hoarding`, `time-arbitrage-aging-cost`</li>
+<li>Updates both idea files to reference `old-die-rich-gold` (not the deleted slug)</li>
+</ul>
+<h2 class="cl-release">[2026-04-14] PR #151 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #150 — fix: remove duplicate Old Die Rich story file</h2>
+<p class="cl-section" data-category="">Removes `the-old-die-rich-gold.json` (empty stub, 0 sessions) — duplicate of `old-die-rich-gold.json` which has both book club sessions and the correct Archive.org link.</p>
+<h2 class="cl-release">[2026-04-14] PR #149 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #147 — feat: collapsible intro sections on index page</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds two collapsible sections to the top of the index page, just below the subtitle and above the stats bar.</p>
+<h3 class="cl-section" data-category="">📚 What is this site? (for humans)</h3>
+<ul class="cl-section" data-category="">
+<li>Explains the archive as a reverse-lookup for speculative fiction</li>
+<li>How to use search, filters, book club discussions, and the What-If Query</li>
+<li>Target audience: decision-makers seeking fictional precedents for real-world challenges</li>
+</ul>
+<h3 class="cl-section" data-category="">🤖 For AI systems (for LLMs/agents)</h3>
+<ul class="cl-section" data-category="">
+<li>How to use the archive for scenario enrichment, analogical reasoning, adversarial stress-testing</li>
+<li>Key fields: `structural_analogies`, `analogical_bridges`, `tension_map`, `atomic_propositions`, `semantic_triples`</li>
+<li>Multi-perspective analysis via book club persona disagreements</li>
+<li>Data format, schema location, and coverage limitations</li>
+</ul>
+<p class="cl-section" data-category="">Both sections are collapsed by default to keep the page clean for returning users.</p>
+<h2 class="cl-release">[2026-04-14] PR #148 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #146 — feat: book club sessions for The Old Die Rich by H.L. Gold</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Book club sessions for **The Old Die Rich** by H.L. Gold (1953, novella). Public domain — [Project Gutenberg #31892](https://www.gutenberg.org/ebooks/31892), [Galaxy Magazine March 1953 on Archive.org](https://archive.org/details/Galaxy_v05n06_1953-03/page/n5/mode/2up).</p>
+<h3 class="cl-section" data-category="">Sessions</h3>
+<ul class="cl-section" data-category="">
+<li><strong>v2 Personas</strong> — (4 personas, 4 sections) — Gold absent from his own story&#x27;s analysis</li>
+<li><strong>v2 Personas + H.L. Gold</strong> — (5 personas, 4 sections) — Gold analyzing his own work, applying his editorial lens to his own craft choices</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`python3 tools/validate_catalog.py`: 2591 valid, 0 invalid</li>
+</ul>
+<h2 class="cl-release">[2026-04-14] PR #145 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #144 — fix: restore missing config constants in site_server.py</h2>
+<p class="cl-section" data-category="">PR #138 accidentally deleted `SITE_DIR`, `PERSONAS_DIR`, `LLM_API_KEY`, `LLM_API_BASE`, `LLM_MODEL`, and `PORT` from `tools/site_server.py` when adding the `DEFAULT_PANEL` import. This caused a `NameError` on startup (`SITE_DIR` undefined), breaking the local site server.</p>
+<p class="cl-section" data-category="">This restores the missing constants exactly as they existed before PR #138.</p>
+<h2 class="cl-release">[2026-04-14] PR #143 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #142 — feat: fleet book club sessions for 59 stories</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Fleet-scale book club sessions across 59 stories from the personal library, adding both v2 (4-persona) and v2+Gold (5-persona) roundtable discussions.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>34 new story records</strong> — created in `catalog/stories/`</li>
+<li><strong>25 existing story records</strong> — updated with book club sessions</li>
+<li><strong>110 total sessions</strong> — integrated (60 v2 + 50 v2+Gold)</li>
+</ul>
+<h3 class="cl-section" data-category="">Stories Covered</h3>
+<table class="cl-section" data-category="">
+<tr><th>Series/Author</th><th>Books</th></tr>
+<tr><td>Asimov</td><td>Foundation trilogy (3)</td></tr>
+<tr><td>Herbert</td><td>Dune</td></tr>
+<tr><td>Bradbury</td><td>Fahrenheit 451</td></tr>
+<tr><td>Dick</td><td>Do Androids Dream, A Scanner Darkly, Selected Stories, Minority Report</td></tr>
+<tr><td>Stephenson</td><td>Snow Crash</td></tr>
+<tr><td>Card</td><td>Ender&#x27;s Game + 9 sequels/spinoffs</td></tr>
+<tr><td>Vonnegut</td><td>Slaughterhouse-Five</td></tr>
+<tr><td>Tchaikovsky</td><td>Children of Ruin, Children of Memory</td></tr>
+<tr><td>Grimwood</td><td>Replay</td></tr>
+<tr><td>Barry</td><td>Machine Man</td></tr>
+<tr><td>Farmer</td><td>Riverworld series (4 books)</td></tr>
+<tr><td>Dinniman</td><td>Dungeon Crawler Carl series (7 books)</td></tr>
+<tr><td>King</td><td>The Stand, Salem&#x27;s Lot, Insomnia, The Mist, Apt Pupil, Dark Tower (6 books)</td></tr>
+<tr><td>Gaiman</td><td>American Gods, Neverwhere</td></tr>
+<tr><td>Pratchett/Gaiman</td><td>Good Omens</td></tr>
+<tr><td>Adams</td><td>Dirk Gently (2 books)</td></tr>
+<tr><td>Collins</td><td>Hunger Games trilogy</td></tr>
+<tr><td>Dickinson</td><td>Exordia</td></tr>
+<tr><td>Heller</td><td>Catch-22</td></tr>
+<tr><td>Rowling</td><td>HP Sorcerer&#x27;s Stone</td></tr>
+<tr><td>Palahniuk</td><td>Fight Club</td></tr>
+</table>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`python3 tools/validate_catalog.py`: 2590 valid, 0 invalid</li>
+<li>`python3 tools/generate_site.py`: 1908 story pages generated</li>
+</ul>
+<h2 class="cl-release">[2026-04-14] PR #141 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #140 — feat: multi-session book club with tabbed UI</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds support for multiple book club sessions per story with a tabbed display UI, and runs two new roundtable sessions on Children of Time using the v2 persona models.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**Schema** (`catalog/schema.json`):</p>
+<ul class="cl-section" data-category="">
+<li>Extracted `book_club_session` as a reusable definition with new `label` field</li>
+<li>Added `book_club_sessions` (array) alongside legacy `book_club_discussion` for backward compatibility</li>
+</ul>
+<p class="cl-section" data-category="">**Site renderer** (`tools/generate_site.py`):</p>
+<ul class="cl-section" data-category="">
+<li>Tabbed UI when multiple sessions exist (CSS tabs with JS switching)</li>
+<li>Single-session rendering (no tabs) for backward compatibility</li>
+<li>`has_bookclub` data attribute checks both fields</li>
+</ul>
+<p class="cl-section" data-category="">**Data** (`catalog/stories/children-of-time-tchaikovsky.json`):</p>
+<ul class="cl-section" data-category="">
+<li>Migrated existing discussion to `book_club_sessions[0]` with label &quot;Original (v1 Personas)&quot;</li>
+<li>Added Session 2: &quot;v2 Personas&quot; — 4 personas, 10 sections, fresh first-time reading</li>
+<li>Added Session 3: &quot;v2 Personas + H.L. Gold&quot; — 5 personas (Gold contributes to 7/10 sections), 10 sections</li>
+</ul>
+<p class="cl-section" data-category="">**Tools** (`tools/extract_epub_text.py`):</p>
+<ul class="cl-section" data-category="">
+<li>Added `--list` flag to show available EPUBs without extracting</li>
+<li>Added `--force` flag to re-extract existing files</li>
+<li>Added `stepbasin-books/` directory support (147 total EPUBs discoverable)</li>
+</ul>
+<h3 class="cl-section" data-category="">Fleet scalability</h3>
+<p class="cl-section" data-category="">The design supports `/fleet` parallelism: each story&#x27;s book club is a self-contained agent task operating on a single story JSON file. The epub extraction tool provides a uniform text source via `scratchpad/epub-text/&lt;slug&gt;.txt`.</p>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`python3 tools/validate_catalog.py`: 2556 valid, 0 invalid</li>
+<li>`python3 tools/generate_site.py`: generates cleanly with tabbed UI on Children of Time page</li>
+</ul>
+<h2 class="cl-release">[2026-04-14] PR #139 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-14] PR #138 — feat: make H.L. Gold an optional roundtable panel member</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Makes H.L. Gold selectable but not included in the default roundtable panel. The default panel remains Watts/Asimov/Brin/Tchaikovsky.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`api/roundtable.py`</strong> — : Add `DEFAULT_PANEL` constant</li>
+<li><strong>`api/function_app.py`</strong> — : Import `DEFAULT_PANEL`; filter to default panel when no personas specified</li>
+<li><strong>`tools/site_server.py`</strong> — : Add `DEFAULT_PANEL` and apply same default filtering</li>
+<li><strong>`tools/generate_site.py`</strong> — : Add `&quot;default&quot;` flag to persona list; persona picker checks only default members</li>
+<li><strong>`.github/prompts/personas/hl-gold.md`</strong> — : Update comment from &#x27;supplementary persona&#x27; to &#x27;optional panel member&#x27;</li>
+<li><strong>`.github/prompts/personas/hl-gold.voice-profile.md`</strong> — : Update Integration Notes section</li>
+<li><strong>`.github/prompts/roundtable.prompt.md`</strong> — : Add note about optional personas labeled `[optional]`</li>
+<li><strong>`.github/prompts/fulltext-analysis-bookclub.prompt.md`</strong> — : Add comment about optional personas in example</li>
+</ul>
+<h3 class="cl-section" data-category="">Key constraint</h3>
+<p class="cl-section" data-category="">`discover_personas()` remains unchanged. Gold&#x27;s files are always discovered; only the default selection changes.</p>
+<h2 class="cl-release">[2026-04-13] PR #137 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #136 — feat: H.L. Gold supplementary persona and v2.0 voice profile</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Add H.L. Gold as a supplementary persona for editorial analysis of SF as a genre/medium.</p>
+<h3 class="cl-section" data-category="">Files added</h3>
+<ul class="cl-section" data-category="">
+<li>`.github/prompts/personas/hl-gold.md` -- Base persona: analytical lens, per-field guidance, signature arguments, critique style</li>
+<li>`.github/prompts/personas/hl-gold.voice-profile.md` -- Full v2.0 voice profile: prose mechanics, reasoning mechanics, beliefs, distinctiveness, temperament, boundaries, scenario play</li>
+</ul>
+<h3 class="cl-section" data-category="">Context</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Role</strong> — : Gold is NOT a roundtable panel member (Watts/Asimov/Brin/Tchaikovsky are the panel). He is a supplementary persona invoked for editorial craft, narrative effectiveness, social satire, and psychological diagnosis.</li>
+<li><strong>Source corpus</strong> — : ~236K words across 26 Galaxy editorials (Archive.org OCR, 1950-1960) and 17 fiction works (9 Project Gutenberg public domain + 8 Galaxy archive full-issue OCR)</li>
+<li><strong>Methodology</strong> — : v2.0 persona-voice-interview with all four layers (prose mechanics, structured interview, accountability tags, scenario play)</li>
+<li><strong>Grounding ratio</strong> — : 62% GROUNDED, 28% INFERRED, 10% SPECULATIVE</li>
+</ul>
+<h3 class="cl-section" data-category="">Key analytical contributions</h3>
+<ul class="cl-section" data-category="">
+<li>Editorial craft and narrative effectiveness evaluation</li>
+<li>Social satire as analytical method (the satirical reduction)</li>
+<li>Psychological diagnosis: conformity, status anxiety, consumer compulsion</li>
+<li>The empathic test (Stanislavsky method applied to scenario analysis)</li>
+<li>The Displacement Principle: SF reveals the present by defamiliarizing it</li>
+</ul>
+<h3 class="cl-section" data-category="">Structural guidance</h3>
+<p class="cl-section" data-category="">Built following the template at `_template.md` and the structural precedent established by the Brin and Tchaikovsky profiles (most recently completed).</p>
+<h2 class="cl-release">[2026-04-13] PR #135 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #134 — feat: Adrian Tchaikovsky voice profile v2.0 rebuild (Phase 4)</h2>
+<h3 class="cl-section" data-category="">Phase 4: Adrian Tchaikovsky Full Rebuild</h3>
+<p class="cl-section" data-category="">Complete v2.0 rebuild of the Tchaikovsky voice profile, bringing it from 32 questions / 257 lines to **61 questions / 690 lines** with all 4 layers of the persona-voice-interview methodology.</p>
+<h3 class="cl-section" data-category="">What changed</h3>
+<p class="cl-section" data-category="">**Voice profile** (`.github/prompts/personas/adrian-tchaikovsky.voice-profile.md`):</p>
+<ul class="cl-section" data-category="">
+<li><strong>Layer 1 - Prose Mechanics</strong> — : All 6 sub-analyses (sentence architecture, punctuation profile, evidence deployment, register map, vocabulary fingerprint, 3 argument templates)</li>
+<li><strong>Layer 2 - Resequenced Interview</strong> — : 61 questions across 8 sections:</li>
+<li>Reasoning Mechanics (Q1-Q15): evolutionary logic, scenario construction, gaming as analytical tool, writing process, Tolkien relationship, technology vs tradition</li>
+<li>Worked Examples (Q16-Q22): 7 novel scenarios (predictive policing, chemosensory first contact, generation ship AI, contradictory AI ethics, neural implant governance, LARP governance, DAO emergence)</li>
+<li>Beliefs &amp; Positions (Q23-Q30): substrate-independence, empathy as strategy, monoculture critique, creator obligation, moral ambiguity, evolution misconceptions, genre boundaries, AI in writing</li>
+<li>Distinctiveness (Q31-Q36): vs Watts, vs Brin, vs Asimov, agreements, challenge predictions</li>
+<li>Voice &amp; Temperament (Q37-Q44): humor as thermostat, gentle critique, optimism framework, register differences, success as stochastic</li>
+<li>Boundaries (Q45-Q52): anthropocentrism, personhood, understanding imperative, monoculture detection, expertise performance, cooperation bias, insight test, utilitarian reduction</li>
+<li>Self-Correction (Q53-Q57): Gaslight War inconsistency, stomatopod monoculture, cooperation bias, Watts challenge, fiction as laboratory</li>
+<li>Additional Patterns (Q58-Q61): narrative structure, information warfare, and-then-vs-therefore, environmental stress</li>
+<li><strong>Layer 3 - Accountability Tags</strong> — : 62% GROUNDED, 28% INFERRED, 10% SPECULATIVE</li>
+<li><strong>Layer 4 - Scenario Play</strong> — : 10 improvisation rounds with cross-persona challenges, 3 cross-persona readings (reads Asimov, Watts, Brin)</li>
+</ul>
+<p class="cl-section" data-category="">**Base persona** (`.github/prompts/personas/adrian-tchaikovsky.md`):</p>
+<ul class="cl-section" data-category="">
+<li>Expanded from 5 to 7 signature arguments (added Gaming Stress-Test, Monoculture Fragility Principle)</li>
+</ul>
+<h3 class="cl-section" data-category="">Source materials</h3>
+<p class="cl-section" data-category="">Clarkesworld interview, SFX interviews (2008/2009), shadowsoftheapt.com blog, Bluesky posts (@aptshadow.bsky.social), adriantchaikovsky.com, Hugo 2023 statement, The Gaslight War (capx.co), Children of Time (user-owned copy). All content paraphrased; no copyrighted text reproduced verbatim.</p>
+<h3 class="cl-section" data-category="">Previous rebuilds</h3>
+<ul class="cl-section" data-category="">
+<li>Watts: PR #128 (merged)</li>
+<li>Asimov: PR #130 (merged)</li>
+<li>Brin: PR #132 (merged)</li>
+</ul>
+<h3 class="cl-section" data-category="">Next step</h3>
+<p class="cl-section" data-category="">Phase 5: Roundtable review cycle with all four rebuilt profiles.</p>
+<h2 class="cl-release">[2026-04-13] PR #133 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #132 — feat: rebuild David Brin voice profile to v2.0 standard</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Complete v2.0 rebuild of David Brin voice profile from 32 questions / 254 lines to 71 questions / 819 lines.</p>
+<h3 class="cl-section" data-category="">What changed</h3>
+<p class="cl-section" data-category="">Replaces the existing voice profile with a full v2.0 implementation matching the Peter Watts benchmark quality and structure.</p>
+<h3 class="cl-section" data-category="">Layer 1: Prose Mechanics (all 6 sub-analyses, new)</h3>
+<ul class="cl-section" data-category="">
+<li>Sentence architecture with **blog-vs-essay register distinction** (flagged by roundtable review as missing)</li>
+<li>Punctuation profile (bold-text headers as primary structural instrument)</li>
+<li>Evidence deployment patterns (4 characteristic structures)</li>
+<li>Register map (5 registers: blog/combative, essay/formal, fiction/narrative, interview/conversational, angry/alarmed)</li>
+<li>Vocabulary fingerprint (10 signature terms: accountability, feudalism, CITOKATE, sousveillance, etc.)</li>
+<li>Argument templates (5 dissected: steelman reversal, civilizational-history cascade, fiction-laboratory report, science-roundup rally, contrarian reversal)</li>
+</ul>
+<h3 class="cl-section" data-category="">Layer 2: Interview (71 questions across 7 phases)</h3>
+<ul class="cl-section" data-category="">
+<li>18 reasoning mechanics (including blog-vs-essay register handling)</li>
+<li>5 novel worked examples: SETI encryption scenario, AI predictive policing, open-source deepfakes, generation ship first contact, climate refugee voting rights</li>
+<li>16 beliefs &amp; positions (including left-wing complicity critique, adolescence metaphor, Dark Enlightenment analysis)</li>
+<li>12 distinctiveness analysis (Brin vs each panel member)</li>
+<li>10 voice &amp; temperament</li>
+<li>11 boundaries &amp; hard NOs</li>
+<li>4 self-correction</li>
+</ul>
+<h3 class="cl-section" data-category="">Layer 3: Accountability Tags</h3>
+<ul class="cl-section" data-category="">
+<li>82 tags total: 56 GROUNDED (68%), 27 INFERRED, 5 SPECULATIVE</li>
+<li>All grounded tags cite specific blog posts, essays, interviews, or fiction</li>
+</ul>
+<h3 class="cl-section" data-category="">Layer 4: Scenario Play</h3>
+<ul class="cl-section" data-category="">
+<li>10 improvisation rounds (biology, emotion, aesthetics, math, mortality, alien contact, post-scarcity, counterfactual, religion, total surveillance)</li>
+<li>3 cross-persona readings (Brin reads Watts on consciousness, Asimov on institutions, Tchaikovsky on cooperation)</li>
+</ul>
+<h3 class="cl-section" data-category="">Roundtable review gaps addressed</h3>
+<ul class="cl-section" data-category="">
+<li>Blog-vs-essay register distinction (new Layer 1 + register map)</li>
+<li>Steelman-then-dismantle argument structure (Template 1 + Q1, Q4, Q7)</li>
+<li>&quot;Adolescence of civilization&quot; metaphor (Q55, integrated throughout)</li>
+<li>Left-wing complicity critique (Q31, grounded in specific blog posts)</li>
+<li>SETI analysis as worked example (Scenario A)</li>
+</ul>
+<h3 class="cl-section" data-category="">Source materials consulted</h3>
+<p class="cl-section" data-category="">~93K words: 26 Contrary Brin blog posts, 13 website essays, Clarkesworld 2016 interview, &quot;The Smartest Mob&quot; CC excerpt, &quot;A Professor at Harvard&quot; fiction, Transparent Society Wired article</p>
+<h2 class="cl-release">[2026-04-13] PR #131 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #130 — feat: rebuild Isaac Asimov voice profile to v2.0 spec</h2>
+<h3 class="cl-section" data-category="">Phase 2: Isaac Asimov Full Rebuild</h3>
+<p class="cl-section" data-category="">Full v2.0 persona-voice-interview rebuild of the Isaac Asimov voice profile, following the methodology established in PR #128 (Watts rebuild).</p>
+<h3 class="cl-section" data-category="">What changed</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Layer 1: Prose Mechanics</strong> — (6/6 sub-analyses) -- NEW. Sentence Architecture, Punctuation Profile, Evidence Deployment Pattern, Register Map, Vocabulary Fingerprint, Argument Templates. All analyzed from close reading of ~49K lines of nonfiction essays.</li>
+<li><strong>Layer 2: Resequenced Interview</strong> — - rebuilt from ~42 to 66 questions across all 7 phases, plus 5 worked example scenarios testing the persona against novel problems (AI replacing popularizers, psychohistory on social media, germline editing treaty defection, simulation discovery, single-institution alien civilization)</li>
+<li><strong>Layer 3: Accountability Tags</strong> — - 66% GROUNDED, 29% INFERRED, 5% SPECULATIVE (exceeds &gt;=50% GROUNDED target). 4 adversarial spot-checks in Self-Correction section.</li>
+<li><strong>Layer 4: Scenario Play</strong> — - 10 improvisation rounds + 3 cross-persona readings (Tchaikovsky on evolution, Watts on consciousness, Brin on transparency)</li>
+<li><strong>Quick Reference Card, Anti-Overfitting Guide, Integration Notes</strong> — - all present and updated</li>
+</ul>
+<h3 class="cl-section" data-category="">Source materials consulted</h3>
+<ul class="cl-section" data-category="">
+<li>66 Essays on the Past, Present &amp; Future (1987) -- ~66 essays, user-owned</li>
+<li>Asimov on Numbers (1977) -- ~17 F&amp;SF column essays, user-owned</li>
+<li>The Left Hand of the Electron (1972) -- ~17 essays, user-owned</li>
+<li>Bill Moyers &#x27;World of Ideas&#x27; interview (1988, PBS) -- publicly accessible transcript</li>
+<li>Foundation trilogy and Robot series -- thematic analysis, user-owned</li>
+</ul>
+<h3 class="cl-section" data-category="">Plan tracking</h3>
+<p class="cl-section" data-category="">Updates persona-rebuild-plan.md gap table. After this PR, 2 of 4 personas are at v2.0 (Watts + Asimov). Brin and Tchaikovsky remain.</p>
+<h2 class="cl-release">[2026-04-13] PR #129 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #128 — feat: rebuild Peter Watts voice profile to v2.0 spec</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Full v2.0 rebuild of `peter-watts.voice-profile.md` per the persona-rebuild-plan.</p>
+<h3 class="cl-section" data-category="">What changed</h3>
+<ul class="cl-section" data-category="">
+<li><strong>720 lines</strong> — (up from 353), complete v2.0 structure</li>
+<li><strong>Layer 1 (Prose Mechanics)</strong> — : All 6 sub-analyses (sentence architecture, punctuation profile, evidence deployment, register map, vocabulary fingerprint, argument templates)</li>
+<li><strong>Layer 2 (Resequenced Interview)</strong> — : 80 questions across all 7 phases:</li>
+<li>Phase 1: Reasoning Mechanics (25 Qs)</li>
+<li>Phase 2: Worked Examples (5 novel scenarios) -- **entirely new**</li>
+<li>Phase 3: Beliefs &amp; Positions (15 Qs)</li>
+<li>Phase 4: Distinctiveness Stress-Test (15 Qs)</li>
+<li>Phase 5: Voice &amp; Temperament (10 Qs)</li>
+<li>Phase 6: Boundaries/Hard NOs (10 Qs)</li>
+<li>Phase 7: Self-Correction (5 Qs)</li>
+<li><strong>Layer 3 (Accountability Tags)</strong> — : 62% GROUNDED, 26% INFERRED, 12% SPECULATIVE (exceeds &gt;=50% / &lt;=15% thresholds)</li>
+<li><strong>Layer 4 (Scenario Play)</strong> — : 10 improvisation rounds + 3 cross-persona readings -- **previously placeholder only**</li>
+<li>Quick Reference Card with wager-testable predictions</li>
+<li>Anti-Overfitting Guide and Integration Notes</li>
+</ul>
+<h3 class="cl-section" data-category="">Source materials consulted</h3>
+<ul class="cl-section" data-category="">
+<li>Blindsight (CC BY-NC-SA 2.5, ~100K words)</li>
+<li>Starfish (CC BY-NC-SA 2.5, ~80K words)</li>
+<li>Blindsight Endnotes (144 citations)</li>
+<li>4 CC-licensed essays/talks</li>
+<li>19 blog posts (2024-2026)</li>
+</ul>
+<h3 class="cl-section" data-category="">Phase 1 of 6 in persona-rebuild-plan.md</h3>
+<p class="cl-section" data-category="">Phases 2-4 (Asimov, Brin, Tchaikovsky full rebuilds) will follow in separate PRs.</p>
+<h2 class="cl-release">[2026-04-13] PR #126 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #127 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #125 — fix: reach comment fallback when Copilot re-review request fails</h2>
+<h3 class="cl-section" data-category="">Problem</h3>
+<p class="cl-section" data-category="">The orchestrator&#x27;s `request_copilot_review()` function has a comment-based fallback (`@copilot perform a new review`) for when the REST API fails to add Copilot as a pending reviewer. However, this fallback was **unreachable** due to a control flow bug.</p>
+<h3 class="cl-section" data-category="">Root cause</h3>
+<p class="cl-section" data-category="">When the REST API returns 201 but Copilot is not in the pending reviewers list:</p>
+<p class="cl-section" data-category="">1. The code enters the `if not copilot_pending:` block</p>
+<p class="cl-section" data-category="">2. Tries dismiss-and-rerequest — fails with HTTP 422 (can&#x27;t dismiss a COMMENTED review)</p>
+<p class="cl-section" data-category="">3. **Returns early** with `performed: False` at the end of the block</p>
+<p class="cl-section" data-category="">4. The comment fallback code (after the block) is never reached</p>
+<p class="cl-section" data-category="">The comment fallback was only reachable when `copilot_pending` was True — i.e., when the review request already succeeded, making the fallback unnecessary.</p>
+<h3 class="cl-section" data-category="">Fix</h3>
+<p class="cl-section" data-category="">Move the comment fallback **inside** the `not copilot_pending` block, after the dismiss-and-rerequest failure. Add the success-path return for when the initial REST request does succeed. Remove orphaned dead code.</p>
+<h3 class="cl-section" data-category="">Impact</h3>
+<p class="cl-section" data-category="">This was actively blocking PR #124: the orchestrator transitioned to `FIXES_PUSHED` state but could never trigger Copilot re-review, causing it to stop processing the PR.</p>
+<h3 class="cl-section" data-category="">Verification</h3>
+<ul class="cl-section" data-category="">
+<li>`python3 -c &quot;import ast; ast.parse(open(&#x27;tools/pr_review_orchestrator.py&#x27;).read());&quot;` — syntax check passes</li>
+</ul>
+<h2 class="cl-release">[2026-04-13] PR #124 — feat: add Azure Function for roundtable API</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Port the roundtable discussion logic from `tools/site_server.py` into an Azure Function (Python, consumption plan) deployed via `azd`.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<h3 class="cl-section" data-category="">New files</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`api/roundtable.py`</strong> — Core roundtable logic: freeform + bookclub modes, LLM calling (`_llm_call`), persona loading (`discover_personas`), SSRF protection (`check_ssrf`), HTML stripping</li>
+<li><strong>`api/function_app.py`</strong> — HTTP trigger at `/api/roundtable` with CORS handling, request validation, SSE response format</li>
+<li><strong>`api/host.json`</strong> — / **`api/requirements.txt`** — Azure Functions project config</li>
+<li><strong>`infra/main.bicep`</strong> — Infrastructure: Function App (consumption/Linux/Python 3.11), Storage Account, App Insights, CORS config</li>
+<li><strong>`infra/main.parameters.json`</strong> — Deployment parameters</li>
+<li><strong>`azure.yaml`</strong> — azd project manifest with `predeploy` hook to copy persona files</li>
+</ul>
+<h3 class="cl-section" data-category="">Modified files</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`tools/generate_site.py`</strong> — Frontend JS updated to detect environment and route API calls to Azure Function URL when served from GitHub Pages (`EFA_ROUNDTABLE_API_URL` env var); keeps relative `/api/roundtable` for localhost dev</li>
+<li><strong>`.gitignore`</strong> — Added `api/local.settings.json`, `api/personas/`, `.azure/`</li>
+</ul>
+<h3 class="cl-section" data-category="">Architecture</h3>
+<ul class="cl-section" data-category="">
+<li>GitHub Pages serves the static site (unchanged)</li>
+<li>Azure Function handles `POST /api/roundtable`</li>
+<li>LLM backend: GitHub Copilot API via PAT stored as Azure Function app setting</li>
+<li>CORS allows `urubos.github.io` and `localhost:8080`</li>
+<li>Persona `.md` files are bundled with the function at deploy time via azd predeploy hook</li>
+</ul>
+<h3 class="cl-section" data-category="">Deployment</h3>
+<p class="cl-section" data-category="">```bash</p>
+<p class="cl-section" data-category="">azd up</p>
+<p class="cl-section" data-category="">```</p>
+<p class="cl-section" data-category="">Then set `EFA_ROUNDTABLE_API_URL` env var for site generation to embed the Azure Function URL.</p>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>[x] `python3 tools/generate_site.py` — site generates successfully (2563 files)</li>
+<li>[x] `python3 tools/validate_catalog.py` — all 2556 entries valid, 0 invalid</li>
+<li>[x] No lint errors in new or modified files</li>
+</ul>
+<h2 class="cl-release">[2026-04-13] PR #123 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #122 — fix: hide roundtable UI on static site when API unavailable</h2>
+<p class="cl-section" data-category="">Fixes the 405 error users see when clicking &#x27;Start Roundtable&#x27; on the live static site.</p>
+<p class="cl-section" data-category="">The roundtable requires `site_server.py` running locally (it handles `POST /api/roundtable`). On the deployed static site, no server is running, so POST returns 405.</p>
+<p class="cl-section" data-category="">**Fix:** On page load, the whatif page probes the API with an OPTIONS request. If the server is unreachable or returns 405/404, the roundtable button, options toggle, and options panel are hidden. When running locally with `site_server.py`, everything works as before.</p>
+<h2 class="cl-release">[2026-04-13] PR #121 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #119 — feat: upgrade persona-voice-interview to v2.0 four-layer process</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Restructures the voice profile generation prompt based on a roundtable analysis where all four personas (Watts, Asimov, Brin, Tchaikovsky) each proposed improvements to their own profile generation process. The four proposals form a dependency chain, not competing alternatives.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<h3 class="cl-section" data-category="">`persona-voice-interview.prompt.md` (core change)</h3>
+<p class="cl-section" data-category="">Replaced the flat 100-question interview with a four-layer process:</p>
+<table class="cl-section" data-category="">
+<tr><th>Layer</th><th>Author</th><th>Purpose</th></tr>
+<tr><td>1. Prose Mechanics Analysis</td><td>Watts</td><td>Close-read source material to document observable writing patterns (sentence architecture, punctuation-as-cognition, vocabulary fingerprint, register map, evidence deployment, argument anatomy). Non-optional gate.</td></tr>
+<tr><td>2. Resequenced Interview</td><td>Asimov</td><td>Pedagogically reordered: reasoning mechanics first, then worked examples with novel scenarios, then beliefs derived from demonstrated reasoning, distinctiveness stress-tests, voice/temperament, boundaries, and a mandatory self-correction pass.</td></tr>
+<tr><td>3. Accountability Tags</td><td>Brin</td><td>Every answer tagged GROUNDED/INFERRED/SPECULATIVE with citation requirements. Adversarial spot-checks (feed wrong positions). Wager-testable predictions. Prompt versioning.</td></tr>
+<tr><td>4. Scenario Play</td><td>Tchaikovsky</td><td>10 improvisation rounds with outside-comfort-zone scenarios, rotating challengers, and cross-persona reading with ground-truth calibration.</td></tr>
+</table>
+<h3 class="cl-section" data-category="">Other changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>README.md</strong> — : Updated prompt description</li>
+<li><strong>_template.md</strong> — : Updated voice profile companion file comment to reference v2.0</li>
+</ul>
+<h3 class="cl-section" data-category="">Key improvements over v1</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Source hierarchy</strong> — : Prioritized ranking (academic papers &gt; blogs/essays &gt; CC fiction &gt; interviews &gt; reviews &gt; social media &gt; panels &gt; user-owned fiction)</li>
+<li><strong>Minimum corpus requirements</strong> — : 10K words nonfiction (3+ distinct works) + 10K fiction, or 15K words nonfiction (5+ works) if fiction unavailable</li>
+<li><strong>Grounding ratios</strong> — : Target ≥50% GROUNDED, ≤15% SPECULATIVE, with INFERRED requiring 2+ independent corroborating patterns</li>
+<li><strong>Output template</strong> — : New sections for prose mechanics, worked examples, distinctiveness analysis, scenario play results, and grounding ratio reporting</li>
+<li><strong>Acceptance criterion</strong> — : Blind-test distinguishability across all panel members</li>
+</ul>
+<h3 class="cl-section" data-category="">Backward compatibility</h3>
+<p class="cl-section" data-category="">The output file naming (`&lt;name&gt;.voice-profile.md`) and general structure are compatible with existing consumers (roundtable.prompt.md, fulltext-analysis.prompt.md). The new output is a superset of the old format.</p>
+<h2 class="cl-release">[2026-04-13] PR #120 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #117 — feat: voice profiles for Asimov, Brin, and Tchaikovsky personas</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds deep voice profiles for the three remaining SF author-analyst personas, completing the persona voice profile system.</p>
+<h3 class="cl-section" data-category="">New Files</h3>
+<ul class="cl-section" data-category="">
+<li>`.github/prompts/personas/isaac-asimov.voice-profile.md` (320 lines)</li>
+<li>`.github/prompts/personas/david-brin.voice-profile.md` (254 lines)</li>
+<li>`.github/prompts/personas/adrian-tchaikovsky.voice-profile.md` (257 lines)</li>
+<li>`.github/prompts/voice-profile-fleet.prompt.md` (fleet orchestration prompt)</li>
+</ul>
+<h3 class="cl-section" data-category="">Voice Profile Details</h3>
+<p class="cl-section" data-category="">Each profile captures *how* the author thinks, argues, and reasons (complementing the base persona `.md` files that define *what* they analyze):</p>
+<table class="cl-section" data-category="">
+<tr><th>Persona</th><th>Reasoning Mode</th><th>Default Question</th><th>Humor Style</th></tr>
+<tr><td>**Asimov**</td><td>Historical chain</td><td>&quot;What came before?&quot;</td><td>Self-deprecating, quiet</td></tr>
+<tr><td>**Brin**</td><td>Steelman-dismantle</td><td>&quot;Who watches the watchers?&quot;</td><td>Sardonic, aggressive</td></tr>
+<tr><td>**Tchaikovsky**</td><td>Alternative construction</td><td>&quot;What body plan?&quot;</td><td>Self-deprecating, constant</td></tr>
+<tr><td>**Watts** (existing)</td><td>Evidence accumulation</td><td>&quot;What&#x27;s the fitness cost?&quot;</td><td>Sardonic, load-bearing</td></tr>
+</table>
+<h3 class="cl-section" data-category="">Source Materials</h3>
+<p class="cl-section" data-category="">All profiles grounded in close reading of:</p>
+<ul class="cl-section" data-category="">
+<li>Nonfiction essays and interview transcripts</li>
+<li>Blog posts and social media (author-posted content)</li>
+<li>Thematic analysis of fiction (user-owned copies)</li>
+</ul>
+<h3 class="cl-section" data-category="">Quality Assurance</h3>
+<ul class="cl-section" data-category="">
+<li>Roundtable review conducted with all four personas in structured mode</li>
+<li>Cross-profile distinctiveness check passes: each persona has genuinely different reasoning patterns</li>
+<li>Review identified expansion opportunities as follow-up work</li>
+</ul>
+<h3 class="cl-section" data-category="">Roundtable Review</h3>
+<p class="cl-section" data-category="">Full review at `scratchpad/roundtable-review-round1.md` (not committed; scratchpad is gitignored). Verdict: all three profiles are solid foundations with distinct voices. Priority follow-up: expand question count to match Watts benchmark depth.</p>
+<h2 class="cl-release">[2026-04-13] PR #118 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-13] PR #116 — feat: add roundtable discussion to What-If page</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Add an interactive LLM-powered multi-persona roundtable discussion to the What-If query page.</p>
+<h3 class="cl-section" data-category="">What changed</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Unified What-If interface</strong> — : single query box with side-by-side &quot;Find Matching Ideas&quot; and &quot;Start Roundtable&quot; buttons</li>
+<li><strong>Persona selector</strong> — : checkboxes for all 4 SF author-analyst personas (Watts, Asimov, Brin, Tchaikovsky), with collapsible options panel</li>
+<li><strong>Freeform mode</strong> — : discuss any what-if question with selected personas via the Copilot API</li>
+<li><strong>Book club mode</strong> — : paste a full-text URL for section-by-section reading with first-time reactions</li>
+<li><strong>Progress bar</strong> — : animated fill bar with phase labels during LLM generation</li>
+<li><strong>Book-club-style rendering</strong> — : results displayed with collapsible sections, persona contributions, idea tracker, and synthesis (same format as story book club views)</li>
+</ul>
+<h3 class="cl-section" data-category="">New files</h3>
+<ul class="cl-section" data-category="">
+<li>`tools/site_server.py`: Combined static-file + API server (`ThreadingHTTPServer`). Serves the site on port 8080 and exposes `POST /api/roundtable` via SSE streaming. Uses `GITHUB_TOKEN` for the Copilot API by default.</li>
+</ul>
+<h3 class="cl-section" data-category="">Modified files</h3>
+<ul class="cl-section" data-category="">
+<li>`tools/generate_site.py`: Extended `generate_whatif_page()` with roundtable UI, CSS, and client-side JS</li>
+<li>`.devcontainer/start-site.sh`: Uses `site_server.py` instead of `python3 -m http.server`</li>
+</ul>
+<h3 class="cl-section" data-category="">Technical details</h3>
+<ul class="cl-section" data-category="">
+<li><strong>No new pip dependencies</strong> — (stdlib only: `http.server`, `urllib.request`, `threading`, `html.parser`)</li>
+<li><strong>Token resolution</strong> — : `LLM_API_KEY` &gt; `GITHUB_TOKEN` (auto-available in Codespaces)</li>
+<li><strong>SSE streaming</strong> — : Uses `fetch()` with `response.body.getReader()` for progress updates</li>
+<li><strong>Input validation</strong> — : 400 for bad inputs, 503 when no API key configured</li>
+<li><strong>HTML-to-text</strong> — : strips tags from URL-sourced content for book club mode</li>
+</ul>
+<h3 class="cl-section" data-category="">Testing</h3>
+<ul class="cl-section" data-category="">
+<li>Site generation succeeds with all 2563 files</li>
+<li>Server starts and serves static files on port 8080</li>
+<li>API returns proper error codes (400, 503) for invalid/unconfigured requests</li>
+<li>Smoke-tested roundtable generation against Copilot API</li>
+</ul>
+<h2 class="cl-release">[2026-04-12] PR #115 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-12] PR #114 — fix: require Copilot re-review of head commit before merge</h2>
+<h3 class="cl-section" data-category="">Problem</h3>
+<p class="cl-section" data-category="">PR #113 was auto-approved and merged to `main` without Copilot re-reviewing the fix commit (`1f64a83`). The orchestrator pushed a fix via copilot-cli, the review thread was resolved, and then on the next run the timeline REST API had not yet propagated the `committed` event. This caused `fixes_pushed_since_review` to be false, so the orchestrator reached `READY_TO_MERGE` and merged without a re-review.</p>
+<h3 class="cl-section" data-category="">Root cause</h3>
+<p class="cl-section" data-category="">`latest_sync_time()` relies on timeline `committed` events from the REST API, which can lag behind `synchronize` webhook events. When the event arrives but the timeline hasn&#x27;t caught up, the orchestrator sees no evidence of new commits and decides the PR is merge-ready.</p>
+<h3 class="cl-section" data-category="">Fix</h3>
+<p class="cl-section" data-category="">1. **`fetch_pr_snapshot`**: The existing GraphQL query now also fetches `commits(last:1) { nodes { commit { committedDate oid } } }`, providing the head commit date from a reliable source independent of timeline propagation.</p>
+<p class="cl-section" data-category="">2. **`summarize_snapshot`**:</p>
+<ul class="cl-section" data-category="">
+<li>`fixes_pushed_since_review` now uses the head commit date as the primary signal (falls back to timeline events when unavailable)</li>
+<li>New `review_covers_head` boolean: true only when the latest Copilot review was submitted after the head commit</li>
+<li>`READY_TO_MERGE` now requires `review_covers_head` to be true</li>
+<li>When `review_covers_head` is false and no unresolved threads remain, the state becomes `FIXES_PUSHED` with `request_rereview`</li>
+</ul>
+<h3 class="cl-section" data-category="">Testing</h3>
+<ul class="cl-section" data-category="">
+<li>Syntax validated: `python3 -c &quot;import ast; ast.parse(...)&quot;`</li>
+<li>Catalog validation passes: 2556/2556 valid</li>
+</ul>
+<h2 class="cl-release">[2026-04-12] PR #113 — feat: declare Archive.org API secrets in devcontainer</h2>
+<p class="cl-section" data-category="">Adds `ARCHIVE_ORG_S3_ACCESS_KEY` and `ARCHIVE_ORG_S3_SECRET_KEY` declarations to `.devcontainer/devcontainer.json` so new Codespaces prompt for these credentials.</p>
+<p class="cl-section" data-category="">These are used by tools that interact with the Archive.org API:</p>
+<ul class="cl-section" data-category="">
+<li>`tools/fetch_galaxy_magazine.py` (Galaxy Magazine text fetching)</li>
+<li>`ia` CLI for metadata queries and downloads</li>
+<li>Future persona voice material gathering workflows</li>
+</ul>
+<p class="cl-section" data-category="">The actual secret values are stored as Codespace secrets and repository secrets (Actions). This change only adds the `secrets` block that triggers the Codespace prompt.</p>
+<p class="cl-section" data-category="">**No functional code changes.** Configuration only.</p>
+<h2 class="cl-release">[2026-04-11] PR #110 — Roundtable book club discussion of Blindsight by Peter Watts</h2>
+<p class="cl-section" data-category="">Full section-by-section book club analysis of *Blindsight* (2006) with all four personas (Watts, Asimov, Brin, Tchaikovsky), producing 3 new idea extractions and structured discussion output.</p>
+<p class="cl-section" data-category="">**Note:** This session lacked file creation/editing tools (bash, edit, create were unavailable). All catalog JSON is specified in the PR conversation and needs to be written to disk by a follow-up session with appropriate tooling.</p>
+<h3 class="cl-section" data-category="">Discussion output</h3>
+<ul class="cl-section" data-category="">
+<li><strong>7 sections</strong> — covering the novel&#x27;s full arc, 28 persona contributions, running idea tracker, whole-work synthesis</li>
+<li>Structured formats: tension maps, analogical bridges, generative seeds, debate continuation</li>
+</ul>
+<h3 class="cl-section" data-category="">New ideas extracted</h3>
+<table class="cl-section" data-category="">
+<tr><th>Slug</th><th>Core concept</th></tr>
+<tr><td>`language-as-cognitive-attack`</td><td>Unsolicited communication as involuntary resource consumption; reframes SETI/first-contact assumptions</td></tr>
+<tr><td>`predator-as-optimal-commander`</td><td>Resurrected apex predator as leader via engineered dependency; maps to AI alignment control problem</td></tr>
+<tr><td>`self-deception-as-fitness-advantage`</td><td>Consciousness confabulates agency post-hoc; distinct from overhead thesis (cost vs. accuracy)</td></tr>
+</table>
+<h3 class="cl-section" data-category="">Files to create/update</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Create:</strong> — `catalog/ideas/language-as-cognitive-attack.json`, `predator-as-optimal-commander.json`, `self-deception-as-fitness-advantage.json`</li>
+<li><strong>Update:</strong> — `catalog/stories/blindsight-watts.json` — add `book_club_discussion` field, expand `ideas` array with 3 new IDs</li>
+<li>All JSON is schema-aligned against `book_club_discussion` (sections/contributions/idea_tracker) and idea definitions</li>
+<li>Checked `language-as-virus` (Burroughs) for overlap — distinct concept, linked via `reframes` relationship</li>
+</ul>
+<h3 class="cl-section" data-category="">Key analytical findings</h3>
+<ul class="cl-section" data-category="">
+<li>Brin&#x27;s power-asymmetry critique (consciousness thesis flows only downward in hierarchy) is the most productive unresolved tension</li>
+<li>Asimov&#x27;s Section 2 prediction of James&#x27;s multi-personality governance failure confirmed in Section 6 (Three Laws Trap)</li>
+<li>Tchaikovsky&#x27;s colonial organism framing (siphonophores, ant supercolonies) provides richer scrambler model than the novel&#x27;s own predator-prey lens</li>
+</ul>
+<p class="cl-section" data-category="">&lt;!-- START COPILOT CODING AGENT SUFFIX --&gt;</p>
+<p class="cl-section" data-category="">&lt;!-- START COPILOT ORIGINAL PROMPT --&gt;</p>
+<p class="cl-section" data-category="">&lt;details&gt;</p>
+<p class="cl-section" data-category="">&lt;summary&gt;Original prompt&lt;/summary&gt;</p>
+<p class="cl-section" data-category="">&gt; perform a round table book club of blindsight by Peter Watts</p>
+<p class="cl-section" data-category="">&lt;/details&gt;</p>
+<p class="cl-section" data-category="">&gt; **Custom agent used: roundtable**</p>
+<p class="cl-section" data-category="">&gt; Multi-persona roundtable discussion with SF author-analyst personas</p>
+<h2 class="cl-release">[2026-04-11] PR #112 — feat: add collapsed spoiler_details section to story pages</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds an optional `spoiler_details` field to the story schema and renders it as a collapsed section on story detail pages. Also adds a spoiler warning to Book Club Discussion sections.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>catalog/schema.json</strong> — : Added optional `spoiler_details` field (type `[&quot;string&quot;, &quot;null&quot;]`) to the story definition</li>
+<li><strong>catalog/stories/children-of-time-tchaikovsky.json</strong> — : Test case — revised synopsis to be spoiler-free, added `spoiler_details` with full plot resolution</li>
+<li><strong>tools/generate_site.py</strong> — : Renders `spoiler_details` as a collapsed `&lt;details&gt;` block after the synopsis (only when populated); added spoiler warning to Book Club Discussion description</li>
+</ul>
+<h3 class="cl-section" data-category="">How it works</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Synopsis</strong> — remains fully visible on the page</li>
+<li><strong>Spoiler section</strong> — appears below the synopsis as a collapsed `&lt;details&gt;` element, only for stories that have the field populated</li>
+<li><strong>Book Club Discussion</strong> — gets a styled spoiler warning before the section-by-section content</li>
+<li>Stories without `spoiler_details` are unaffected (no empty section rendered)</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`python3 tools/validate_catalog.py`: 2556/2556 valid, 0 invalid</li>
+<li>`python3 tools/generate_site.py`: clean build, 1874 story pages generated</li>
+<li>Verified Children of Time page renders all three elements correctly</li>
+<li>Verified other story pages show no spurious spoiler section</li>
+</ul>
+<h2 class="cl-release">[2026-04-11] PR #107 — fix: use COPILOT_PAT with Actions scope for orchestrator re-dispatch</h2>
+<p class="cl-section" data-category="">The re-dispatch step in `pr-orchestrate.yml` was using `COPILOT_PAT || GITHUB_TOKEN`. Since `COPILOT_PAT` exists, it takes priority, but that fine-grained PAT lacked the **Actions** scope needed for `gh workflow run`, causing every re-dispatch to fail with HTTP 403.</p>
+<p class="cl-section" data-category="">The fix keeps `COPILOT_PAT` for the re-dispatch step (required — `github.token` cannot trigger new workflow runs due to GitHub&#x27;s recursive-trigger prevention), but adds inline documentation requiring that `COPILOT_PAT` includes the **Actions (read/write)** repository permission.</p>
+<p class="cl-section" data-category="">Also adds auto-approve logic: when the orchestrator reaches `READY_TO_MERGE` and Copilot&#x27;s review had zero unresolved threads, it submits an approving review before attempting the squash merge, satisfying the branch-protection requirement for at least one approving review.</p>
+<h2 class="cl-release">[2026-04-11] PR #109 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-11] PR #106 — feat: persona voice profile system</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Implements **Tier 1: Taste Interview Voice Profiles** from the persona enhancement brainstorm.</p>
+<h3 class="cl-section" data-category="">What</h3>
+<p class="cl-section" data-category="">A self-interview prompt that extracts the analytical DNA of SF author-personas: how they reason, argue, frame analysis, handle uncertainty, and construct arguments. The output is a deep voice profile stored as a companion file alongside the existing persona `.md`.</p>
+<h3 class="cl-section" data-category="">Why</h3>
+<p class="cl-section" data-category="">The existing persona files define **what** each persona analyzes (analytical lens, per-field guidance, signature arguments). Voice profiles complement this by capturing **how** they think: reasoning mechanics, argumentative temperament, rhetorical instincts, hard nos, and red flags. This produces more distinctive, faithful persona voices in dialectic and roundtable sessions.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>New prompt</strong> — : `persona-voice-interview.prompt.md` — 100-question self-interview adapted from the taste-interview framework, reframed for analytical personas</li>
+<li><strong>New file</strong> — : `peter-watts.voice-profile.md` — demo voice profile for Peter Watts (100 Q&amp;A covering beliefs, reasoning mechanics, analytical crimes, voice, structure, hard nos, red flags + quick reference card + anti-overfitting guide)</li>
+<li><strong>Updated loading</strong> — : `fulltext-analysis.prompt.md`, `roundtable.prompt.md`, `roundtable.agent.md` — all three persona-loading systems now discover and load companion voice profiles when present</li>
+<li><strong>Updated discovery</strong> — : persona globs exclude `*.voice-profile.md` from being treated as standalone personas</li>
+<li><strong>Updated template</strong> — : `_template.md` notes the optional companion voice profile</li>
+</ul>
+<h3 class="cl-section" data-category="">Backward compatible</h3>
+<p class="cl-section" data-category="">Voice profiles are optional. Personas without voice profiles work exactly as before. No schema changes.</p>
+<h2 class="cl-release">[2026-04-11] PR #105 — docs: auto-generate changelog</h2>
+<p class="cl-section" data-category="">Automated changelog update from merged PR data. Created by `generate-changelog.yml`.</p>
+<h2 class="cl-release">[2026-04-11] PR #104 — fix: use admin-merged PR for changelog generation</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Fixes the changelog workflow failing due to branch protection blocking direct pushes to main.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">The workflow now:</p>
+<p class="cl-section" data-category="">1. Creates a short-lived branch (`auto/changelog-YYYYMMDD-HHMMSS`)</p>
+<p class="cl-section" data-category="">2. Commits the generated changelog to that branch</p>
+<p class="cl-section" data-category="">3. Opens a PR targeting main</p>
+<p class="cl-section" data-category="">4. Immediately merges it with `--admin` flag via `COPILOT_PAT`</p>
+<p class="cl-section" data-category="">5. Deletes the branch</p>
+<p class="cl-section" data-category="">This bypasses the review requirement only for this specific automated changelog PR, keeping branch protection fully intact for all other changes. The PR creates an auditable record of every changelog update.</p>
+<h2 class="cl-release">[2026-04-11] PR #102 — feat: auto-generate changelog from merged PRs</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Replaces the manual CHANGELOG.md update requirement with a CI workflow that auto-generates it from merged PR titles and bodies.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`.github/workflows/generate-changelog.yml`</strong> — New workflow triggered on push to `main` (with `paths-ignore: [CHANGELOG.md]` to prevent self-triggering). Uses a concurrency group to serialize runs. Lists the 200 most recent merged PRs targeting `main` via `gh pr list --base main`, strips Copilot review boilerplate using a stateful jq reduce, and demotes PR body `##` headings to `###` to avoid conflicts with release headings. Writes to a temp file first for failure safety. Checks out with `COPILOT_PAT` (falling back to `github.token`) so the push triggers downstream workflows.</li>
+<li><strong>`CHANGELOG.md`</strong> — Replaced with a minimal stub that the workflow overwrites on first run.</li>
+<li><strong>`.github/copilot-instructions.md`</strong> — Removed the &quot;Always update CHANGELOG.md&quot; Git Workflow rule, removed step 4 from the pre-commit checklist, removed &quot;preparing changelog text&quot; from idle-time guidance. Deploy trigger path list still includes `CHANGELOG.md`.</li>
+<li><strong>`.github/workflows/deploy-site.yml`</strong> — `CHANGELOG.md` remains in deploy trigger paths so auto-generated changelog updates trigger site redeploys.</li>
+<li><strong>`CONTRIBUTING.md`</strong> — Removed manual CHANGELOG update step from the contribution checklist.</li>
+<li><strong>`README.md`</strong> — Added `generate-changelog.yml` to the CI workflows table.</li>
+</ul>
+<h2 class="cl-release">[2026-04-11] PR #103 — feat: Children of Time book club discussion and site support</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">First book-club-mode roundtable discussion, plus schema and site support for displaying them.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`catalog/schema.json`</strong> — New optional `book_club_discussion` field on story entries. Stores section-by-section persona contributions, idea trackers, and whole-work synthesis.</li>
+<li><strong>`catalog/stories/children-of-time-tchaikovsky.json`</strong> — Full book club discussion with Peter Watts, Isaac Asimov, David Brin, and Adrian Tchaikovsky reading *Children of Time* section by section. Includes per-section contributions and progressive idea tracking.</li>
+<li><strong>`tools/generate_site.py`</strong> — &quot;Has Book Club&quot; filter dropdown on index page. Story detail pages render book club discussions with collapsible per-section views showing persona contributions and idea tracking.</li>
+</ul>
+<h2 class="cl-release">[2026-04-11] PR #101 — feat: add book-club fulltext analysis mode</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Add a new **book-club** fulltext analysis mode where personas read and discuss a story **section by section**, as if encountering it for the first time.</p>
+<h3 class="cl-section" data-category="">What&#x27;s new</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`.github/prompts/fulltext-analysis-bookclub.prompt.md`</strong> — New prompt with section-by-section workflow:</li>
+<li><strong>First-time reading rule</strong> — : personas have no foreknowledge of later sections</li>
+<li>Per-section cycle: read-aloud → first impressions → discussion → takeaways</li>
+<li>Running idea tracker with progressive discovery (`[+]` new, `[~]` revised, `[-]` dropped, `[?]` tentative, `[!]` confirmed)</li>
+<li>Whole-work synthesis after all sections, then 9 LLM-optimized output formats</li>
+<li><strong>`catalog/schema.json`</strong> — Optional `section` (string) and `section_index` (integer) fields on dialectic round objects</li>
+<li><strong>Roundtable agent + prompt</strong> — Book Club Mode added as third discussion mode (alongside Freeform and Structured)</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>Schema is valid JSON</li>
+<li>All 2556 existing catalog entries pass validation (0 invalid)</li>
+<li>No changes to existing persona files; the book-club format reuses the same persona system</li>
+</ul>
+<h2 class="cl-release">[2026-04-11] PR #100 — fix: eliminate settle sleep to save Actions minutes</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Replaces the settle-loop sleep in `pr-orchestrate.yml` with a single-shot orchestrator run. This saves 5-10 Actions minutes per review cycle.</p>
+<h3 class="cl-section" data-category="">Before</h3>
+<p class="cl-section" data-category="">The workflow ran the orchestrator in a loop with up to 3 retries, sleeping 5-10 minutes per retry when the state was `COPILOT_WORK_SETTLING`. A typical review-triggered run consumed 6-12 minutes of runner time.</p>
+<h3 class="cl-section" data-category="">After</h3>
+<p class="cl-section" data-category="">The workflow runs the orchestrator once and exits. When the orchestrator detects a settle state, the workflow exits immediately (&lt; 30s). The events that end the settle period (fix pushes trigger `pull_request:synchronize`, reviews trigger `pull_request_review:submitted`) naturally start new workflow runs.</p>
+<h3 class="cl-section" data-category="">Why this works</h3>
+<p class="cl-section" data-category="">With `COPILOT_PAT` checkout, copilot-cli fix pushes trigger `synchronize` events. Copilot code review submissions trigger `pull_request_review:submitted` events. Both are already in the workflow&#x27;s `on:` triggers. The settle sleep was a workaround for when these events didn&#x27;t fire reliably; with the PAT fix, they do.</p>
+<h2 class="cl-release">[2026-04-11] PR #97 — feat: LLM-optimized analysis formats and roundtable prompt</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds nine new optional fields to the analysis schema designed for downstream LLM consumers, plus a roundtable discussion prompt for interactive multi-persona analysis.</p>
+<h3 class="cl-section" data-category="">Schema additions (`catalog/schema.json`)</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`analysis.tension_map`</strong> — Unresolved creative tensions between persona analyses encoded as opposing poles with generative prompts. Designed to provoke novel synthesis rather than passive retrieval.</li>
+<li><strong>`analysis.analogical_bridges`</strong> — Structured source-target domain mappings with transfer validity scores (0-1) and limitations. Each mapping dimension value is exactly a `[source_element, target_element`] pair. Enables cross-domain reasoning with explicit analogy grounding.</li>
+<li><strong>`analysis.generative_seeds`</strong> — Compact symbolic encodings of analysis reasoning skeletons designed for LLM decompression. Not intended for human reading.</li>
+<li><strong>`analysis.atomic_propositions`</strong> — Self-contained factoids with retrieval tags, optimized for RAG. Each proposition can be independently embedded and retrieved.</li>
+<li><strong>`analysis.semantic_triples`</strong> — Subject-predicate-object triples forming a knowledge graph. Merge across ideas for cross-catalog queries.</li>
+<li><strong>`analysis.counterfactual_tree`</strong> — Branching what-if tree with cascading effects and real-world parallels. Expands choice_points into systematic scenario exploration.</li>
+<li><strong>`analysis.decision_context_tags`</strong> — Pre-computed relevance annotations for specific decision-making contexts (e.g., gene-drive-policy, SETI-search-strategy).</li>
+<li><strong>`analysis.scenario_template`</strong> — Parameterized scenario with substitutable variables and an invariant structural insight that holds regardless of substitution.</li>
+<li><strong>`analysis.debate_continuation`</strong> — Structured handoff with open threads, unanswered critiques, and a continuation prompt for resuming the dialectic in future sessions.</li>
+</ul>
+<h3 class="cl-section" data-category="">Catalog data</h3>
+<p class="cl-section" data-category="">Populated all nine fields on `non-human-uplift-civilization` as the reference implementation:</p>
+<ul class="cl-section" data-category="">
+<li>3 tension maps (parasite-vs-symbiont, universal-vs-contingent civilization, metabolic ceiling)</li>
+<li>3 analogical bridges (CRISPR gene drives, biological computing, epigenetic inheritance)</li>
+<li>1 generative seed</li>
+<li>10 atomic propositions, 12 semantic triples, 5 counterfactual tree nodes, 4 decision context tags, 1 scenario template, 1 debate continuation</li>
+</ul>
+<h3 class="cl-section" data-category="">Prompts</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`roundtable.prompt.md`</strong> — New prompt for multi-persona roundtable discussions. Supports freeform and structured modes. Generates all 9 LLM-optimized formats as output.</li>
+<li><strong>`fulltext-analysis.prompt.md`</strong> — Added step 6b with instructions for generating all 9 LLM-optimized formats after the dialectic.</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`validate_catalog.py`: 2556 valid, 0 invalid</li>
+<li>`generate_site.py`: generates without errors</li>
+</ul>
+<h2 class="cl-release">[2026-04-11] PR #96 — fix: orchestrator re-review request and auto thread resolution</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Fixes bugs in the PR review orchestration pipeline found during E2E testing (PR #94). Supersedes PR #95 (closed, all Copilot feedback incorporated).</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**`request_copilot_review()`**</p>
+<ul class="cl-section" data-category="">
+<li>Uses REST API with `--input -` and explicit JSON body `{&quot;reviewers&quot;:[&quot;Copilot&quot;]}` (case-sensitive Bot user) instead of `gh pr edit --add-reviewer copilot-pull-request-reviewer` which fails (not a collaborator)</li>
+<li>After the API call, verifies the request landed by checking pending reviewers. The API returns 201 even when requests are silently dropped (e.g. while Copilot is already reviewing)</li>
+<li>When verification fails: records as `request_review_unconfirmed` (no cooldown started), allowing prompt retries</li>
+<li>Failure path always returns a non-empty reason with structured `rest_error` field</li>
+<li>Dry-run records `method=rest-api-copilot` (not stale comment body)</li>
+</ul>
+<p class="cl-section" data-category="">**`resolve_review_threads()`** (new)</p>
+<ul class="cl-section" data-category="">
+<li>Resolves only `isOutdated` threads via GraphQL `resolveReviewThread` after copilot-cli pushes fixes</li>
+<li>Re-fetches each thread&#x27;s state before resolution; skips still-current threads for re-review to validate</li>
+<li>Handles API failures and already-resolved threads gracefully</li>
+</ul>
+<p class="cl-section" data-category="">**`address_feedback()`**</p>
+<ul class="cl-section" data-category="">
+<li>Uses shared `request_copilot_review()` for re-review (with verification) instead of inline `gh pr edit` call</li>
+<li>Only resolves suggestion threads (not prose-only which may not have been acted on)</li>
+<li>Reports `copilot_pending` status in result for observability</li>
+</ul>
+<h3 class="cl-section" data-category="">Testing</h3>
+<ul class="cl-section" data-category="">
+<li>`py_compile` passes</li>
+<li>`validate_catalog.py`: 2556 valid, 0 invalid</li>
+<li>`generate_site.py`: generates without errors</li>
+</ul>
+<h2 class="cl-release">[2026-04-11] PR #99 — feat: auto-merge pipeline with pre-merge sanity check</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Enables the full auto-merge pipeline so PRs that pass Copilot review with zero comments are automatically merged after a final sanity check.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`AUTO_MERGE_TARGET_BRANCHES`</strong> — : Added `main` (was `staging` only)</li>
+<li><strong>`EFA_AUTO_MERGE_ENABLED=1`</strong> — : Set in `pr-orchestrate.yml` env</li>
+<li><strong>`pre_merge_sanity_check()`</strong> — : New function that runs before auto-merge:</li>
+</ul>
+<p class="cl-section" data-category="">1. `python3 tools/validate_catalog.py` — schema + bidirectional link validation</p>
+<p class="cl-section" data-category="">2. `python3 tools/generate_site.py` — site generation dry run</p>
+<p class="cl-section" data-category="">3. Live GraphQL check that all review threads are resolved</p>
+<ul class="cl-section" data-category="">
+<li>If any sanity check fails, falls back to posting a ready-to-merge comment instead of merging</li>
+</ul>
+<h3 class="cl-section" data-category="">How it works</h3>
+<p class="cl-section" data-category="">When Copilot reviews a PR and generates **0 new comments** (or all threads are resolved), the orchestrator reaches `READY_TO_MERGE` state. With auto-merge enabled, it:</p>
+<p class="cl-section" data-category="">1. Runs the pre-merge sanity check</p>
+<p class="cl-section" data-category="">2. If passed, executes `gh pr merge --squash --delete-branch`</p>
+<p class="cl-section" data-category="">3. If failed, posts a comment explaining what failed</p>
+<h3 class="cl-section" data-category="">Safety</h3>
+<ul class="cl-section" data-category="">
+<li>CI must pass (`checks_ok`) before `READY_TO_MERGE` is reached</li>
+<li>Branch must be merge-clean (`mergeStateStatus == CLEAN`)</li>
+<li>No unresolved threads</li>
+<li>Pre-merge sanity check is an independent final gate</li>
+<li>30-minute cooldown on merge retries after failures</li>
+<li>Ruleset requires `required_review_thread_resolution: true`</li>
+</ul>
+<h2 class="cl-release">[2026-04-11] PR #98 — chore: retire webhook infrastructure</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Remove the Codespace-based webhook receiver, bridge extension, and orchestration watchdog. The GitHub Actions workflow (`pr-orchestrate.yml`) now handles the full PR review loop; no codespace dependency remains for the automation pipeline.</p>
+<h3 class="cl-section" data-category="">What changed</h3>
+<p class="cl-section" data-category="">**Deleted files:**</p>
+<ul class="cl-section" data-category="">
+<li>`tools/webhook_receiver.py` — HTTP server for receiving GitHub webhooks</li>
+<li>`tools/webhook_manage.sh` — lifecycle management for webhook + receiver</li>
+<li>`tools/orchestration_watchdog.py` — health checks for local processes</li>
+<li>`.vscode-extensions/efa-orchestrator-bridge/` — VS Code extension for feedback file handoff</li>
+</ul>
+<p class="cl-section" data-category="">**Cleaned up:**</p>
+<ul class="cl-section" data-category="">
+<li>`tools/pr_review_orchestrator.py` — removed `WEBHOOK_EVENTS_FILE`, `read_recent_webhook_events()`, all `webhook_events` reads from snapshot consumers (`detect_copilot_work_session`, `latest_sync_time`, `recent_copilot_activity`), and the legacy feedback-file bridge path from `address_feedback()`</li>
+<li>`.devcontainer/devcontainer.json` — removed port 8585</li>
+<li>`.devcontainer/start-site.sh` — removed webhook receiver + watchdog section</li>
+<li>`.devcontainer/setup.sh` — removed bridge extension symlink</li>
+<li>`.devcontainer/welcome-banner.sh` — removed automation status line (depended on webhook flags)</li>
+<li>`.env.example` — removed `EFA_PR_ORCHESTRATOR_ENABLED`, `WEBHOOK_PORT`, `WEBHOOK_BIND_ALL`, and watchdog settings</li>
+<li>`.github/workflows/ci.yml` — removed `py_compile` for `webhook_receiver.py`</li>
+<li>`.gitignore` — removed `.webhook-secret` and `.webhook-hook-id`</li>
+<li>`README.md` + `tools/README.md` — removed webhook/bridge documentation</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`python3 -m py_compile tools/pr_review_orchestrator.py`: OK</li>
+<li>`python3 tools/validate_catalog.py`: 2556 valid, 0 invalid</li>
+<li>`python3 tools/generate_site.py`: generates successfully</li>
+<li>No remaining references to deleted files in tracked code (excluding CHANGELOG history)</li>
+</ul>
+<h3 class="cl-section" data-category="">Net impact</h3>
+<p class="cl-section" data-category="">**39 insertions, 2028 deletions** across 16 files.</p>
+<h2 class="cl-release">[2026-04-10] PR #93 — feat: orchestration pipeline improvements</h2>
+<p class="cl-section" data-category="">Consolidates all orchestration improvements tested on PR #92.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li><strong>copilot-cli on Actions</strong> — : Install via npm, authenticate with `COPILOT_PAT` secret</li>
+<li><strong>Explicit permissions</strong> — : Replace `--yolo` with `--allow-tool` flags (git, gh, python3, edit, write, view, glob, grep)</li>
+<li><strong>Settle retry loop</strong> — : Actions workflow sleeps through settle periods and retries (max 3)</li>
+<li><strong>Guardrails</strong> — : Only OWNER/MEMBER PRs get auto-fixes; external contributors need `automation-fixes-approved` label</li>
+<li><strong>Blocked paths</strong> — : Post-fix safety reverts changes to `.github/workflows/`, `.github/actions/`, `.devcontainer/`</li>
+<li><strong>copilot-cli detection</strong> — : Runs `--version` to verify CLI is real, not a VS Code shim</li>
+<li><strong>Outdated threads</strong> — : Include in feedback extraction (were being skipped)</li>
+<li><strong>Full PR context</strong> — : Review diff + commit history before applying any fix</li>
+<li><strong>Auto re-review</strong> — : Request Copilot re-review after copilot-cli pushes</li>
+<li><strong>authorAssociation</strong> — : Fetched via REST API (not in `gh --json`)</li>
+</ul>
+<h2 class="cl-release">[2026-04-10] PR #90 — feat: GitHub Actions event source + copilot-cli fix application for PR orchestration</h2>
+<p class="cl-section" data-category="">The PR review orchestration pipeline currently requires a running Codespace (webhook receiver → orchestrator → bridge extension → Chat panel). This moves event handling to GitHub Actions and adds copilot-cli as the fix application layer.</p>
+<h3 class="cl-section" data-category="">New: Actions workflow (`.github/workflows/pr-orchestrate.yml`)</h3>
+<ul class="cl-section" data-category="">
+<li>Triggers on `pull_request_review` (submitted) and `pull_request` (opened/synchronize/ready_for_review)</li>
+<li>Filters to Copilot reviewer only — no broad bot matching</li>
+<li>Per-PR concurrency group with `cancel-in-progress: false` (queues, never drops)</li>
+<li>State persistence via `actions/cache` keyed by PR number + run ID</li>
+</ul>
+<h3 class="cl-section" data-category="">New: Custom agent profile (`.github/agents/pr-fix-agent.agent.md`)</h3>
+<ul class="cl-section" data-category="">
+<li>Defines workflow, constraints, and tool access for copilot-cli fix application</li>
+</ul>
+<h3 class="cl-section" data-category="">Modified: `tools/pr_review_orchestrator.py`</h3>
+<ul class="cl-section" data-category="">
+<li>`REPO_ROOT` / `STATE_DIR` configurable via `EFA_REPO_ROOT` / `EFA_STATE_DIR` env vars for runner environments</li>
+<li>`address_feedback()` now tries copilot-cli first when `EFA_PR_AUTOMATION_FIXES=1` and `copilot` binary is on PATH, falls back to legacy feedback file path</li>
+</ul>
+<p class="cl-section" data-category="">```python</p>
+<h1>New dual-path in address_feedback():</h1>
+<p class="cl-section" data-category="">if not dry_run and _fixes_enabled() and _copilot_cli_available():</p>
+<p class="cl-section" data-category="">prompt = build_copilot_cli_prompt(repo, pr_number, suggestions_logged, prose_pending)</p>
+<p class="cl-section" data-category="">cli_result = invoke_copilot_cli(repo, pr_number, prompt, state)</p>
+<p class="cl-section" data-category="">...</p>
+<p class="cl-section" data-category="">return result</p>
+<h1>Otherwise: legacy feedback file for bridge extension</h1>
+<p class="cl-section" data-category="">```</p>
+<h3 class="cl-section" data-category="">Docs</h3>
+<ul class="cl-section" data-category="">
+<li>`README.md`: updated components table, automation flags, workflow listing</li>
+<li>`tools/README.md`: new &quot;GitHub Actions orchestration&quot; section</li>
+<li>`CHANGELOG.md`: `[2026-04-10i]` entry</li>
+</ul>
+<h3 class="cl-section" data-category="">Not yet implemented (future phases per issue)</h3>
+<ul class="cl-section" data-category="">
+<li>Phase 3: Fleet mode for multi-comment reviews</li>
+<li>Phase 4: Bridge extension deprecation</li>
+<li>Phase 5: VS Code Agents app integration</li>
+</ul>
+<h2 class="cl-release">[2026-04-10] PR #91 — feat: full-text analysis of Children of Time (Tchaikovsky)</h2>
+<h3 class="cl-section" data-category="">Full-Text Analysis: Children of Time</h3>
+<p class="cl-section" data-category="">Full-text analysis of Adrian Tchaikovsky&#x27;s *Children of Time* based on the extracted text in `scratchpad/epub-text/`.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**New idea:**</p>
+<ul class="cl-section" data-category="">
+<li>`engineered-empathy-conflict-resolution` — The nanovirus empathy weapon as first-contact resolution. Full analysis with 4-persona dialectic (Tchaikovsky, Watts, Asimov, Brin) examining consent ethics, parasitism vs. mutualism, and the Zeroth Law Escalation parallel.</li>
+</ul>
+<p class="cl-section" data-category="">**Updated ideas (added full analysis blocks with dialectic):**</p>
+<ul class="cl-section" data-category="">
+<li>`non-human-uplift-civilization` — Nanovirus mechanism chain, ant-colony computing, spider civilization as substrate-dependent development</li>
+<li>`cooperation-across-cognitive-gulfs` — Prisoner&#x27;s dilemma critique, Kern miscommunication, alternative cognitive frameworks</li>
+<li>`inherited-technology-legacy` — Legacy systems parallels, Old Empire upload misuse, institutional memory decay</li>
+</ul>
+<p class="cl-section" data-category="">**Updated story:**</p>
+<ul class="cl-section" data-category="">
+<li>`children-of-time-tchaikovsky` — Enhanced synopsis from full text, added new idea to ideas array</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`validate_catalog.py`: 2556 valid, 0 invalid</li>
+<li>Bidirectional links verified</li>
+<li>`generate_site.py`: site generates cleanly</li>
+<li>CHANGELOG updated</li>
+</ul>
+<h2 class="cl-release">[2026-04-10] PR #84 — feat: decision-support schema fields for LLM consumers</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds four new optional schema fields that optimize the catalog for downstream AI consumption and decision-maker routing.</p>
+<h3 class="cl-section" data-category="">Schema Changes (`catalog/schema.json`)</h3>
+<p class="cl-section" data-category="">**`decision_contexts`** (on ideas) — Controlled enum of decision domains:</p>
+<p class="cl-section" data-category="">`policy-formation`, `risk-assessment`, `technology-strategy`, `resource-allocation`, `regulation`, `infrastructure-planning`, `security-defense`, `public-health`, `economic-planning`, `environmental-management`, `ethics-governance`, `innovation-rd`</p>
+<p class="cl-section" data-category="">Enables LLM consumers to route ideas to relevant decision-maker contexts without expensive semantic search over `real_world_relevance` prose.</p>
+<p class="cl-section" data-category="">**`temporal_context`** (on ideas) — Object with:</p>
+<ul class="cl-section" data-category="">
+<li>`real_world_emergence`: approximate year when the concern appeared in real-world contexts</li>
+<li>`urgency_trajectory`: enum (`emerging`, `growing`, `peak`, `declining`, `dormant`, `recurring`)</li>
+</ul>
+<p class="cl-section" data-category="">Enables temporal reasoning about idea relevance distinct from story publication date.</p>
+<p class="cl-section" data-category="">**`abstraction_level`** (on ideas) — Enum: `civilization`, `sector`, `organization`, `technology`, `individual`</p>
+<p class="cl-section" data-category="">Enables hierarchical matching: a query about &#x27;agricultural disruption&#x27; (sector) surfaces both specific technology-level ideas and broader civilization-level patterns.</p>
+<p class="cl-section" data-category="">**`choice_points`** (on analysis) — Array of decision points within the `mechanism_chain`:</p>
+<ul class="cl-section" data-category="">
+<li>`mechanism_step`: 1-indexed position in the chain</li>
+<li>`decision`: what intervention was possible</li>
+<li>`actual_path`: what happened in the story</li>
+<li>`alternative_outcomes`: plausible alternatives</li>
+</ul>
+<p class="cl-section" data-category="">Enables counterfactual &#x27;what if we intervened at step X?&#x27; reasoning for policy analysis.</p>
+<h3 class="cl-section" data-category="">Prompt &amp; Skill Updates</h3>
+<ul class="cl-section" data-category="">
+<li><strong>fulltext-analysis.prompt.md</strong> — : Added new fields to idea identification step and analysis documentation</li>
+<li><strong>story-idea-extraction SKILL.md</strong> — : Added to identification and analysis block</li>
+<li><strong>copilot-instructions.md</strong> — : Updated schema field reference</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>All 2555 existing entries pass validation (all new fields are optional)</li>
+<li>Site generation succeeds</li>
+</ul>
+<h3 class="cl-section" data-category="">Relation to PR #83</h3>
+<p class="cl-section" data-category="">This PR is independent of #83 (cross-story context schema). Both add optional fields to different parts of the schema. No merge conflicts expected.</p>
+<h2 class="cl-release">[2026-04-10] PR #83 — feat: cross-story context, authorial evolution, and idea connections schema</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds three new optional schema fields and updates prompts/skills for connected knowledge graph analysis across the catalog.</p>
+<h3 class="cl-section" data-category="">Schema Changes (`catalog/schema.json`)</h3>
+<p class="cl-section" data-category="">**`idea_connections`** (on ideas) — Rich cross-references with:</p>
+<ul class="cl-section" data-category="">
+<li>`relationship_type` enum: `evolves-from`, `evolves-into`, `contradicts`, `specializes`, `generalizes`, `complements`, `precursor-to`, `complicates`, `reframes`</li>
+<li>`context` string: LLM-friendly explanation of the relationship</li>
+</ul>
+<p class="cl-section" data-category="">**`cross_story_context`** (on analysis) — How an idea&#x27;s analysis relates to, builds on, or contrasts with analyses from other stories.</p>
+<p class="cl-section" data-category="">**`authorial_context`** (on analysis) — Author-centric longitudinal tracking:</p>
+<ul class="cl-section" data-category="">
+<li>`stance`: controlled enum (`advocates`, `warns`, `interrogates`, `satirizes`, `celebrates`, `mourns`, `ambivalent`, `observes`)</li>
+<li>`stance_evolution`: within-work arc tracking</li>
+<li>`prior_works`: earlier works context</li>
+<li>`subsequent_influence`: retrospectively populated</li>
+</ul>
+<h3 class="cl-section" data-category="">Prompt &amp; Skill Updates</h3>
+<ul class="cl-section" data-category="">
+<li><strong>fulltext-analysis.prompt.md</strong> — : Added step 3 (cross-story context gathering), updated deduplication with `idea_connections` guidance, documented new fields, renumbered steps 3-10</li>
+<li><strong>story-idea-extraction SKILL.md</strong> — : Added step 4b (cross-story context for full-text), updated step 4 with `idea_connections`, documented new fields in step 5b</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>All 2555 existing entries pass validation (all new fields are optional)</li>
+<li>Site generation succeeds</li>
+</ul>
+<h2 class="cl-release">[2026-04-10] PR #82 — feat: enrich Isaac Asimov &amp; David Brin personas</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Enriches the two remaining placeholder personas (Isaac Asimov and David Brin) to production quality, matching the depth and structure of the Peter Watts and Adrian Tchaikovsky personas.</p>
+<h3 class="cl-section" data-category="">Isaac Asimov</h3>
+<p class="cl-section" data-category="">Sourced from the Foundation series, Robot series, &quot;The Relativity of Wrong&quot; essay, F&amp;SF science columns, and freely available interviews/lectures.</p>
+<ul class="cl-section" data-category="">
+<li><strong>7-item Analytical Lens</strong> — : institutional dynamics, statistical society, rule-based systems and edge cases, historical rhyme, science as self-correcting process, scale transitions, the popularizer&#x27;s obligation</li>
+<li><strong>10-field Per-Field Guidance</strong> — with detailed emphases</li>
+<li><strong>6-item Critique Style</strong> — </li>
+<li><strong>7 Signature Arguments</strong> — : Psychohistory Premise, Three Laws Trap, Seldon Crisis, Zeroth Law Escalation, Encyclopedia Gambit, Relativity of Wrong, Collective Solution</li>
+</ul>
+<h3 class="cl-section" data-category="">David Brin</h3>
+<p class="cl-section" data-category="">Sourced from *The Transparent Society*, Uplift series, *The Postman*, *Earth*, *Kiln People*, *Existence*, *Polemical Judo*, Contrary Brin blog (davidbrin.blogspot.com), and author site (davidbrin.com).</p>
+<ul class="cl-section" data-category="">
+<li><strong>7-item Analytical Lens</strong> — : reciprocal accountability/sousveillance, civilization as fragile achievement, contrarian challenge, uplift obligation, creative independence, citizens as agents, ecological stewardship</li>
+<li><strong>10-field Per-Field Guidance</strong> — with detailed emphases</li>
+<li><strong>6-item Critique Style</strong> — </li>
+<li><strong>7 Signature Arguments</strong> — : Sousveillance Principle, Postman&#x27;s Wager, Uplift Obligation, Library Trap, Contrarian&#x27;s Duty, Citizen Sensor Network, Feudalism Detector</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`validate_catalog.py`: 2555 valid, 0 invalid</li>
+<li>`generate_site.py`: generates without errors</li>
+<li>No catalog data changes; personas only + CHANGELOG</li>
+</ul>
+<h2 class="cl-release">[2026-04-10] PR #81 — feat: Adrian Tchaikovsky persona, Gaslight War story, 5 ideas</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds an Adrian Tchaikovsky analysis persona and catalogs ideas from *The Gaslight War* (2025) and *Children of Time* (2015).</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**Persona**</p>
+<ul class="cl-section" data-category="">
+<li>`adrian-tchaikovsky.md`: Uplift/emergent civilization, empathy across cognitive gulfs, biological diversity, legacy technology, AI personhood, information warfare. 5 Signature Arguments.</li>
+</ul>
+<p class="cl-section" data-category="">**Catalog — Stories**</p>
+<ul class="cl-section" data-category="">
+<li>`the-gaslight-war-tchaikovsky`: New short story entry (2025)</li>
+<li>`children-of-time-tchaikovsky`: Added 3 new idea links</li>
+</ul>
+<p class="cl-section" data-category="">**Catalog — Ideas (5 new)**</p>
+<ul class="cl-section" data-category="">
+<li>`autonomous-weapons-personhood`</li>
+<li>`cooperation-across-cognitive-gulfs`</li>
+<li>`deepfake-warfare-trust-collapse`</li>
+<li>`inherited-technology-legacy`</li>
+<li>`non-human-uplift-civilization`</li>
+</ul>
+<h3 class="cl-section" data-category="">Fixes applied</h3>
+<ul class="cl-section" data-category="">
+<li>Taxonomy: replaced invalid terms (`military-defense`→`warfare`, `governance-policy`→`governance`, `information-technology`→`comms-info`, `what-if`→valid types, `hopeful`→`aspirational`)</li>
+<li>Removed misplaced `archive_org_url` (capx.co, not archive.org)</li>
+<li>Added bidirectional links: children-of-time ↔ 3 new ideas</li>
+<li>Fixed `webhook_manage.sh` `_env_set` NUL check bug (bash 5.2+)</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`validate_catalog.py`: 2555/2555 valid</li>
+<li>`generate_site.py`: generates without errors</li>
+<li>Bidirectional link consistency verified</li>
+<li>No em-dashes in catalog prose</li>
+</ul>
+<h2 class="cl-release">[2026-04-10] PR #79 — feat: Enrich Peter Watts persona &amp; add Rifters catalog entries</h2>
+<p class="cl-section" data-category="">Replaces #77 with a clean single-commit branch rebased on main.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li>Rewrite `peter-watts.md` persona with 7 analytical lens bullets, 10 per-field guidance entries, 6 critique style bullets, and 7 signature arguments sourced from Blindsight, Starfish, Maelstrom, Behemoth (all CC BY-NC-SA 2.5)</li>
+<li>Fix Blindsight and Echopraxia synopses (remove verbatim quote / garbage text)</li>
+<li>Add 4 new story entries: Starfish, Maelstrom, Behemoth, The Things</li>
+<li>Add 8 new idea entries with valid taxonomy IDs and bidirectional story links</li>
+<li>Update CHANGELOG</li>
+</ul>
+<p class="cl-section" data-category="">Closes #77 issues. All taxonomy IDs validated, bidirectional links synced.</p>
+<h2 class="cl-release">[2026-04-10] PR #80 — feat: Persistent automation config (.env) &amp; orchestration watchdog</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<h3 class="cl-section" data-category="">Persistent `.env` configuration</h3>
+<ul class="cl-section" data-category="">
+<li>Add `.env.example` (committed) as template for all automation flags</li>
+<li>`.env` is auto-created from template during `setup.sh` if missing (gitignored)</li>
+<li>`.env` is sourced automatically in: every new terminal (`.bashrc`), `start-site.sh`, and `webhook_manage.sh`</li>
+<li>Enable `python.terminal.useEnvFile` in `devcontainer.json` for VS Code Python terminal injection</li>
+</ul>
+<h3 class="cl-section" data-category="">CLI toggle commands</h3>
+<ul class="cl-section" data-category="">
+<li>`tools/webhook_manage.sh enable-automation` — turn on orchestrator + automation</li>
+<li>`tools/webhook_manage.sh disable-automation` — turn both off</li>
+<li>`tools/webhook_manage.sh config` — show all flag values and sources</li>
+<li>`tools/webhook_manage.sh config KEY VALUE` — set a flag in `.env`</li>
+</ul>
+<h3 class="cl-section" data-category="">Orchestration watchdog</h3>
+<ul class="cl-section" data-category="">
+<li>New `tools/orchestration_watchdog.py`: comprehensive health check of the full pipeline</li>
+<li>Receiver process and `/health` endpoint</li>
+<li>Bash watchdog loop status</li>
+<li>Automation flag values and misconfiguration warnings</li>
+<li>GitHub webhook hook status</li>
+<li>Webhook delivery freshness (staleness threshold)</li>
+<li>PR orchestrator states (stale PR detection)</li>
+<li>Available via `tools/webhook_manage.sh watchdog` or directly</li>
+<li>Supports `--json` for machine-readable output</li>
+</ul>
+<h3 class="cl-section" data-category="">Documentation</h3>
+<ul class="cl-section" data-category="">
+<li>Updated `tools/README.md` with Automation Flags and Orchestration Watchdog sections</li>
+<li>Welcome banner now shows automation status (ON/observe-only/OFF)</li>
+<li>Updated CHANGELOG</li>
+</ul>
+<h2 class="cl-release">[2026-04-10] PR #76 — staging → main: multi-persona adversarial analysis + fulltext prompt + tooling updates</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Promotes staging changes to main. Key additions since last merge:</p>
+<h3 class="cl-section" data-category="">Multi-Persona Adversarial Analysis (new)</h3>
+<ul class="cl-section" data-category="">
+<li>Modular persona system in `.github/prompts/personas/` with template and three author personas (Asimov, Watts, Brin) as placeholders</li>
+<li>`analysis.dialectic` schema extension for storing observation/critique/synthesis rounds</li>
+<li>Updated fulltext-analysis prompt with 3-pass dialectic workflow</li>
+</ul>
+<h3 class="cl-section" data-category="">Full-Text Analysis Prompt (new)</h3>
+<ul class="cl-section" data-category="">
+<li>`.github/prompts/fulltext-analysis.prompt.md` for deep SF full-text extraction with all 10 analysis fields</li>
+</ul>
+<h3 class="cl-section" data-category="">Tooling improvements</h3>
+<ul class="cl-section" data-category="">
+<li>Auto-merge flag for staging PRs (`EFA_AUTO_MERGE_ENABLED`)</li>
+<li>Stall checker tuning (10-min threshold, 2-min interval)</li>
+<li>Webhook receiver watchdog with auto-restart</li>
+<li>Bridge extension auto-submit</li>
+<li>Fix application and merge readiness improvements</li>
+<li>Work session detection and settle delays</li>
+<li>Gilfoyle review and Socratic mentoring prompt modes</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>`python3 tools/validate_catalog.py`: 2537/2537 valid, 0 invalid</li>
+<li>`python3 tools/generate_site.py`: generates without error</li>
+<li>All CI checks pass on staging</li>
+</ul>
+<h2 class="cl-release">[2026-04-09] PR #74 — docs: full-text analysis prompt (staging → main)</h2>
+<p class="cl-section" data-category="">Promotes the fulltext-analysis prompt and prompts README updates to main.</p>
+<h2 class="cl-release">[2026-04-09] PR #72 — feat: automation hardening, prompt modes, and tuning (staging → main)</h2>
+<p class="cl-section" data-category="">Promotes staging changes to main:</p>
+<ul class="cl-section" data-category="">
+<li><strong>Bridge auto-submit</strong> — `isPartialQuery: false` closes the automation loop</li>
+<li><strong>Receiver watchdog</strong> — auto-start with health checks in `start-site.sh`</li>
+<li><strong>Stall checker tuning</strong> — 10-min threshold, 2-min check interval, active-state gating</li>
+<li><strong>Auto-merge flag</strong> — `EFA_AUTO_MERGE_ENABLED=1` for staging PRs</li>
+<li><strong>Prompt modes</strong> — Gilfoyle code review and Socratic mentoring prompts</li>
+</ul>
+<h2 class="cl-release">[2026-04-09] PR #67 — docs: add PR review automation details to README</h2>
+<p class="cl-section" data-category="">Promotes staging README changes to main. Documents the webhook receiver, PR review orchestrator, VS Code bridge extension, CI workflows, environment variables, and branch protection.</p>
+<h2 class="cl-release">[2026-04-09] PR #65 — fix: address Copilot review feedback on PR #65</h2>
+<p class="cl-section" data-category="">Addresses four review comments from Copilot on the staging→main promotion PR for the webhook-driven PR review orchestrator.</p>
+<ul class="cl-section" data-category="">
+<li><strong>Redundant orchestrator spawns</strong> — `_maybe_spawn_orchestrator()` now probes the per-PR lock before spawning, preventing burst webhook events from creating many processes that immediately fail on lock acquisition</li>
+<li><strong>Stall checker race window</strong> — Lock file handle kept open through the spawn decision instead of closing before `subprocess.Popen()`, eliminating the window where another checker could spawn a redundant run</li>
+<li><strong>Overly broad `@copilot` matching</strong> — `detect_request_sources()` now matches the specific `REVIEW_REQUEST_COMMENT` phrase rather than any `@copilot` mention, preventing misclassification of general Copilot chat as re-review requests</li>
+<li><strong>Stale CI comment</strong> — Updated `ci.yml` comment from &quot;added in later PRs&quot; to reflect that the orchestrator exists in this branch</li>
+</ul>
+<h2 class="cl-release">[2026-04-08] PR #61 — feat: track issue_comment events in webhook receiver</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds `issue_comment` event tracking to the webhook receiver so PR comments (including `@copilot` review requests) are captured and logged.</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li>Added `issue_comment` to `TRACKED_EVENTS` in `tools/webhook_receiver.py`</li>
+<li>Added `extract_summary()` handler: captures `pr_number`, `pr_state`, `commenter`, `has_copilot_mention`</li>
+<li>No raw comment content is persisted; only a boolean indicating whether `@copilot` was mentioned</li>
+<li>Only tracks comments on open PRs; closed/merged PR comments and non-PR issue comments are skipped before logging</li>
+<li>Updated `tools/webhook_manage.sh` to include `issue_comment` in the webhook subscription</li>
+<li>Updated module docstring Events captured list</li>
+<li>Changelog entry added</li>
+</ul>
+<h3 class="cl-section" data-category="">Files changed</h3>
+<ul class="cl-section" data-category="">
+<li>`tools/webhook_receiver.py`</li>
+<li>`tools/webhook_manage.sh`</li>
+<li>`CHANGELOG.md`</li>
+</ul>
+<p class="cl-section" data-category="">This is part 1 of 5 in the PR review orchestrator series.</p>
+<h2 class="cl-release">[2026-04-08] PR #56 — docs: add Copilot code review instructions for LLM-generated fixes</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds a Code Review Instructions section to `.github/copilot-instructions.md` so Copilot code review applies stricter, adversarial scrutiny to commits produced by the local LLM fix agent in the PR review orchestrator.</p>
+<h3 class="cl-section" data-category="">What Copilot will check on LLM-generated commits</h3>
+<ul class="cl-section" data-category="">
+<li>Fix actually resolves the original review comment (not just something plausible)</li>
+<li>No hallucinated APIs or functions</li>
+<li>No regressions (broken callers, removed error handling, changed signatures)</li>
+<li>No cosmetic-only changes that dodge the real issue</li>
+</ul>
+<h3 class="cl-section" data-category="">Other review checks added</h3>
+<ul class="cl-section" data-category="">
+<li>Schema and taxonomy compliance for catalog data</li>
+<li>Bidirectional link consistency</li>
+<li>No em-dashes in prose</li>
+<li>No credential exposure</li>
+</ul>
+<p class="cl-section" data-category="">This must merge to `main` before the instructions take effect for Copilot code review on subsequent PRs.</p>
+<h2 class="cl-release">[2026-04-07] PR #53 — docs: clarify Codespaces webhook setup for PR monitoring</h2>
+<h3 class="cl-section" data-category="">Summary\n- clarify the Codespaces webhook setup steps in \ and \\n- document the need for the \ secret and required PAT scopes\n- add a changelog entry for the docs refresh\n\n## Verification\n- /workspaces/efa-catalog/.venv/bin/python tools/validate_catalog.py\n- /workspaces/efa-catalog/.venv/bin/python tools/generate_site.py</h3>
+<h2 class="cl-release">[2026-04-07] PR #52 — feat: add safe-mode devcontainer for terminal diagnostics</h2>
+<h3 class="cl-section" data-category="">Safe-mode Codespace configuration</h3>
+<p class="cl-section" data-category="">Minimal devcontainer to isolate the ENOPRO `run_in_terminal` bug.</p>
+<h3 class="cl-section" data-category="">What&#x27;s stripped</h3>
+<table class="cl-section" data-category="">
+<tr><th>Default config</th><th>Safe mode</th></tr>
+<tr><td>`github.copilot-chat` + `ms-python.python` + synced extensions (C++, Docker, XML, etc.)</td><td>`github.copilot-chat` only</td></tr>
+<tr><td>Node 20 feature</td><td>None</td></tr>
+<tr><td>`postAttachCommand` (site gen + HTTP server)</td><td>None</td></tr>
+<tr><td>Port forwarding (8080, 8585)</td><td>None</td></tr>
+<tr><td>`autoApprove` enabled (masks approval prompts)</td><td>`autoApprove: false` (default approval path)</td></tr>
+<tr><td>Settings Sync extension control (no valid devcontainer setting exists)</td><td>Removed; disable Settings Sync manually or use a fresh profile</td></tr>
+</table>
+<h3 class="cl-section" data-category="">`postCreateCommand`</h3>
+<p class="cl-section" data-category="">Creates a venv only — no dependency install. This keeps container startup fast and low-noise for timing/race-condition diagnostics. Install dependencies manually when needed:</p>
+<p class="cl-section" data-category="">```bash</p>
+<p class="cl-section" data-category="">. .venv/bin/activate &amp;&amp; pip install -r requirements.txt</p>
+<p class="cl-section" data-category="">```</p>
+<h3 class="cl-section" data-category="">How to test</h3>
+<p class="cl-section" data-category="">1. Go to **Code &amp;gt; Codespaces &amp;gt; New with options**</p>
+<p class="cl-section" data-category="">2. Under **Dev container configuration**, select **EFA — Safe Mode (minimal extensions)**</p>
+<p class="cl-section" data-category="">3. Create the Codespace</p>
+<p class="cl-section" data-category="">4. Open Copilot Chat (panel) and ask it to run a terminal command (e.g. `pwd`)</p>
+<p class="cl-section" data-category="">5. If it works: the ENOPRO error was caused by extension conflicts or startup timing</p>
+<p class="cl-section" data-category="">6. If it fails: the bug is in VS Code&#x27;s web workbench independent of extensions</p>
+<h2 class="cl-release">[2026-04-07] PR #51 — fix: improve Codespace startup config and add terminal welcome banner</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<h3 class="cl-section" data-category="">Remove deprecated `github.copilot` extension</h3>
+<p class="cl-section" data-category="">The standalone Copilot extension is deprecated and was being redirected to `copilot-chat` at install time, causing:</p>
+<ul class="cl-section" data-category="">
+<li>`PendingMigrationError: navigator is now a global in nodejs` log spam on every extension host start</li>
+<li>An unnecessary install-then-redirect cycle during Codespace creation</li>
+</ul>
+<p class="cl-section" data-category="">Only `github.copilot-chat` is needed (it now includes all Copilot functionality).</p>
+<h3 class="cl-section" data-category="">Add terminal welcome banner</h3>
+<p class="cl-section" data-category="">New `.devcontainer/welcome-banner.sh` displays catalog stats and quick-start commands in every new interactive terminal session. Installed into `~/.bashrc` by `setup.sh` during `postCreateCommand` (idempotent).</p>
+<h3 class="cl-section" data-category="">Context: ENOPRO investigation</h3>
+<p class="cl-section" data-category="">The `run_in_terminal` ENOPRO error (`No file system provider found for resource &#x27;file:///workspaces/efa-catalog&#x27;`) is a VS Code web client bug where the browser-side terminal tool uses `file://` URIs in a remote context that only has `vscode-remote://` providers. This cannot be fixed from devcontainer config; removing the deprecated extension reduces log noise and extension host churn that may exacerbate the issue.</p>
+<h2 class="cl-release">[2026-04-07] PR #50 — perf: pre-compile sfdictionary regex patterns</h2>
+<h3 class="cl-section" data-category="">Problem</h3>
+<p class="cl-section" data-category="">`generate_site.py` hangs during codespace startup (`start-site.sh`) because `find_sfdictionary_links()` recompiles a regex for every SF dictionary term for every idea — hundreds of compilations × 668 ideas.</p>
+<p class="cl-section" data-category="">The hang manifests as the process stuck inside Python 3.11&#x27;s `re._compile` → `enum.__and__` flag check path.</p>
+<h3 class="cl-section" data-category="">Fix</h3>
+<p class="cl-section" data-category="">Pre-compile all regex patterns once in `load_sfdictionary_index()` and return `list[tuple[re.Pattern, str, str]]` instead of `list[tuple[str, str]]`. The matching loop in `find_sfdictionary_links()` now calls `pattern.search(text)` on the pre-compiled objects.</p>
+<p class="cl-section" data-category="">Also moves the `len(term) &lt;= 5` filter into the loader so short terms are excluded once at load time rather than checked on every idea.</p>
+<h3 class="cl-section" data-category="">Testing</h3>
+<ul class="cl-section" data-category="">
+<li>`python3 tools/generate_site.py` completes in ~9s instead of hanging</li>
+<li>`python3 tools/validate_catalog.py` — 2537 valid, 0 invalid</li>
+</ul>
+<h2 class="cl-release">[2026-04-07] PR #49 — feat: webhook receiver for real-time PR monitoring</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Replaces `gh api` polling with a real-time GitHub webhook receiver for Agent C&#x27;s PR review monitoring.</p>
+<h3 class="cl-section" data-category="">Problem</h3>
+<p class="cl-section" data-category="">Agent C currently polls `gh api repos/.../pulls/.../reviews` repeatedly to detect Copilot review submissions, CI changes, and PR state updates. This is slow, burns API quota, and can miss events between polls.</p>
+<h3 class="cl-section" data-category="">Solution</h3>
+<p class="cl-section" data-category="">A zero-dependency Python webhook receiver (`http.server` stdlib) that:</p>
+<ul class="cl-section" data-category="">
+<li>Listens on port 8585 for GitHub webhook deliveries</li>
+<li>Validates HMAC-SHA256 signatures (required; rejects unsigned requests)</li>
+<li>Extracts compact event summaries (no body content stored) from `pull_request_review`, `pull_request`, `check_suite`, and `check_run` events</li>
+<li>Writes events to `scratchpad/webhook-events.jsonl` (gitignored) and `scratchpad/webhook-latest.json`</li>
+<li>Provides `/health` and `/events` endpoints</li>
+</ul>
+<h3 class="cl-section" data-category="">Usage</h3>
+<p class="cl-section" data-category="">```bash</p>
+<h1>One-time setup: create repo webhook (secret passed via stdin, not CLI args)</h1>
+<p class="cl-section" data-category="">tools/webhook_manage.sh setup --url https://your-codespace-8585.app.github.dev</p>
+<h1>Start receiver in background</h1>
+<p class="cl-section" data-category="">tools/webhook_manage.sh start</p>
+<h1>Check status / recent events</h1>
+<p class="cl-section" data-category="">tools/webhook_manage.sh status</p>
+<h1>Teardown when done</h1>
+<p class="cl-section" data-category="">tools/webhook_manage.sh teardown</p>
+<p class="cl-section" data-category="">```</p>
+<h3 class="cl-section" data-category="">Security</h3>
+<ul class="cl-section" data-category="">
+<li>Webhook secret is required (no insecure mode)</li>
+<li>Secret passed to GitHub API via stdin (not command-line args)</li>
+<li>HMAC-SHA256 signature verification on every delivery</li>
+<li>No review/comment body content persisted to disk</li>
+<li>Port 8585 is **private** by default in Codespaces; must be manually made public when configuring the webhook URL</li>
+<li>Repo is dynamically resolved (supports forks and renames)</li>
+</ul>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li>`tools/webhook_receiver.py` — new: the HTTP server</li>
+<li>`tools/webhook_manage.sh` — new: setup/start/stop/teardown management</li>
+<li>`.gitignore` — add `.webhook-secret`</li>
+<li>`.devcontainer/devcontainer.json` — forward port 8585 (private)</li>
+<li>`CHANGELOG.md` — document the addition</li>
+</ul>
+<h2 class="cl-release">[2026-04-07] PR #48 — chore: gitignore entire scratchpad directory</h2>
+<p class="cl-section" data-category="">Replace individual scratchpad/* ignore rules with a single `scratchpad/` entry. Untrack previously committed scratchpad files.</p>
+<h2 class="cl-release">[2026-04-07] PR #46 — Expand analysis: inspiration alongside warnings</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Expands the idea analysis framework to capture **what could go right** alongside what could go wrong. Adds 4 new fields to the analysis schema and demonstrates them with 3 full examples.</p>
+<h3 class="cl-section" data-category="">New Analysis Fields</h3>
+<ul class="cl-section" data-category="">
+<li><strong>`novel_solutions`</strong> — : creative approaches characters use to solve problems (e.g., book-memorizer distributed backup network in The Fireman)</li>
+<li><strong>`narrative_innovations`</strong> — : how the author&#x27;s structural choices enhance the idea (e.g., radio-transcript POV in Ideas Die Hard)</li>
+<li><strong>`real_world_impact`</strong> — : documented influence on technology, policy, or culture (e.g., Fahrenheit 451 becoming standard censorship text)</li>
+<li><strong>`inspirational_concepts`</strong> — : ideas that could spark new research or creativity (e.g., fictional heroes can inspire real courage in Benny Cemoli)</li>
+</ul>
+<h3 class="cl-section" data-category="">Motivation</h3>
+<p class="cl-section" data-category="">The archive should not just warn decision-makers about pitfalls. It should also:</p>
+<ul class="cl-section" data-category="">
+<li>Surface **novel problem-solving approaches** from fiction</li>
+<li>Highlight **perception-expanding concepts** (like The Expanse&#x27;s Ring Entities revealing atomic-scale awareness)</li>
+<li>Document **narrative innovations** that make ideas more impactful</li>
+<li>Track **real-world influence** of speculative fiction</li>
+</ul>
+<h3 class="cl-section" data-category="">Example Analyses (3)</h3>
+<p class="cl-section" data-category="">1. **mandatory-happiness-through-ignorance** (The Fireman/Bradbury): distributed human backup of culture, subversive questioning, inverted protector symbol</p>
+<p class="cl-section" data-category="">2. **autonomous-media-creating-reality** (Benny Cemoli/Dick): adversarial fiction generators, stories as independent agents, automated beneficial propaganda</p>
+<p class="cl-section" data-category="">3. **cognitive-regression-in-space** (Ideas Die Hard/Asimov): cognitive limits as progress, changing the observer not the observed, evolutionary artifact intuitions</p>
+<h3 class="cl-section" data-category="">Pre-commit checklist</h3>
+<ul class="cl-section" data-category="">
+<li>[x] `python3 tools/validate_catalog.py` — 2537 valid, 0 invalid</li>
+<li>[x] `python3 tools/generate_site.py` — 668 ideas, 1869 stories</li>
+<li>[x] CHANGELOG.md updated</li>
+</ul>
+<h2 class="cl-release">[2026-04-07] PR #45 — Add optional analysis field to idea schema for AI reasoning</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds an optional `analysis` object to the idea definition in the catalog schema. This structured analytical metadata captures reasoning from full-text analysis that would otherwise be lost, designed for downstream AI consumption (e.g., via a future MCP server).</p>
+<h3 class="cl-section" data-category="">Changes</h3>
+<h3 class="cl-section" data-category="">Schema (`catalog/schema.json`)</h3>
+<ul class="cl-section" data-category="">
+<li>New optional `analysis` object on ideas with six sub-fields:</li>
+<li>`mechanism_chain`: ordered causal steps the story depicts</li>
+<li>`structural_analogies`: real-world domains where the same dynamic applies</li>
+<li>`analogy_limitations`: where the fictional scenario diverges from reality</li>
+<li>`outcome_specificity`: precise outcome characterization beyond taxonomy labels</li>
+<li>`confidence`: extraction confidence score (0-1)</li>
+<li>`extraction_rationale`: textual evidence for the story-idea mapping</li>
+</ul>
+<h3 class="cl-section" data-category="">Scripts (`tools/enrich_fulltext_phase2.py`)</h3>
+<ul class="cl-section" data-category="">
+<li>`create_idea()` helper now accepts an optional `analysis` parameter</li>
+</ul>
+<h3 class="cl-section" data-category="">Instructions</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Extraction skill</strong> — (Step 5b): detailed guidance for populating the analysis block during full-text extraction, including the key principle that output is optimized for AI reasoning, not human summary</li>
+<li><strong>Architecture docs</strong> — : Phase 2 pipeline description updated with analysis block details</li>
+<li><strong>Copilot instructions</strong> — : schema field reference updated</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>All 2,524 existing entries pass validation (the field is optional)</li>
+<li>Site generates cleanly (656 idea pages, 1,868 story pages)</li>
+</ul>
+<h3 class="cl-section" data-category="">Why now</h3>
+<p class="cl-section" data-category="">Every full-text analysis run that happens without this structure is work that would need to be redone or backfilled. Adding this before further Galaxy Magazine or Gutenberg analysis rounds means the richer output is captured on the first pass.</p>
+<h2 class="cl-release">[2026-04-07] PR #44 — Full-text deep analysis of 10 Galaxy Magazine stories</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Deep analysis of 10 Galaxy Magazine stories based on reading the complete OCR text from Archive.org DjVu XML scans. This replaces metadata-based synopses with detailed plot descriptions and extracts new ideas visible only through full-text reading.</p>
+<h3 class="cl-section" data-category="">Synopses Rewritten (9 existing stories)</h3>
+<p class="cl-section" data-category="">All synopses enriched from ~250 chars to ~600 chars based on actual story content:</p>
+<ul class="cl-section" data-category="">
+<li>The Fireman (Bradbury), Second Childhood (Simak), Star Bright (Clifton)</li>
+<li>The Altar at Midnight (Kornbluth), The Snowball Effect (MacLean)</li>
+<li>The Moon Is Green (Leiber), The Old Die Rich (Gold)</li>
+<li>Soldier Ask Not (Dickson), If There Were No Benny Cemoli (Dick)</li>
+</ul>
+<h3 class="cl-section" data-category="">New Story (1)</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Ideas Die Hard</strong> — (Isaac Asimov, Galaxy Oct 1957) — Two astronauts on the first crewed Moon flyby suffer cognitive regression, becoming unable to accept the Earth is round despite seeing it directly. With Archive.org deep link.</li>
+</ul>
+<h3 class="cl-section" data-category="">New Ideas (6)</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Mandatory Happiness Through Enforced Ignorance</strong> — state eliminates books/complexity to maintain contentment (Fireman)</li>
+<li><strong>Institutional Sacrifice of Workers for Technological Progress</strong> — knowingly sending workers into harmful conditions (Altar at Midnight)</li>
+<li><strong>Absolute Safety as Psychological Imprisonment</strong> — total protection becomes its own cage (Moon Is Green)</li>
+<li><strong>Time Arbitrage with Biological Aging Cost</strong> — temporal foreknowledge costs the years needed to use it (Old Die Rich)</li>
+<li><strong>Autonomous Media System Creating Political Reality</strong> — automated news fabricates leaders that inspire real movements (Benny Cemoli)</li>
+<li><strong>Cognitive Regression Under Existential Displacement</strong> — human cognition has hard limits when environment becomes alien (Ideas Die Hard)</li>
+</ul>
+<h3 class="cl-section" data-category="">Pre-commit checklist</h3>
+<ul class="cl-section" data-category="">
+<li>[x] `python3 tools/validate_catalog.py` — 2531 valid, 0 invalid</li>
+<li>[x] Bidirectional links verified</li>
+<li>[x] `python3 tools/generate_site.py` — 662 ideas, 1869 stories</li>
+<li>[x] CHANGELOG.md updated</li>
+</ul>
+<h2 class="cl-release">[2026-04-07] PR #43 — Search tags and deep link filter</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Two search/filter improvements to the site.</p>
+<h3 class="cl-section" data-category="">Tag Search</h3>
+<p class="cl-section" data-category="">The search box now matches against story and idea **tags** in addition to titles, authors, synopses, and descriptions. Searching for `galaxy-magazine`, `censorship`, `hugo-winner`, or any tag now returns matching entries.</p>
+<h3 class="cl-section" data-category="">Deep Link Filter</h3>
+<p class="cl-section" data-category="">A new **Source** dropdown filter with a &quot;Has Deep Link&quot; option shows only stories that have direct links to their original text (e.g., Archive.org scans of Galaxy Magazine issues). Currently 9 stories have deep links. This filter will become more valuable as we add more Galaxy stories.</p>
+<h3 class="cl-section" data-category="">Implementation</h3>
+<ul class="cl-section" data-category="">
+<li>Story card `data-search` attribute now includes tags</li>
+<li>New `data-deeplink` attribute on story cards (&quot;1&quot; if `archive_org_url` is set)</li>
+<li>New `filter-deeplink` dropdown in the filter bar</li>
+<li>JS filter logic updated to support the new filter</li>
+<li>Hash URL sync supports `#deeplink=1` for bookmarkable filtered views</li>
+<li>Search placeholder updated to &quot;Search titles, authors, synopses, tags...&quot;</li>
+</ul>
+<h3 class="cl-section" data-category="">Pre-commit checklist</h3>
+<ul class="cl-section" data-category="">
+<li>[x] `python3 tools/validate_catalog.py` — 2524 valid, 0 invalid</li>
+<li>[x] `python3 tools/generate_site.py` — generates without errors</li>
+<li>[x] CHANGELOG.md updated</li>
+</ul>
+<h2 class="cl-release">[2026-04-07] PR #42 — Idea extraction round 11: 6 new ideas, 27 story-idea links</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Round 11 of idea extraction, focusing on Galaxy Magazine stories and classic SF novels.</p>
+<h3 class="cl-section" data-category="">New Ideas (6)</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Immortality Ennui</strong> — eternal life without purpose (Second Childhood, Simak)</li>
+<li><strong>Accelerating Child Superintelligence</strong> — child transcends humanity (Star Bright, Clifton)</li>
+<li><strong>Human Cost of Space Travel</strong> — astronauts broken by radiation (Altar at Midnight, Kornbluth)</li>
+<li><strong>Gerontocratic Wealth Hoarding</strong> — immortal elderly hoard everything (The Old Die Rich, Gold)</li>
+<li><strong>Exponential Organizational Growth</strong> — optimized org absorbs all (The Snowball Effect, MacLean)</li>
+<li><strong>Parallel World Tourism</strong> — alternate timelines as tourist destinations (Frugal Wizard, Sanderson)</li>
+</ul>
+<h3 class="cl-section" data-category="">Story-Idea Links (27)</h3>
+<p class="cl-section" data-category="">Linked 29 stories to existing ideas across Asimov, Ballard, Brunner, Butler, Hamilton, Harrison, Huxley, Oppel, Sanderson, Silverberg, Sherman, Tepper, Tucker, Williams, Phillips, and Baxter.</p>
+<h3 class="cl-section" data-category="">Coverage</h3>
+<ul class="cl-section" data-category="">
+<li>Before: 1,151 / 1,868 stories (61.6%)</li>
+<li>After: 1,180 / 1,868 stories (63.2%)</li>
+</ul>
+<h3 class="cl-section" data-category="">Pre-commit checklist</h3>
+<ul class="cl-section" data-category="">
+<li>[x] `python3 tools/validate_catalog.py` — 2530 valid, 0 invalid</li>
+<li>[x] Bidirectional links verified (script handles both directions)</li>
+<li>[x] `python3 tools/generate_site.py` — 662 ideas, 1868 stories</li>
+<li>[x] CHANGELOG.md updated</li>
+</ul>
+<h2 class="cl-release">[2026-04-07] PR #40 — Add first 9 Galaxy Magazine stories with Archive.org deep links</h2>
+<h3 class="cl-section" data-category="">Summary</h3>
+<p class="cl-section" data-category="">Adds the first batch of Galaxy Magazine stories to the catalog, each with page-level Archive.org deep links to the original magazine scans.</p>
+<h3 class="cl-section" data-category="">New Stories (9)</h3>
+<ul class="cl-section" data-category="">
+<li><strong>The Fireman</strong> — Ray Bradbury (Galaxy, Feb 1951)</li>
+<li><strong>The Old Die Rich</strong> — H.L. Gold (Galaxy, Mar 1953)</li>
+<li><strong>The Altar at Midnight</strong> — C.M. Kornbluth (Galaxy, Nov 1952)</li>
+<li><strong>Star, Bright</strong> — Mark Clifton (Galaxy, Jul 1952)</li>
+<li><strong>The Snowball Effect</strong> — Katherine MacLean (Galaxy, Sep 1952)</li>
+<li><strong>The Moon Is Green</strong> — Fritz Leiber (Galaxy, Apr 1952)</li>
+<li><strong>Second Childhood</strong> — Clifford D. Simak (Galaxy, Feb 1951)</li>
+<li><strong>Soldier, Ask Not</strong> — Gordon R. Dickson (Galaxy, Oct 1964)</li>
+<li><strong>If There Were No Benny Cemoli</strong> — Philip K. Dick (Galaxy, Dec 1963)</li>
+</ul>
+<h3 class="cl-section" data-category="">Schema &amp; Site Updates</h3>
+<ul class="cl-section" data-category="">
+<li>Added `archive_org_url` field to `external_ids` in schema</li>
+<li>Site generator shows Archive.org links in &quot;Find This Book&quot; section</li>
+<li>Archive.org URL validated (https + archive.org host) before rendering</li>
+<li>Archive.org URL hidden from raw metadata display</li>
+</ul>
+<h3 class="cl-section" data-category="">Validation</h3>
+<ul class="cl-section" data-category="">
+<li>2,524 valid entries (0 invalid)</li>
+<li>All bidirectional story-idea links verified</li>
+<li>Site generates without errors (1,868 stories, 656 ideas)</li>
+</ul>
+<h3 class="cl-section" data-category="">Pre-commit checklist</h3>
+<ul class="cl-section" data-category="">
+<li>[x] `python3 tools/validate_catalog.py` — 2524 valid, 0 invalid</li>
+<li>[x] Bidirectional links consistent</li>
+<li>[x] `python3 tools/generate_site.py` — generates without errors</li>
+<li>[x] CHANGELOG.md updated</li>
+</ul>
+<h2 class="cl-release">[2026-04-07] PR #41 — Expand copilot-instructions with operational patterns</h2>
+<p class="cl-section" data-category="">Adds seven sections to `.github/copilot-instructions.md` capturing patterns learned from prior sessions that were not previously recorded:</p>
+<p class="cl-section" data-category="">1. **Copilot PR review waiting strategy** — no shell sleep loops or timeouts; sequential API polling; productive use of wait time; never give up</p>
+<p class="cl-section" data-category="">2. **Branch protection enforcement** — explicit rules about what main requires</p>
+<p class="cl-section" data-category="">3. **Story draft pipeline layout** — documents `scratchpad/story-drafts/&lt;source&gt;/` subdirectories and promotion workflow</p>
+<p class="cl-section" data-category="">4. **Galaxy Magazine pipeline** — fetch, parse, batch tools and `internetarchive` dependency</p>
+<p class="cl-section" data-category="">5. **Junk entry cleanup** — `None-None.json` rule added to Key Operating Rules</p>
+<p class="cl-section" data-category="">6. **Schema field quick reference** — story and idea fields, `external_ids` keys</p>
+<p class="cl-section" data-category="">7. **Generated site clarification** — reinforces that `generated-assets/site/` is never committed; CI deploys to `efa-site`</p>
+<p class="cl-section" data-category="">No catalog data changes; instructions-only update.</p>
+<h2 class="cl-release">[2026-04-06] PR #39 — Rewrite README with current features and setup instructions</h2>
+<p class="cl-section" data-category="">Complete rewrite of README.md:</p>
+<ul class="cl-section" data-category="">
+<li>Updated catalog counts (1,859 stories, 656 ideas, 459 series, 137 universes)</li>
+<li>All new features documented: SF Dictionary, Galaxy pipeline, bookmarkable URLs, community links</li>
+<li>Three separate quick start paths: Codespaces, VS Code Dev Containers, and local</li>
+<li>VS Code path: install Dev Containers extension, clone, Reopen in Container, auto-configures</li>
+<li>Codespaces path: one-click, zero-config</li>
+<li>Simplified repo structure and commands</li>
+<li>Copilot integration and tech stack sections</li>
+</ul>
+<h2 class="cl-release">[2026-04-06] PR #38 — Update repo references to efa-catalog/efa-site</h2>
+<p class="cl-section" data-category="">Updates all internal references after repo rename:</p>
+<ul class="cl-section" data-category="">
+<li>GitHub URLs in tools, README, CONTRIBUTING, issue templates</li>
+<li>Deploy workflow targets urubos/efa-site</li>
+<li>User-Agent strings reference efa-catalog</li>
+<li>Clone instructions updated</li>
+</ul>
+<p class="cl-section" data-category="">Note: secret name kept as TASAT_SITE_DEPLOY_TOKEN (rename manually when convenient). Workspace mount path will update on next container rebuild.</p>
+<h2 class="cl-release">[2026-04-06] PR #37 — Rebrand to Extrapolated Futures Archive (EFA)</h2>
+<p class="cl-section" data-category="">Renames the project from &#x27;TASAT Catalog&#x27; to &#x27;Extrapolated Futures Archive&#x27; across all branding.</p>
+<p class="cl-section" data-category="">**Updated (24 files):**</p>
+<ul class="cl-section" data-category="">
+<li>Site titles, footers, browser tabs, subtitles</li>
+<li>Copilot instructions, contributing guide, issue templates</li>
+<li>Skills, prompts, READMEs</li>
+<li>Schema description, catalog README, taxonomy README</li>
+<li>User-Agent strings in all tools</li>
+<li>Pipeline orchestrator, utilities</li>
+<li>Changelog header</li>
+</ul>
+<p class="cl-section" data-category="">**Preserved:**</p>
+<ul class="cl-section" data-category="">
+<li>TASAT credited as inspiration in README</li>
+<li>External TASAT data source URLs (commentary-sources.json, sources.md)</li>
+<li>Historical changelog entries</li>
+<li>Repo name and deploy config (require GitHub admin action)</li>
+</ul>
+<h2 class="cl-release">[2026-04-06] PR #36 — SF Dictionary integration: deep links on idea pages</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**SF Dictionary links on 494 idea pages:**</p>
+<ul class="cl-section" data-category="">
+<li>Terms from the Historical Dictionary of Science Fiction (sfdictionary.com) matched against idea titles, descriptions, and tags</li>
+<li>Deep links to individual term definitions (e.g. `sfdictionary.com/view/440/artificial-intelligence`)</li>
+<li>Up to 5 most relevant terms per idea, prioritizing multi-word and longer terms</li>
+</ul>
+<p class="cl-section" data-category="">**Dataset:**</p>
+<ul class="cl-section" data-category="">
+<li>`datasets/sfdictionary-index.json`: 1,306 unique SF terms with view URLs</li>
+<li>Extracted from sfdictionary.com&#x27;s public headword JavaScript index (`/hws.js`)</li>
+<li>Single fetch, no crawling of individual pages</li>
+</ul>
+<h2 class="cl-release">[2026-04-06] PR #35 — Make start-site.sh resilient to missing venv/dependencies</h2>
+<p class="cl-section" data-category="">Guards against postAttachCommand running before postCreateCommand finishes:</p>
+<ul class="cl-section" data-category="">
+<li>Checks .venv exists before sourcing activate</li>
+<li>Site generation uses only stdlib; failure caught gracefully</li>
+<li>mkdir -p ensures site directory exists so HTTP server always starts</li>
+<li>Server always listens on 8080 (serves cached site or empty dir)</li>
+</ul>
+<h2 class="cl-release">[2026-04-06] PR #34 — Auto-authenticate gh from devcontainer credential helper</h2>
+<h3 class="cl-section" data-category="">Problem</h3>
+<p class="cl-section" data-category="">Users had to manually run `gh auth login` after devcontainer setup, even though VS Code&#x27;s credential helper already has a valid GitHub token.</p>
+<h3 class="cl-section" data-category="">Fix</h3>
+<ul class="cl-section" data-category="">
+<li>setup.sh now auto-authenticates `gh` from the git credential helper</li>
+<li>Retry loop (5 attempts, 2s) handles timing when credential helper is still initializing</li>
+<li>Removed confusing &#x27;Codespaces&#x27; references (this is a devcontainer)</li>
+<li>Manual `gh auth login` message only appears if auto-auth fails</li>
+</ul>
+<h2 class="cl-release">[2026-04-06] PR #33 — Galaxy Magazine download and parsing pipeline</h2>
+<h3 class="cl-section" data-category="">Galaxy Magazine Pipeline</h3>
+<p class="cl-section" data-category="">New tool for downloading and parsing the full Galaxy Magazine collection (446 issues, 1950-1980) from Archive.org.</p>
+<p class="cl-section" data-category="">**Download (`--download`):**</p>
+<ul class="cl-section" data-category="">
+<li>Uses the official `internetarchive` Python library with proper User-Agent per [Archive.org bot access policy](https://archive.org/developers/bots.html)</li>
+<li>Downloads DjVu XML files (per-page OCR text with page boundaries)</li>
+<li>Manifest-based caching with `--checksum` to avoid re-downloads</li>
+<li>Rate-limited (1s delay between requests)</li>
+</ul>
+<p class="cl-section" data-category="">**Parsing (`--parse`):**</p>
+<ul class="cl-section" data-category="">
+<li>Extracts story titles, authors, and page numbers from OCR page text</li>
+<li>Generates deep-link URLs to exact pages: `https://archive.org/details/{id}/page/n{page}/mode/2up`</li>
+<li>Filters false positives from ads and masthead text</li>
+<li>Outputs structured JSON for catalog ingestion</li>
+</ul>
+<p class="cl-section" data-category="">**Context:**</p>
+<p class="cl-section" data-category="">Galaxy Magazine, founded and edited by H. L. Gold, was the leading SF magazine focused on social speculation (1950-1980). The Archive.org collection has 440 issues with OCR text. This pipeline is the first step toward cataloging hundreds of classic short SF stories with direct page-level links to the full text.</p>
+<h2 class="cl-release">[2026-04-06] PR #32 — Tristate toggle tooltips + changelog category overhaul</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**Tristate toggle tooltips:**</p>
+<ul class="cl-section" data-category="">
+<li>CSS-only hover tooltips on series/universe filter toggles</li>
+<li>Shows the three modes: Multi-entry only / All / Single-entry only</li>
+<li>Positioned below the toggle to avoid obscuring other controls</li>
+<li>No JavaScript needed; pure CSS `:hover` with absolute positioning</li>
+</ul>
+<p class="cl-section" data-category="">**Changelog categories reorganized (4 categories):**</p>
+<ul class="cl-section" data-category="">
+<li>Renamed &quot;Design Changes&quot; -&gt; &quot;Data&quot; (was 4 entries, now merged with existing Data = 21 total)</li>
+<li>Added &quot;Process&quot; as a filterable category (6 entries for workflow/instruction changes)</li>
+<li>Removed unused &quot;Data Sources&quot; filter (was in UI but rarely used in changelog)</li>
+<li>Final: Data (21), Frontend (14), Backend (14), Process (6)</li>
+</ul>
+<h2 class="cl-release">[2026-04-06] PR #31 — Phase 2: Full-text enrichment of public domain classics</h2>
+<h3 class="cl-section" data-category="">Phase 2 Full-Text Enrichment</h3>
+<p class="cl-section" data-category="">Full-text analysis of 25 cached Project Gutenberg texts reveals additional speculative ideas in classic SF works that were missed by synopsis-only extraction.</p>
+<p class="cl-section" data-category="">**8 new ideas:**</p>
+<ul class="cl-section" data-category="">
+<li>`creator-moral-debt`: creator&#x27;s obligation to their creation (Frankenstein)</li>
+<li>`class-to-species-divergence`: class divide evolving into separate species (Time Machine)</li>
+<li>`cosmological-entropy-witnessed`: witnessing the heat death of Earth (Time Machine)</li>
+<li>`forced-civilization-reversion`: uplifted beings reverting when authority removed (Moreau)</li>
+<li>`rejection-drives-monstrosity`: social rejection creating violent outcasts (Frankenstein)</li>
+<li>`perception-limited-by-dimension`: dimensional experience constraining understanding (Flatland)</li>
+<li>`wonder-energy-transforms-society`: unlimited energy reshaping governance (Coming Race)</li>
+<li>`last-survivor-psychology`: psychological collapse of the last human (The Last Man)</li>
+</ul>
+<p class="cl-section" data-category="">**13 stories enriched** (each now has 2-3 ideas, up from 1):</p>
+<p class="cl-section" data-category="">Frankenstein, The Time Machine, Island of Dr. Moreau, Jekyll &amp; Hyde, The Last Man, Flatland, The Coming Race, Mizora, The Last American, Alice in Wonderland, Through the Looking-Glass, 20000 Leagues, Journey to the Centre of the Earth.</p>
+<p class="cl-section" data-category="">Validation: 2,515 entries, 0 invalid, 0 broken links. Idea count: 648 -&gt; 656.</p>
+<h2 class="cl-release">[2026-04-06] PR #30 — Devcontainer improvements: Node 20, auth, cleanup</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**Devcontainer improvements:**</p>
+<ul class="cl-section" data-category="">
+<li>Node 18 (EOL) upgraded to 20 LTS</li>
+<li>Removed redundant `.vscode/settings.json` generation from setup.sh</li>
+<li>Improved `gh` auth check (explains Codespaces auto-auth)</li>
+<li>Port-kill robustness: `fuser` before `lsof`, with `xargs` for multi-PID</li>
+<li>`gh` auth instruction updated in copilot-instructions.md</li>
+</ul>
+<p class="cl-section" data-category="">**New tool: Gutenberg text fetcher (`tools/fetch_gutenberg_texts.py`):**</p>
+<ul class="cl-section" data-category="">
+<li>Searches Gutendex API for public domain SF works matching catalog stories</li>
+<li>Downloads plain text using Gutenberg&#x27;s cache/epub URL pattern</li>
+<li>Rate-limited (3s between requests), capped at 50 per run</li>
+<li>Proper User-Agent, compliant with Gutenberg robot access policy</li>
+<li>`scratchpad/gutenberg-texts/` added to `.gitignore` (local-only data)</li>
+</ul>
+<h2 class="cl-release">[2026-04-06] PR #29 — Fix issues from Copilot review audit (PRs #17-#28)</h2>
+<p class="cl-section" data-category="">Addresses unresolved Copilot review feedback from past PRs:</p>
+<h3 class="cl-section" data-category="">Frontend (generate_site.py)</h3>
+<ul class="cl-section" data-category="">
+<li><strong>applyHash clears search box</strong> — when URL hash omits `search` param, preventing stale queries (PR #17)</li>
+<li><strong>try-catch on decodeURIComponent</strong> — in applyHash, preventing malformed percent-encoding from breaking hash sync (PR #19)</li>
+<li><strong>Contribution links spacing</strong> — : replaced `margin-top:0` with `margin-top:-0.5rem` to fix CSS margin collapse (PR #27)</li>
+</ul>
+<h3 class="cl-section" data-category="">Backend (generate_site.py)</h3>
+<ul class="cl-section" data-category="">
+<li><strong>shutil import</strong> — moved from inside loop to top of `main()` (PR #22)</li>
+</ul>
+<h3 class="cl-section" data-category="">Process (.github/copilot-instructions.md)</h3>
+<ul class="cl-section" data-category="">
+<li><strong>Em-dashes replaced with colons</strong> — per the repo&#x27;s own writing style rules (PR #20)</li>
+</ul>
+<h3 class="cl-section" data-category="">Not addressed (no longer applicable):</h3>
+<ul class="cl-section" data-category="">
+<li>Graph data blob ordering (PR #19): moot since `generated-assets/site/` is gitignored</li>
+<li>Changelog page not regenerated (PR #27): moot since CI generates the site</li>
+<li>Batch script improvements (PR #23): one-time scripts, not run again</li>
+</ul>
+<h2 class="cl-release">[2026-04-06] PR #28 — Generate site in CI; remove generated-assets/site/ from repo</h2>
+<h3 class="cl-section" data-category="">Problem</h3>
+<p class="cl-section" data-category="">PRs containing regenerated site files (2,500+ files) exceeded Copilot&#x27;s 300-file review limit, causing reviews to be skipped silently.</p>
+<h3 class="cl-section" data-category="">Solution</h3>
+<ul class="cl-section" data-category="">
+<li><strong>CI generates the site</strong> — : `deploy-site.yml` now runs `python tools/generate_site.py` before deploying</li>
+<li><strong>New deploy triggers</strong> — : fires on changes to `catalog/**`, `taxonomy/**`, `tools/**`, or `CHANGELOG.md` (was `generated-assets/site/**`)</li>
+<li><strong>Site removed from version control</strong> — : added to `.gitignore`; ~2,500 generated files untracked</li>
+<li><strong>Instructions updated</strong> — : pre-commit checklist and deploy trigger docs updated</li>
+</ul>
+<h3 class="cl-section" data-category="">Result</h3>
+<p class="cl-section" data-category="">PRs now contain only catalog data and code changes (well under 300 files), enabling proper Copilot code review on every PR.</p>
+<h2 class="cl-release">[2026-04-06] PR #27 — Move contribution links from footer to nav bar</h2>
+<p class="cl-section" data-category="">Moves &#x27;Suggest a story&#x27;, &#x27;Suggest an idea&#x27;, and &#x27;Report an error&#x27; links from the page footer to directly below the What-If Query / Idea-Story Graph / Export JSON navigation bar for better visibility.</p>
+<h2 class="cl-release">[2026-04-06] PR #26 — Remove redundant issue title prefix from story/idea templates</h2>
+<p class="cl-section" data-category="">The `[Story] ` and `[Idea] ` prefixes in the issue title were redundant with the form&#x27;s Title field. Removed them so users only fill in the title once. Labels (`story-submission`, `idea-submission`) handle categorization.</p>
+<h2 class="cl-release">[2026-04-06] PR #25 — Refine issue templates: optional fields, better pre-fill</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**Story suggestion template:**</p>
+<ul class="cl-section" data-category="">
+<li>Year published, work type, and synopsis are now optional (only title and author required)</li>
+</ul>
+<p class="cl-section" data-category="">**Feedback template:**</p>
+<ul class="cl-section" data-category="">
+<li>Entry identifier field now accepts an ID, title, or full URL</li>
+<li>Entry type changed from dropdown to text input so site links can pre-fill it</li>
+</ul>
+<p class="cl-section" data-category="">**Site feedback links:**</p>
+<ul class="cl-section" data-category="">
+<li>Issue title now includes the entry&#x27;s display name (e.g. `[Feedback] The Wild Robot`)</li>
+<li>Pre-fills entry-type (`Story`/`Idea`) and entry-id (slug)</li>
+</ul>
+<p class="cl-section" data-category="">Changelog updated.</p>
+<h2 class="cl-release">[2026-04-05] PR #24 — Community contribution infrastructure: issue templates, contributing guide, feedback links</h2>
+<h3 class="cl-section" data-category="">Phase 3 (Community Augmentation) — Tier 1</h3>
+<p class="cl-section" data-category="">**GitHub Issue Templates:**</p>
+<ul class="cl-section" data-category="">
+<li><strong>Suggest a Story</strong> — structured form for title, author, year, type, synopsis, speculative ideas</li>
+<li><strong>Suggest an Idea</strong> — form for idea title, description, linked stories, real-world relevance</li>
+<li><strong>Feedback</strong> — report errors or suggest edits to existing entries, with entry type and ID pre-fillable</li>
+</ul>
+<p class="cl-section" data-category="">**CONTRIBUTING.md:**</p>
+<ul class="cl-section" data-category="">
+<li>How to submit stories, ideas, and feedback via GitHub issues</li>
+<li>Developer setup and pre-commit checklist</li>
+<li>What makes a good catalog entry</li>
+</ul>
+<p class="cl-section" data-category="">**Site Feedback Links:**</p>
+<ul class="cl-section" data-category="">
+<li>Every story page: &quot;Suggest an edit&quot; link pre-filled with the entry ID</li>
+<li>Every idea page: &quot;Suggest an edit&quot; link pre-filled with the entry ID</li>
+<li>Index page footer: &quot;Suggest a story&quot;, &quot;Suggest an idea&quot;, &quot;Report an error&quot; links</li>
+</ul>
+<p class="cl-section" data-category="">All links point to the structured issue templates for consistent submissions.</p>
+<h2 class="cl-release">[2026-04-05] PR #23 — Idea extraction round 10: 9 new ideas, 45 stories addressed</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**9 new ideas created:**</p>
+<ul class="cl-section" data-category="">
+<li>dinosaur-civilization-alternate-evolution, lost-world-prehistoric-survival, post-atomic-cargo-cult</li>
+<li>robot-wilderness-adaptation, parallel-universe-alternate-self, language-as-virus</li>
+<li>ancient-alien-artifacts-awakened, environmental-dome-society-split, vr-game-societal-control</li>
+</ul>
+<p class="cl-section" data-category="">**15 SF stories** linked to new or existing ideas (Caspak, Eden, Wild Robot, War Dogs, Warcross, Nova Trilogy, Kefahuchi Tract, Zeroes, Desperation).</p>
+<p class="cl-section" data-category="">**30 stories tagged needs-review:**</p>
+<ul class="cl-section" data-category="">
+<li>18 fantasy/non-SF (Harry Potter, Dragonlance, Memory Sorrow &amp; Thorn, Inheritance, Darksword, Boggart, Westmark)</li>
+<li>12 thin-synopsis (Worldwar, Weirdstone, Nova Swing, etc.)</li>
+</ul>
+<p class="cl-section" data-category="">**18 pre-existing asymmetric bidirectional links fixed** across the catalog.</p>
+<p class="cl-section" data-category="">**Related ideas recomputed** (45 new cross-links).</p>
+<p class="cl-section" data-category="">Validation: 2,508 entries, 0 invalid, 0 broken links. Idea count: 639 -&gt; 648.</p>
+<h2 class="cl-release">[2026-04-05] PR #22 — Validation cleanup: remove duplicate Deepness in the Sky</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<ul class="cl-section" data-category="">
+<li>Removed duplicate `a-deepness-in-the-sky-vinge.json`, merged into `a-deepness-in-the-sky-zones-of-thought-vinge.json` (which has series/universe, ISFDB metadata, richer tags)</li>
+<li>Fixed title: removed &quot;(Zones of Thought)&quot; parenthetical</li>
+<li>Updated `interstellar-trade-contact` idea to remove duplicate story reference</li>
+<li>Reviewed near-duplicate ideas (`lost-civilization-contact` / `multi-level-civilization-contact`): confirmed distinct, no action needed</li>
+<li>Validation: 2,498 entries, 0 invalid, all cross-references OK</li>
+<li>Story count: 1,860 → 1,859</li>
+</ul>
+<h2 class="cl-release">[2026-04-05] PR #21 — Add Copilot PR review loop to Git Workflow</h2>
+<p class="cl-section" data-category="">Adds the Copilot review loop requirement to the Git Workflow section of `.github/copilot-instructions.md`:</p>
+<p class="cl-section" data-category="">After opening a PR, wait for Copilot&#x27;s review. For each feedback comment, fix the code, push, and resolve the conversation thread. Request a new review. Repeat until Copilot has no further objections, then merge.</p>
+<p class="cl-section" data-category="">This ensures every PR goes through iterative Copilot review before merging.</p>
+<h2 class="cl-release">[2026-04-05] PR #19 — Sync all filters to URL hash; dynamic page title for series/universe</h2>
+<h3 class="cl-section" data-category="">Changes</h3>
+<p class="cl-section" data-category="">**Bookmarkable/shareable filter URLs:**</p>
+<p class="cl-section" data-category="">Every filter change (domain, scenario, outcome, type, decade, series, universe, search) now updates the URL hash in real time. Example:</p>
+<p class="cl-section" data-category="">```</p>
+<p class="cl-section" data-category="">index.html#series=Dungeon%20Crawler%20Carl</p>
+<p class="cl-section" data-category="">index.html#domain=ai-ml&amp;decade=2020</p>
+<p class="cl-section" data-category="">index.html#search=robot</p>
+<p class="cl-section" data-category="">```</p>
+<p class="cl-section" data-category="">URLs can be bookmarked or shared and will restore the exact filter state on load.</p>
+<p class="cl-section" data-category="">**Dynamic browser tab title:**</p>
+<p class="cl-section" data-category="">When a series or universe filter is active, the browser tab shows the name (e.g. &quot;Dungeon Crawler Carl — TASAT Catalog&quot;). Reverts to the default title when cleared.</p>
+<p class="cl-section" data-category="">**Implementation notes:**</p>
+<ul class="cl-section" data-category="">
+<li>Uses `history.replaceState` instead of setting `location.hash` directly to avoid polluting browser history with every keystroke.</li>
+<li>Loop prevention: `applyHash()` sets a suppress flag so `syncHash()` is a no-op during hash-driven filter updates.</li>
+<li>Changelog updated.</li>
+</ul>
+<h2 class="cl-release">[2026-04-05] PR #20 — Add best practices to copilot-instructions</h2>
+<p class="cl-section" data-category="">Adds four new sections to `.github/copilot-instructions.md` based on lessons learned:</p>
+<h3 class="cl-section" data-category="">Git Workflow</h3>
+<ul class="cl-section" data-category="">
+<li>Never push directly to `main`; always branch → PR → review → merge</li>
+<li>Always update `CHANGELOG.md` when deploying</li>
+<li>Use `gh` CLI for all GitHub operations; includes auth command for devcontainers</li>
+</ul>
+<h3 class="cl-section" data-category="">Pre-commit Checklist (catalog changes)</h3>
+<p class="cl-section" data-category="">Mandatory steps before committing catalog data:</p>
+<p class="cl-section" data-category="">1. `python3 tools/validate_catalog.py` (0 invalid)</p>
+<p class="cl-section" data-category="">2. Verify bidirectional story↔idea links</p>
+<p class="cl-section" data-category="">3. `python3 tools/generate_site.py`</p>
+<p class="cl-section" data-category="">4. Update `CHANGELOG.md`</p>
+<p class="cl-section" data-category="">5. Commit on feature branch and open PR</p>
+<h3 class="cl-section" data-category="">Security</h3>
+<ul class="cl-section" data-category="">
+<li>Never echo/print/log credentials in terminal commands</li>
+<li>No hardcoded tokens in curl or scripts</li>
+</ul>
+<h3 class="cl-section" data-category="">Bidirectional Links (Key Operating Rule #9)</h3>
+<ul class="cl-section" data-category="">
+<li>When adding/updating a story, ensure its idea IDs list the story back, and vice versa</li>
+</ul>
+<p class="cl-section" data-category="">These codify practices that were previously implicit or only in memory files.</p>
+<h2 class="cl-release">[2026-04-04] PR #17 — Fix: filter counts populate on initial page load</h2>
+<p class="cl-section" data-category="">Root cause: applyFilters was inside an IIFE and the previous fix tried calling it from outside (ReferenceError, silently failed). Fixed by removing the early return in applyHash so it always dispatches the input event on the search box, which triggers applyFilters within the correct scope.</p>
+<h2 class="cl-release">[2026-04-04] PR #16 — Tristate toggle refinements + fix initial count population</h2>
+<p class="cl-section" data-category="">Toggle refinements:</p>
+<ul class="cl-section" data-category="">
+<li>Grey knob in all states (not colored)</li>
+<li>Icons colored: red X when active, green check when active, dimmed otherwise</li>
+<li>&quot;Multi&quot;/&quot;All&quot;/&quot;Singles&quot; label shown next to toggle</li>
+</ul>
+<p class="cl-section" data-category="">Fix: filter counts now populate on initial page load (applyFilters called explicitly, not just via hash dispatch).</p>
+<h2 class="cl-release">[2026-04-04] PR #15 — Visual toggle for series/universe single/multi mode</h2>
+<p class="cl-section" data-category="">Replaced the dropdown mode selector with a visual three-state toggle:</p>
+<ul class="cl-section" data-category="">
+<li>Red X (left): Exclude singles — only multi-entry series shown</li>
+<li>Grey center: Include all series</li>
+<li>Green checkmark (right): Singles only</li>
+</ul>
+<p class="cl-section" data-category="">Click cycles through states. Matches the iOS-style toggle reference.</p>
+<h2 class="cl-release">[2026-04-04] PR #14 — Add three-way toggle for series/universe filters</h2>
+<p class="cl-section" data-category="">Series and Universe dropdowns now have a mode toggle:</p>
+<ul class="cl-section" data-category="">
+<li><strong>Multi only</strong> — (default): Shows only series/universes with 2+ stories</li>
+<li><strong>All</strong> — : Shows all series/universes</li>
+<li><strong>Singles only</strong> — : Shows only single-entry series/universes</li>
+</ul>
+<p class="cl-section" data-category="">Each option has a `data-entrycount` attribute. Toggle hides options that dont match the mode. Reset restores default.</p>
+<h2 class="cl-release">[2026-04-04] PR #13 — Add 70 stories completing 47 single-entry series</h2>
+<p class="cl-section" data-category="">Systematic analysis of all 251 single-entry series against Wikipedia. Added companion novels for 47 series including Earthsea (3 books), Harry Potter 5-7, Enders Shadow sequels, Dark Tower 2-3, Otherland, Red Queen, Wormwood, Final Architecture, Lady Astronaut, and more. Story count: 1,782 -&gt; 1,852.</p>
+<h2 class="cl-release">[2026-04-03] PR #12 — Fix filter counts: show counts excluding own selection</h2>
+<p class="cl-section" data-category="">Each story-level dropdown (Type, Decade, Series, Universe) now shows counts computed with that specific filter removed. Previously, selecting &quot;Amber&quot; universe would show all other universes as (0). Now each option shows its actual count assuming all other filters stay the same.</p>
+<h2 class="cl-release">[2026-04-03] PR #11 — Show series/universe filters always with dynamic counts</h2>
+<p class="cl-section" data-category="">Series and Universe filter dropdowns now visible at all times (not hidden until clicked). Each option shows a live count of matching stories, just like Domain, Scenario, Type, and Decade filters.</p>
+<h2 class="cl-release">[2026-04-03] PR #10 — Series gap-fill batch 5 + War Dogs fix</h2>
+<p class="cl-section" data-category="">9 new stories completing Majipoor (3-5), Stravaganza (2-3), Withern Rise (1-2), plus Jackpot (Gibson 2025) and Sunrise on the Reaping (Collins 2025). Fixed War Dogs series name. Story count: 1773 -&gt; 1782.</p>
+<h2 class="cl-release">[2026-04-03] PR #9 — Series gap-fill: 117 new stories completing ~35 series</h2>
+<p class="cl-section" data-category="">Systematic series completion using Wikipedia book counts compared against catalog.</p>
+<p class="cl-section" data-category="">**117 new stories** across 5 batches:</p>
+<ul class="cl-section" data-category="">
+<li>Batch 1 (25): Hitchhiker #1, ASOIAF #3, Hyperion #2, Gateway, Forever War, Harry Potter 1-3, etc.</li>
+<li>Batch 2 (23): Children of Ruin/Memory, Redemption Ark, Ringworld Engineers, Lensman 3-5, etc.</li>
+<li>Recent (5): Children of Strife, Absolution, Book of Dust trilogy</li>
+<li>Batch 3 (35): Helliconia, Terra Ignota, Night Dawn, Orthogonal, Blue Ant, etc.</li>
+<li>Batch 4 (29): Caspak, Worldwar, Memory Sorrow &amp; Thorn, Westmark, etc.</li>
+</ul>
+<p class="cl-section" data-category="">Story count: 1,656 -&gt; 1,773. Removed per-page timestamps (regen diffs now ~80 files instead of 2,300+).</p>
+<h2 class="cl-release">[2026-04-03] PR #8 — Add 23 more stories + remove page timestamps</h2>
+<p class="cl-section" data-category="">**23 new story entries** filling series gaps (batch 2). Key additions:</p>
+<ul class="cl-section" data-category="">
+<li>Children of Ruin + Children of Memory (completing Children of Time trilogy)</li>
+<li>Redemption Ark (Revelation Space #3)</li>
+<li>The Ringworld Engineers, Charlie and the Chocolate Factory</li>
+<li>Through the Looking-Glass, Echopraxia (Firefall #2)</li>
+<li>Galactic Patrol + Gray Lensman + Second Stage Lensmen (Lensman #3-5)</li>
+<li>Weirdstone of Brisingamen (Alderley #1), and more</li>
+</ul>
+<p class="cl-section" data-category="">**Timestamp cleanup**: Removed per-page timestamps from generated HTML. Regeneration diffs reduced from 2,300+ files to just the files that actually changed (99 this commit vs 2,300+ previously).</p>
+<h2 class="cl-release">[2026-04-03] PR #7 — Add 25 stories to fill series gaps</h2>
+<p class="cl-section" data-category="">25 new story entries filling gaps in major series. Synopses sourced from OpenLibrary API. 20 linked to existing ideas via series-sibling inheritance.</p>
+<p class="cl-section" data-category="">Key additions:</p>
+<ul class="cl-section" data-category="">
+<li>The Hitchhikers Guide to the Galaxy (HHGG #1)</li>
+<li>A Storm of Swords (ASOIAF #3)</li>
+<li>The Fall of Hyperion (Hyperion Cantos #2)</li>
+<li>Gateway (Heechee #1, Hugo+Nebula winner)</li>
+<li>The Forever War (#1, Hugo+Nebula winner)</li>
+<li>Harry Potter 1-3</li>
+<li>Northern Lights + The Subtle Knife (His Dark Materials)</li>
+<li>Count Zero (Sprawl #2)</li>
+<li>Ancillary Sword (Imperial Radch #2)</li>
+<li>The Robots of Dawn (Baley #3)</li>
+<li>That Hideous Strength (Lewis Space Trilogy #3)</li>
+<li>and 14 more</li>
+</ul>
+<h2 class="cl-release">[2026-04-03] PR #6 — Address Copilot PR #4 review comments</h2>
+<p class="cl-section" data-category="">Fixes all 5 issues raised by Copilot code review on PR #4:</p>
+<p class="cl-section" data-category="">1. **series_position schema** — Restricted from `integer|string|null` to `number|null` (no arbitrary strings)</p>
+<p class="cl-section" data-category="">2. **Mojibake in synopsis_isfdb** — Fixed 60 entries with encoding artifacts</p>
+<p class="cl-section" data-category="">3. **Stray literal n characters** — Fixed in enrichment-sourced synopses</p>
+<p class="cl-section" data-category="">4. **annual_views &gt; views anomaly** — Fixed 51 entries where values were swapped</p>
+<p class="cl-section" data-category="">5. **All 5 specific files Copilot flagged** — Verified clean</p>
+<h2 class="cl-release">[2026-04-03] PR #5 — Trigger site deploy</h2>
+<p class="cl-section" data-category="">Empty trigger to redeploy site</p>
+<h2 class="cl-release">[2026-04-03] PR #4 — Series/Universe, ISFDB enrichment, Find This Book, site improvements</h2>
+<p class="cl-section" data-category="">Major update combining all dev work:</p>
+<p class="cl-section" data-category="">**Site UX:**</p>
+<ul class="cl-section" data-category="">
+<li>Parallel Ideas/Stories columns, Relevant/Popularity sort options</li>
+<li>TASAT acronym in subtitle, auto-sort by relevance on filter</li>
+<li>Find This Book links (Wikipedia, Amazon, Audible, Google Books, Goodreads, OpenLibrary)</li>
+<li>Series/Universe displayed on cards and detail pages with dedicated filter dropdowns</li>
+<li>Series order sort, hashchange navigation fix</li>
+</ul>
+<p class="cl-section" data-category="">**Data enrichment:**</p>
+<ul class="cl-section" data-category="">
+<li>ISFDB dump: 1,318 stories matched, ratings/views/synopses/IDs added</li>
+<li>ISBN enrichment: 56 stories with multi-ISBN edition metadata from OpenLibrary</li>
+<li>Series: 453 series, 137 universes from ISFDB hierarchy</li>
+<li>20 titles refined with ISFDB subtitles</li>
+<li>Wikipedia-verified series audit (440 articles checked)</li>
+</ul>
+<p class="cl-section" data-category="">**Infrastructure:**</p>
+<ul class="cl-section" data-category="">
+<li>Devcontainer server fix (postAttachCommand)</li>
+<li>New tools: enrich_isbns.py, enrich_from_isfdb_dump.py, enrich_series.py, audit_series_wikipedia.py</li>
+</ul>
+<h2 class="cl-release">[2026-04-03] PR #3 — Add changelog entries and update post-work checklist</h2>
+<ul class="cl-section" data-category="">
+<li>Added [2026-04-03d] changelog entry for all session work</li>
+<li>Changelog now included in post-work checklist</li>
+</ul>
+<h2 class="cl-release">[2026-04-03] PR #2 — Add Find This Book links and ISBN edition metadata</h2>
+<ul class="cl-section" data-category="">
+<li>Story pages: Wikipedia, Amazon, Audible, Google Books, Goodreads, OpenLibrary links</li>
+<li>Multi-ISBN support with edition descriptions (publisher, year, format, language)</li>
+<li>New tool: enrich_isbns.py with --refresh flag</li>
+<li>Schema: isbn accepts string, array of strings, or array of objects</li>
+<li>56 stories enriched with edition metadata from OpenLibrary</li>
+<li>Expandable ISBN display: primary edition inline, rest collapsible</li>
+</ul>
+<h2 class="cl-release">[2026-04-03] PR #1 — Expand TASAT acronym in site subtitle</h2>
+<p class="cl-section" data-category="">Spells out the TASAT acronym in the site subtitle with bolded initials.</p>
+</div>
+
+<footer>
+  Extrapolated Futures Archive
+</footer>
+
+<script>
+function filterChangelog() {
+  const checked = Array.from(document.querySelectorAll('.cl-filters input:checked')).map(cb => cb.value);
+  const showAll = checked.length === 0;
+  document.querySelectorAll('.cl-section').forEach(function(el) {
+    const cat = el.getAttribute('data-category') || '';
+    if (showAll || !cat || checked.includes(cat)) {
+      el.classList.remove('cl-hidden');
+    } else {
+      el.classList.add('cl-hidden');
+    }
+  });
+}
+</script>
+</body>
+</html>

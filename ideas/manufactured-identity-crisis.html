@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manufactured Identity Crisis — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Manufactured Identity Crisis</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>A person discovers their entire identity, memories, and sense of self were artificially constructed, forcing them to decide whether to accept the manufactured self or pursue a dangerous truth about who they actually are.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Models the Turing test from the inside: if an AI genuinely believes it is human, does that belief constitute personhood? Relevant to AI rights, synthetic identity, and the ontology of consciousness.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=robotics">Robotics and Automation</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a><a class="tag" href="../index.html#domain=ai-ml">Artificial Intelligence and Machine Learning</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a><a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=cautionary">Cautionary</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=android-identity">android-identity</a><a class="tag" href="../index.html#search=synthetic-person">synthetic-person</a><a class="tag" href="../index.html#search=false-memory">false-memory</a><a class="tag" href="../index.html#search=personhood">personhood</a><a class="tag" href="../index.html#search=android-identity-discovery">android-identity-discovery</a><a class="tag" href="../index.html#search=manufactured-identity">manufactured-identity</a><a class="tag" href="../index.html#search=memory-manipulation">memory-manipulation</a><a class="tag" href="../index.html#search=identity-crisis">identity-crisis</a><a class="tag" href="../index.html#search=self-discovery">self-discovery</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (42)</h3>
+  <ul class="related-list"><li><a href="../stories/a-closed-and-common-orbit-chambers.html">A Closed and Common Orbit</a> — Becky Chambers (2016)</li>
+<li><a href="../stories/a-scanner-darkly-dick.html">A Scanner Darkly</a> — Philip K. Dick (1977)</li>
+<li><a href="../stories/ancillary-justice-leckie.html">Ancillary Justice</a> — Ann Leckie (2013)</li>
+<li><a href="../stories/android-at-arms-norton.html">Android at Arms</a> — Andre Norton (1971)</li>
+<li><a href="../stories/cagebird-lowachee.html">Cagebird</a> — Karin Lowachee, Karin Lowachee (2005)</li>
+<li><a href="../stories/charlotte-sometimes-farmer.html">Charlotte Sometimes</a> — Penelope Farmer (1969)</li>
+<li><a href="../stories/dark-matter-crouch.html">Dark Matter</a> — Blake Crouch (2016)</li>
+<li><a href="../stories/defy-me-shatter-me-mafi.html">Defy Me (Shatter Me)</a> — Tahereh Mafi (2019)</li>
+<li><a href="../stories/do-androids-dream-dick.html">Do Androids Dream of Electric Sheep?</a> — Philip K. Dick (1968)</li>
+<li><a href="../stories/feet-of-clay-pratchett.html">Feet of Clay</a> — Terry Pratchett (1996)</li>
+<li><a href="../stories/fight-club-palahniuk.html">Fight Club</a> — Chuck Palahniuk (1996)</li>
+<li><a href="../stories/flow-my-tears-the-policeman-said-dick.html">Flow my tears, the policeman said</a> — Philip K. Dick (1974)</li>
+<li><a href="../stories/glasshouse-stross.html">Glasshouse</a> — Charles Stross (2006)</li>
+<li><a href="../stories/hard-boiled-miller.html">Hard Boiled</a> — Frank Miller, Geof Darrow (1993)</li>
+<li><a href="../stories/hunter-s-run-martin.html">Hunter&#x27;s Run</a> — George R. R. Martin, Gardner R. Dozois, Daniel Abraham, Daniel Abraham (2007)</li>
+<li><a href="../stories/ice-crown-norton.html">Ice Crown</a> — Andre Norton (1970)</li>
+<li><a href="../stories/isaac-asimov-s-robot-city-1-odyssey-kube-mcdowell.html">Isaac Asimov&#x27;s Robot City 1 - Odyssey</a> — Michael P. Kube-McDowell (1987)</li>
+<li><a href="../stories/lifel1k3-kristoff.html">LIFEL1K3</a> — Jay Kristoff (2018)</li>
+<li><a href="../stories/lord-valentine-s-castle-silverberg.html">Lord Valentine&#x27;s Castle</a> — Robert Silverberg (1980)</li>
+<li><a href="../stories/mila-2-0-driza.html">MILA 2.0</a> — Debra Driza (2013)</li>
+<li><a href="../stories/more-than-this-ness.html">More Than This</a> — Patrick Ness (2013)</li>
+<li><a href="../stories/night-of-masks-norton.html">Night of Masks</a> — Andre Norton (1964)</li>
+<li><a href="../stories/non-stop-aldiss.html">Non-Stop</a> — Brian W. Aldiss (1958)</li>
+<li><a href="../stories/open-your-eyes-amen-bar.html">Open Your Eyes</a> — Alejandro Amenábar (1997)</li>
+<li><a href="../stories/pathfinder-card.html">Pathfinder</a> — Orson Scott Card (2010)</li>
+<li><a href="../stories/saturn-s-children-stross.html">Saturn&#x27;s Children</a> — Charles Stross (2008)</li>
+<li><a href="../stories/shatter-city-westerfeld.html">Shatter City</a> — Scott Westerfeld (2019)</li>
+<li><a href="../stories/star-hunter-norton.html">Star Hunter</a> — Andre Norton (1961)</li>
+<li><a href="../stories/star-wars-rebel-force-trapped-wheeler.html">Star Wars - Rebel Force - Trapped</a> — Alex Wheeler, Michel Leydier (2010)</li>
+<li><a href="../stories/swamp-thing-saga-of-the-swamp-thing-moore.html">Swamp Thing Saga of the Swamp Thing</a> — Alan Moore, Stephen Bissette (1987)</li>
+<li><a href="../stories/the-artificial-kid-sterling.html">The Artificial Kid</a> — Bruce Sterling (1980)</li>
+<li><a href="../stories/the-frugal-wizard-s-handbook-for-surviving-medieval-england-sanderson.html">The Frugal Wizard’s Handbook for Surviving Medieval England</a> — Brandon Sanderson (2023)</li>
+<li><a href="../stories/the-ghost-brigades-scalzi.html">The Ghost Brigades</a> — John Scalzi (2006)</li>
+<li><a href="../stories/the-mammoth-book-of-golden-age-science-fiction-asimov.html">The Mammoth Book of Golden Age Science Fiction: Short Novels of the 1940s</a> — Isaac Asimov, Charles G. Waugh, Martin H. Greenberg, Ross Rocklynne, A. E. van Vogt, Lester del Rey, Frederic Brown, Theodore Sturgeon, C. L. Moore, A. Bertram Chandler, T.L. Sherred, Jack Williamson (1989)</li>
+<li><a href="../stories/the-pawns-of-null-a-vogt.html">The Pawns of Null-A</a> — A. E. van Vogt (1956)</li>
+<li><a href="../stories/the-prisoner-disch.html">The Prisoner</a> — Thomas M. Disch (1979)</li>
+<li><a href="../stories/the-unpleasant-profession-of-jonathan-hoag-heinlein.html">The Unpleasant Profession of Jonathan Hoag</a> — Robert A. Heinlein (1959)</li>
+<li><a href="../stories/the-wild-robot-escapes-brown.html">The Wild Robot Escapes</a> — Peter Brown (2016)</li>
+<li><a href="../stories/the-world-of-vogt.html">The World of Ā</a> — A. E. van Vogt (1948)</li>
+<li><a href="../stories/use-of-weapons-banks.html">Use of Weapons</a> — Iain Banks (1990)</li>
+<li><a href="../stories/viscous-circle-anthony.html">Viscous Circle</a> — Piers Anthony (1982)</li>
+<li><a href="../stories/who-budrys.html">Who?</a> — Algis Budrys (1958)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="three-laws-edge-cases.html">Three Laws of Robotics Edge Cases</a></li>
+<li><a href="robot-personhood-quest.html">Robot&#x27;s Quest for Legal Personhood</a></li>
+<li><a href="engineered-social-partition.html">Engineered Social Partition</a></li>
+<li><a href="intellectual-isolation.html">Intellectual Monastic Isolation</a></li>
+<li><a href="persecuted-ability-minority.html">Persecuted Ability Minority</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/14/android" target="_blank" rel="noopener">android</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Manufactured+Identity+Crisis&entry-type=Idea&entry-id=manufactured-identity-crisis" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

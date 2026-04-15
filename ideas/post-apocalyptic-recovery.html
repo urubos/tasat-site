@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post-Apocalyptic Recovery — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Post-Apocalyptic Recovery</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>After civilizational collapse, survivors must rebuild institutions, supply chains, and social trust from scratch, testing which structures prove resilient.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Relevant to disaster recovery planning, civilizational resilience, and debates about which institutions and technologies are most critical to preserve.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=existential-risk">Existential Risk and Civilizational Collapse</a><a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=economics">Economics and Resource Allocation</a><a class="tag" href="../index.html#domain=medicine">Medicine and Human Enhancement</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=cautionary-tale">Cautionary tale</a><a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=aspirational">Aspirational</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=post-apocalypse">post-apocalypse</a><a class="tag" href="../index.html#search=civilizational-recovery">civilizational-recovery</a><a class="tag" href="../index.html#search=resilience">resilience</a><a class="tag" href="../index.html#search=urban-collapse-folk-resilience">urban-collapse-folk-resilience</a><a class="tag" href="../index.html#search=urban-collapse">urban-collapse</a><a class="tag" href="../index.html#search=folk-knowledge">folk-knowledge</a><a class="tag" href="../index.html#search=community-resilience">community-resilience</a><a class="tag" href="../index.html#search=marginalized-survival">marginalized-survival</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (62)</h3>
+  <ul class="related-list"><li><a href="../stories/a-canticle-for-leibowitz-jr.html">A Canticle for Leibowitz</a> — Walter M. Miller Jr., Волтер Майкл Міллер-молодший (1959)</li>
+<li><a href="../stories/after-worlds-collide-wylie.html">After Worlds Collide</a> — Philip Wylie (1934)</li>
+<li><a href="../stories/beyond-the-burning-lands-youd.html">Beyond the burning lands</a> — Sam Youd (1971)</li>
+<li><a href="../stories/black-august-wheatley.html">Black August</a> — Dennis Wheatley (1934)</li>
+<li><a href="../stories/borne-vandermeer.html">Borne</a> — Jeff VanderMeer (2017)</li>
+<li><a href="../stories/breed-to-come-norton.html">Breed to Come</a> — Andre Norton (1972)</li>
+<li><a href="../stories/brown-girl-in-the-ring-hopkinson.html">Brown Girl in the Ring</a> — Nalo Hopkinson (1998)</li>
+<li><a href="../stories/cemetary-world-simak.html">Cemetary World</a> — Clifford D. Simak (1973)</li>
+<li><a href="../stories/city-simak.html">City</a> — Clifford D. Simak (1952)</li>
+<li><a href="../stories/damnation-alley-zelazny.html">Damnation Alley</a> — Roger Zelazny (1969)</li>
+<li><a href="../stories/destination-unknown-applegate.html">Destination Unknown</a> — Katherine Applegate (2001)</li>
+<li><a href="../stories/dreamsnake-mcintyre.html">Dreamsnake</a> — Vonda N. McIntyre (1978)</li>
+<li><a href="../stories/empire-of-the-atom-vogt.html">Empire of the Atom</a> — A. E. van Vogt (1957)</li>
+<li><a href="../stories/fellowship-of-talisman-simak.html">Fellowship of Talisman</a> — Clifford D. Simak (1978)</li>
+<li><a href="../stories/gather-darkness-leiber.html">Gather, darkness!</a> — Fritz Leiber, Jonathan Davis (1950)</li>
+<li><a href="../stories/great-sky-river-benford.html">Great sky river</a> — Gregory Benford (1984)</li>
+<li><a href="../stories/into-the-still-blue-rossi.html">Into the Still Blue</a> — Veronica Rossi (2014)</li>
+<li><a href="../stories/junkyard-planet-piper.html">Junkyard Planet</a> — H. Beam Piper, H. Bean Piper (1963)</li>
+<li><a href="../stories/lucifer-s-hammer-niven.html">Lucifer&#x27;s Hammer</a> — Larry Niven, Jerry Pournelle (1977)</li>
+<li><a href="../stories/maddadam-atwood.html">MaddAdam</a> — Margaret Atwood (2013)</li>
+<li><a href="../stories/maddaddam-atwood.html">MaddAddam</a> — Margaret Atwood (2013)</li>
+<li><a href="../stories/mara-and-dann-lessing.html">Mara and Dann</a> — Doris Lessing (1999)</li>
+<li><a href="../stories/monsters-bick.html">Monsters</a> — Ilsa J. Bick (2013)</li>
+<li><a href="../stories/pandora-s-genes-lance.html">Pandora&#x27;s Genes</a> — Kathryn Lance (2001)</li>
+<li><a href="../stories/space-viking-piper.html">Space Viking</a> — H. Beam Piper (1963)</li>
+<li><a href="../stories/star-man-s-son-2250-a-d-norton.html">Star Man&#x27;s Son 2250 A.D.</a> — Andre Norton (1951)</li>
+<li><a href="../stories/star-rangers-norton.html">Star Rangers</a> — Andre Norton (1953)</li>
+<li><a href="../stories/station-eleven-mandel.html">Station Eleven</a> — Emily St. John Mandel (2014)</li>
+<li><a href="../stories/swan-song-mccammon.html">Swan Song</a> — Robert R. McCammon (1978)</li>
+<li><a href="../stories/the-boy-on-the-bridge-carey.html">The boy on the bridge</a> — M. R. Carey (2017)</li>
+<li><a href="../stories/the-city-of-ember-the-first-book-of-ember-duprau.html">The City of Ember (The First Book of Ember)</a> — Jeanne DuPrau (1998)</li>
+<li><a href="../stories/the-city-of-mirrors-cronin.html">The City of Mirrors</a> — Justin Cronin (2016)</li>
+<li><a href="../stories/the-day-of-the-triffids-wyndham.html">The Day of the Triffids</a> — John Wyndham, Marcel Battin, Cover by Andy Bridge (1951)</li>
+<li><a href="../stories/the-dream-compass-bredenberg.html">The Dream Compass</a> — Jeff Bredenberg (1991)</li>
+<li><a href="../stories/the-foundation-trilogy-asimov.html">The Foundation Trilogy</a> — Isaac Asimov (1950)</li>
+<li><a href="../stories/the-girl-who-owned-a-city-nelson.html">The girl who owned a city</a> — O. T. Nelson (1975)</li>
+<li><a href="../stories/the-kill-order-dashner.html">The Kill Order</a> — James Dashner (2012)</li>
+<li><a href="../stories/the-kiln-fire-us-03-armstrong.html">The Kiln (Fire-Us, #03)</a> — Jennifer L. Armstrong, Nancy Butcher (2003)</li>
+<li><a href="../stories/the-last-american-mitchell.html">The Last American</a> — John Ames Mitchell (1889)</li>
+<li><a href="../stories/the-long-mars-pratchett.html">The Long Mars</a> — Terry Pratchett, Stephen Baxter (2014)</li>
+<li><a href="../stories/the-long-tomorrow-brackett.html">The Long Tomorrow</a> — Leigh Brackett (1955)</li>
+<li><a href="../stories/the-martian-chronicles-bradbury.html">The Martian Chronicles</a> — Ray Bradbury (1950)</li>
+<li><a href="../stories/the-memoirs-of-a-survivor-lessing.html">The Memoirs of a Survivor</a> — Doris Lessing (1974)</li>
+<li><a href="../stories/the-passage-cronin.html">The Passage</a> — Justin Cronin (2010)</li>
+<li><a href="../stories/the-people-of-sparks-book-of-ember-2-duprau.html">The People of Sparks (Book of Ember #2)</a> — Jeanne DuPrau (2004)</li>
+<li><a href="../stories/the-postman-brin.html">The Postman</a> — David Brin (1985)</li>
+<li><a href="../stories/the-scarlet-plague-london.html">The Scarlet Plague</a> — Jack London (1910)</li>
+<li><a href="../stories/the-shadow-trap-watson.html">The Shadow Trap</a> — Jude Watson (2003)</li>
+<li><a href="../stories/the-sky-road-macleod.html">The Sky Road</a> — Ken MacLeod (1997)</li>
+<li><a href="../stories/the-stand-king.html">The Stand</a> — Stephen King (1978)</li>
+<li><a href="../stories/the-story-of-general-dann-and-mara-s-daughter-griot-and-the-snow-dog-lessing.html">The Story of General Dann and Mara&#x27;s daughter, Griot and the Snow Dog</a> — Doris Lessing (2005)</li>
+<li><a href="../stories/the-twelve-cronin.html">The Twelve</a> — Justin Cronin (2012)</li>
+<li><a href="../stories/the-wild-shore-robinson.html">The Wild Shore</a> — Kim Stanley Robinson (1984)</li>
+<li><a href="../stories/the-year-of-the-flood-atwood.html">The Year of the Flood</a> — Margaret Atwood (2009)</li>
+<li><a href="../stories/this-immortal-zelazny.html">This Immortal</a> — Roger Zelazny (1966)</li>
+<li><a href="../stories/under-the-never-sky-rossi.html">Under the Never Sky</a> — Veronica Rossi (2012)</li>
+<li><a href="../stories/vault-of-the-ages-anderson.html">Vault of the ages</a> — Poul Anderson (1952)</li>
+<li><a href="../stories/waterworld-movie-tie-in-collins.html">Waterworld (Movie-Tie-in)</a> — Max Allan Collins (1995)</li>
+<li><a href="../stories/when-worlds-collide-wylie.html">When Worlds Collide</a> — Philip Wylie, Edwin Balmer (1932)</li>
+<li><a href="../stories/where-late-the-sweet-birds-sang-wilhelm.html">Where Late the Sweet Birds Sang</a> — Kate Wilhelm (1976)</li>
+<li><a href="../stories/world-war-z-brooks.html">World War Z</a> — Max Brooks (2006)</li>
+<li><a href="../stories/z-for-zachariah-o-brien.html">Z for Zachariah</a> — Robert C. O&#x27;Brien (1975)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="nuclear-wasteland-survival.html">Nuclear Wasteland Survival Dynamics</a></li>
+<li><a href="technology-collapse-paradigm-shift.html">Sudden Technology Collapse</a></li>
+<li><a href="uncontrollable-psychic-weapon.html">Uncontrollable Psychic Weapon</a></li>
+<li><a href="body-rental-economy.html">Body Rental Economy</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/1316/post-apocalyptic" target="_blank" rel="noopener">post-apocalyptic</a> &middot; <a href="https://sfdictionary.com/view/1478/post-apocalypse" target="_blank" rel="noopener">post-apocalypse</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Post-Apocalyptic+Recovery&entry-type=Idea&entry-id=post-apocalyptic-recovery" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Contact Protocols — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>First Contact Protocols</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>Encounter with non-human intelligence tests communication, threat assessment, and diplomatic frameworks developed for intra-human contexts.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Relevant to SETI planning, exo-diplomacy frameworks, and institutional readiness for paradigm-shifting discoveries.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=first-contact">First Contact and Alien Civilizations</a><a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a><a class="tag" href="../index.html#domain=biotech">Biotechnology and Genetic Engineering</a><a class="tag" href="../index.html#domain=comms-info">Communication and Information Technology</a><a class="tag" href="../index.html#domain=climate">Climate and Environmental Change</a><a class="tag" href="../index.html#domain=time-travel">Time Travel and Temporal Mechanics</a><a class="tag" href="../index.html#domain=existential-risk">Existential Risk and Civilizational Collapse</a><a class="tag" href="../index.html#domain=warfare">Warfare and Weapons Technology</a><a class="tag" href="../index.html#domain=economics">Economics and Resource Allocation</a><a class="tag" href="../index.html#domain=surveillance">Surveillance and Privacy</a><a class="tag" href="../index.html#domain=medicine">Medicine and Human Enhancement</a><a class="tag" href="../index.html#domain=space">Space Exploration and Colonization</a><a class="tag" href="../index.html#domain=energy-physics">Energy and Physics</a><a class="tag" href="../index.html#domain=ai-ml">Artificial Intelligence and Machine Learning</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=prediction">Prediction / Extrapolation</a><a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a><a class="tag" href="../index.html#scenario=satire">Satire / Social commentary</a><a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=cautionary-tale">Cautionary tale</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=transformative">Transformative</a><a class="tag" href="../index.html#outcome=aspirational">Aspirational</a><a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=catastrophic">Catastrophic</a><a class="tag" href="../index.html#outcome=dystopian">Dystopian</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=alien-intelligence">alien-intelligence</a><a class="tag" href="../index.html#search=colonial-dynamics">colonial-dynamics</a><a class="tag" href="../index.html#search=declining-civilization">declining-civilization</a><a class="tag" href="../index.html#search=diplomacy">diplomacy</a><a class="tag" href="../index.html#search=first-contact">first-contact</a><a class="tag" href="../index.html#search=mars">mars</a><a class="tag" href="../index.html#search=political-interference">political-interference</a><a class="tag" href="../index.html#search=alien-abduction-isolation">alien-abduction-isolation</a><a class="tag" href="../index.html#search=alien-abduction">alien-abduction</a><a class="tag" href="../index.html#search=cultural-isolation">cultural-isolation</a><a class="tag" href="../index.html#search=reintegration">reintegration</a><a class="tag" href="../index.html#search=temporal-displacement">temporal-displacement</a><a class="tag" href="../index.html#search=alien-cultural-festival">alien-cultural-festival</a><a class="tag" href="../index.html#search=alien-festival">alien-festival</a><a class="tag" href="../index.html#search=cultural-immersion">cultural-immersion</a><a class="tag" href="../index.html#search=mutation-celebration">mutation-celebration</a><a class="tag" href="../index.html#search=alien-mundane-life">alien-mundane-life</a><a class="tag" href="../index.html#search=alien-daily-life">alien-daily-life</a><a class="tag" href="../index.html#search=mundane-universal">mundane-universal</a><a class="tag" href="../index.html#search=cross-species-similarity">cross-species-similarity</a><a class="tag" href="../index.html#search=alien-impersonating-human">alien-impersonating-human</a><a class="tag" href="../index.html#search=alien-impersonation">alien-impersonation</a><a class="tag" href="../index.html#search=human-value">human-value</a><a class="tag" href="../index.html#search=outsider-perspective">outsider-perspective</a><a class="tag" href="../index.html#search=alien-sleeper-agent-identity">alien-sleeper-agent-identity</a><a class="tag" href="../index.html#search=sleeper-agent">sleeper-agent</a><a class="tag" href="../index.html#search=alien-identity-discovery">alien-identity-discovery</a><a class="tag" href="../index.html#search=cultural-choice">cultural-choice</a><a class="tag" href="../index.html#search=alien-raised-human-returns">alien-raised-human-returns</a><a class="tag" href="../index.html#search=alien-raised-human">alien-raised-human</a><a class="tag" href="../index.html#search=grok">grok</a><a class="tag" href="../index.html#search=new-religion">new-religion</a><a class="tag" href="../index.html#search=alien-communion-vs-individuality">alien-communion-vs-individuality</a><a class="tag" href="../index.html#search=shapeshifting">shapeshifting</a><a class="tag" href="../index.html#search=bodily-autonomy">bodily-autonomy</a><a class="tag" href="../index.html#search=cultural-incommensurability">cultural-incommensurability</a><a class="tag" href="../index.html#search=parasitism-symbiosis">parasitism-symbiosis</a><a class="tag" href="../index.html#search=identity">identity</a><a class="tag" href="../index.html#search=alien-values">alien-values</a><a class="tag" href="../index.html#search=alien-information-pipeline">alien-information-pipeline</a><a class="tag" href="../index.html#search=alien-information">alien-information</a><a class="tag" href="../index.html#search=technology-dependency">technology-dependency</a><a class="tag" href="../index.html#search=hidden-cost">hidden-cost</a><a class="tag" href="../index.html#search=alien-inheritors-mimicking-humanity">alien-inheritors-mimicking-humanity</a><a class="tag" href="../index.html#search=alien-inheritors">alien-inheritors</a><a class="tag" href="../index.html#search=cultural-mimicry">cultural-mimicry</a><a class="tag" href="../index.html#search=post-human-earth">post-human-earth</a><a class="tag" href="../index.html#search=alien-managed-human-colony">alien-managed-human-colony</a><a class="tag" href="../index.html#search=alien-oversight">alien-oversight</a><a class="tag" href="../index.html#search=colonial-administration">colonial-administration</a><a class="tag" href="../index.html#search=nested-governance">nested-governance</a><a class="tag" href="../index.html#search=alien-self-inflicted-catastrophe">alien-self-inflicted-catastrophe</a><a class="tag" href="../index.html#search=self-inflicted-catastrophe">self-inflicted-catastrophe</a><a class="tag" href="../index.html#search=alien-aid">alien-aid</a><a class="tag" href="../index.html#search=moral-hazard">moral-hazard</a><a class="tag" href="../index.html#search=alien-across-history">alien-across-history</a><a class="tag" href="../index.html#search=alien-in-history">alien-in-history</a><a class="tag" href="../index.html#search=hidden-influence">hidden-influence</a><a class="tag" href="../index.html#search=temporal-manipulation">temporal-manipulation</a><a class="tag" href="../index.html#search=art-forgery">art-forgery</a><a class="tag" href="../index.html#search=anti-alien-racism">anti-alien-racism</a><a class="tag" href="../index.html#search=xenophobia">xenophobia</a><a class="tag" href="../index.html#search=interspecies-politics">interspecies-politics</a><a class="tag" href="../index.html#search=benevolent-alien-occupation">benevolent-alien-occupation</a><a class="tag" href="../index.html#search=benevolent-occupation">benevolent-occupation</a><a class="tag" href="../index.html#search=transcendence">transcendence</a><a class="tag" href="../index.html#search=paternalism">paternalism</a><a class="tag" href="../index.html#search=evolutionary-leap">evolutionary-leap</a><a class="tag" href="../index.html#search=deep-ocean-alien-invasion">deep-ocean-alien-invasion</a><a class="tag" href="../index.html#search=ocean-invasion">ocean-invasion</a><a class="tag" href="../index.html#search=unreachable-enemy">unreachable-enemy</a><a class="tag" href="../index.html#search=sea-level-rise">sea-level-rise</a><a class="tag" href="../index.html#search=fugitive-alien-encounter">fugitive-alien-encounter</a><a class="tag" href="../index.html#search=fugitive-encounter">fugitive-encounter</a><a class="tag" href="../index.html#search=forced-collaboration">forced-collaboration</a><a class="tag" href="../index.html#search=alien-capture">alien-capture</a><a class="tag" href="../index.html#search=hidden-intelligent-species">hidden-intelligent-species</a><a class="tag" href="../index.html#search=hidden-intelligence">hidden-intelligence</a><a class="tag" href="../index.html#search=undetected-species">undetected-species</a><a class="tag" href="../index.html#search=perception-limits">perception-limits</a><a class="tag" href="../index.html#search=hollow-earth-discovery">hollow-earth-discovery</a><a class="tag" href="../index.html#search=hollow-earth">hollow-earth</a><a class="tag" href="../index.html#search=uncontacted-civilization">uncontacted-civilization</a><a class="tag" href="../index.html#search=contact-ethics">contact-ethics</a><a class="tag" href="../index.html#search=exploration">exploration</a><a class="tag" href="../index.html#search=interplanetary-cultural-quest">interplanetary-cultural-quest</a><a class="tag" href="../index.html#search=cultural-quest">cultural-quest</a><a class="tag" href="../index.html#search=indigenous-knowledge">indigenous-knowledge</a><a class="tag" href="../index.html#search=outsider-engagement">outsider-engagement</a><a class="tag" href="../index.html#search=interstellar-trade-contact">interstellar-trade-contact</a><a class="tag" href="../index.html#search=interstellar-trade">interstellar-trade</a><a class="tag" href="../index.html#search=asymmetric-contact">asymmetric-contact</a><a class="tag" href="../index.html#search=focused-state">focused-state</a><a class="tag" href="../index.html#search=technological-exploitation">technological-exploitation</a><a class="tag" href="../index.html#search=ordinary-person-alien-liaison">ordinary-person-alien-liaison</a><a class="tag" href="../index.html#search=ordinary-liaison">ordinary-liaison</a><a class="tag" href="../index.html#search=bypassing-institutions">bypassing-institutions</a><a class="tag" href="../index.html#search=citizen-diplomacy">citizen-diplomacy</a><a class="tag" href="../index.html#search=parasitic-alien-body-control">parasitic-alien-body-control</a><a class="tag" href="../index.html#search=body-horror">body-horror</a><a class="tag" href="../index.html#search=parasitism">parasitism</a><a class="tag" href="../index.html#search=trust-collapse">trust-collapse</a><a class="tag" href="../index.html#search=post-peak-civilization-invasion">post-peak-civilization-invasion</a><a class="tag" href="../index.html#search=post-peak-invasion">post-peak-invasion</a><a class="tag" href="../index.html#search=reconquista">reconquista</a><a class="tag" href="../index.html#search=shape-shifting-alien-paranoia">shape-shifting-alien-paranoia</a><a class="tag" href="../index.html#search=shape-shifting">shape-shifting</a><a class="tag" href="../index.html#search=paranoia">paranoia</a><a class="tag" href="../index.html#search=isolation">isolation</a><a class="tag" href="../index.html#search=unfalsifiable-alien-claim">unfalsifiable-alien-claim</a><a class="tag" href="../index.html#search=alien-claim">alien-claim</a><a class="tag" href="../index.html#search=psychiatric-diagnosis">psychiatric-diagnosis</a><a class="tag" href="../index.html#search=unfalsifiability">unfalsifiability</a><a class="tag" href="../index.html#search=ufo-phenomenon-investigation">ufo-phenomenon-investigation</a><a class="tag" href="../index.html#search=ufo">ufo</a><a class="tag" href="../index.html#search=uap">uap</a><a class="tag" href="../index.html#search=epistemology">epistemology</a><a class="tag" href="../index.html#search=disclosure">disclosure</a><a class="tag" href="../index.html#search=mass-alien-compulsion">mass-alien-compulsion</a><a class="tag" href="../index.html#search=mass-compulsion">mass-compulsion</a><a class="tag" href="../index.html#search=alien-control">alien-control</a><a class="tag" href="../index.html#search=free-will">free-will</a><a class="tag" href="../index.html#search=behavioral-override">behavioral-override</a><a class="tag" href="../index.html#search=disguised-planet-killer">disguised-planet-killer</a><a class="tag" href="../index.html#search=disguised-weapon">disguised-weapon</a><a class="tag" href="../index.html#search=planet-destruction">planet-destruction</a><a class="tag" href="../index.html#search=stealth-threat">stealth-threat</a><a class="tag" href="../index.html#search=multi-species-crew">multi-species-crew</a><a class="tag" href="../index.html#search=cognitive-diversity">cognitive-diversity</a><a class="tag" href="../index.html#search=mixed-team">mixed-team</a><a class="tag" href="../index.html#search=forced-cohabitation-first-contact">forced-cohabitation-first-contact</a><a class="tag" href="../index.html#search=forced-cohabitation">forced-cohabitation</a><a class="tag" href="../index.html#search=multi-species">multi-species</a><a class="tag" href="../index.html#search=cultural-misunderstanding">cultural-misunderstanding</a><a class="tag" href="../index.html#search=legal-assassination-diplomacy">legal-assassination-diplomacy</a><a class="tag" href="../index.html#search=legal-assassination">legal-assassination</a><a class="tag" href="../index.html#search=alien-diplomacy">alien-diplomacy</a><a class="tag" href="../index.html#search=cultural-incompatibility">cultural-incompatibility</a><a class="tag" href="../index.html#search=miniature-alien-recruitment">miniature-alien-recruitment</a><a class="tag" href="../index.html#search=miniature-aliens">miniature-aliens</a><a class="tag" href="../index.html#search=civilian-recruitment">civilian-recruitment</a><a class="tag" href="../index.html#search=interstellar-justice">interstellar-justice</a><a class="tag" href="../index.html#search=scale-assumptions">scale-assumptions</a><a class="tag" href="../index.html#search=miniature-civilization-awareness">miniature-civilization-awareness</a><a class="tag" href="../index.html#search=miniature-civilization">miniature-civilization</a><a class="tag" href="../index.html#search=forgotten-identity">forgotten-identity</a><a class="tag" href="../index.html#search=paradigm-discovery">paradigm-discovery</a><a class="tag" href="../index.html#search=intelligent-cosmic-gas-cloud">intelligent-cosmic-gas-cloud</a><a class="tag" href="../index.html#search=intelligent-cloud">intelligent-cloud</a><a class="tag" href="../index.html#search=scale-mismatch">scale-mismatch</a><a class="tag" href="../index.html#search=information-hazard">information-hazard</a><a class="tag" href="../index.html#search=intelligent-animal-human-contact">intelligent-animal-human-contact</a><a class="tag" href="../index.html#search=intelligent-animals">intelligent-animals</a><a class="tag" href="../index.html#search=creator-successor">creator-successor</a><a class="tag" href="../index.html#search=post-human-contact">post-human-contact</a><a class="tag" href="../index.html#search=human-alien-interface">human-alien-interface</a><a class="tag" href="../index.html#search=neural-interface">neural-interface</a><a class="tag" href="../index.html#search=exploitation">exploitation</a><a class="tag" href="../index.html#search=rare-ability">rare-ability</a><a class="tag" href="../index.html#search=servitude">servitude</a><a class="tag" href="../index.html#search=technology-implies-belligerence">technology-implies-belligerence</a><a class="tag" href="../index.html#search=selection-bias">selection-bias</a><a class="tag" href="../index.html#search=evolutionary-aggression">evolutionary-aggression</a><a class="tag" href="../index.html#search=fermi-paradox">fermi-paradox</a><a class="tag" href="../index.html#search=great-filter">great-filter</a><a class="tag" href="../index.html#search=annoying-alien-contact">annoying-alien-contact</a><a class="tag" href="../index.html#search=annoying-aliens">annoying-aliens</a><a class="tag" href="../index.html#search=nuisance-contact">nuisance-contact</a><a class="tag" href="../index.html#search=low-threat-disruption">low-threat-disruption</a><a class="tag" href="../index.html#search=lethal-alien-labyrinth">lethal-alien-labyrinth</a><a class="tag" href="../index.html#search=lethal-labyrinth">lethal-labyrinth</a><a class="tag" href="../index.html#search=repeated-death">repeated-death</a><a class="tag" href="../index.html#search=alien-structure">alien-structure</a><a class="tag" href="../index.html#search=expendable-explorers">expendable-explorers</a><a class="tag" href="../index.html#search=incomprehensible-outside-context-problem">incomprehensible-outside-context-problem</a><a class="tag" href="../index.html#search=outside-context-problem">outside-context-problem</a><a class="tag" href="../index.html#search=incomprehensible-artifact">incomprehensible-artifact</a><a class="tag" href="../index.html#search=paradigm-failure">paradigm-failure</a><a class="tag" href="../index.html#search=immortal-guardian-of-earth">immortal-guardian-of-earth</a><a class="tag" href="../index.html#search=immortality">immortality</a><a class="tag" href="../index.html#search=cultural-preservation">cultural-preservation</a><a class="tag" href="../index.html#search=alien-tourism">alien-tourism</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (114)</h3>
+  <ul class="related-list"><li><a href="../stories/a-deepness-in-the-sky-zones-of-thought-vinge.html">A Deepness in the Sky</a> — Vernor Vinge (1999)</li>
+<li><a href="../stories/a-desolation-called-peace-martine.html">A Desolation Called Peace</a> — Arkady Martine (2022)</li>
+<li><a href="../stories/absolute-choice-ingersoll.html">Absolute choice</a> — Donielle Ingersoll (2016)</li>
+<li><a href="../stories/across-the-sea-of-suns-benford.html">Across the Sea of Suns</a> — Gregory Benford (1984)</li>
+<li><a href="../stories/aelita-tolstoy.html">Аэлита (Aelita)</a> — Alexei Nikolayevich Tolstoy (1923)</li>
+<li><a href="../stories/aliens-ate-my-homework-coville.html">Aliens Ate My Homework</a> — Bruce Coville (1993)</li>
+<li><a href="../stories/all-judgment-fled-white.html">All judgment fled</a> — James White (1968)</li>
+<li><a href="../stories/anathem-stephenson.html">Anathem</a> — Neal Stephenson (2008)</li>
+<li><a href="../stories/armageddon-patterson.html">Armageddon</a> — James Patterson, Chris Grabenstein (2012)</li>
+<li><a href="../stories/at-the-earth-s-core-burroughs.html">At the Earth&#x27;s Core</a> — Edgar Rice Burroughs (1914)</li>
+<li><a href="../stories/awakening-on-orbis-4-haarsma.html">Awakening on Orbis 4</a> — PJ Haarsma (2006)</li>
+<li><a href="../stories/baloney-scieszka.html">Baloney</a> — Jon Scieszka (2001)</li>
+<li><a href="../stories/beyond-heaven-s-river-bear.html">Beyond Heaven&#x27;s River</a> — Greg Bear, Ray Chase (1980)</li>
+<li><a href="../stories/blindsight-watts.html">Blindsight</a> — Peter Watts (2006)</li>
+<li><a href="../stories/captain-underpants-and-the-invasion-of-the-incredibly-naughty-cafeteria-ladies-from-outer-space-pilkey.html">Captain Underpants and the Invasion of the Incredibly Naughty Cafeteria Ladies from Outer Space</a> — Dav Pilkey (1999)</li>
+<li><a href="../stories/childhood-s-end-clarke.html">Childhood’s End</a> — Arthur C. Clarke (1953)</li>
+<li><a href="../stories/children-of-god-russell.html">Children of God</a> — Mary Doria Russell (1998)</li>
+<li><a href="../stories/city-of-death-goss.html">City of Death</a> — James Goss (2012)</li>
+<li><a href="../stories/city-of-sorcery-bradley.html">City of Sorcery</a> — Marion Zimmer Bradley (1984)</li>
+<li><a href="../stories/codgerspace-foster.html">Codgerspace</a> — Alan Dean Foster, Dean Foster, Alan Foster (1992)</li>
+<li><a href="../stories/contact-sagan.html">Contact</a> — Carl Sagan (1985)</li>
+<li><a href="../stories/crisis-on-doona-mccaffrey.html">Crisis on Doona</a> — Anne McCaffrey (1992)</li>
+<li><a href="../stories/damia-mccaffrey.html">Damia</a> — Anne McCaffrey (1992)</li>
+<li><a href="../stories/damia-s-children-mccaffrey.html">Damia&#x27;s Children</a> — Anne McCaffrey, Jean Reed Bahle (1993)</li>
+<li><a href="../stories/dark-light-macleod.html">Dark light</a> — Ken MacLeod (2001)</li>
+<li><a href="../stories/dawn-butler.html">Dawn</a> — Octavia E. Butler, Aldrich Barrett (1987)</li>
+<li><a href="../stories/decision-at-doona-mccaffrey.html">Decision at Doona</a> — Anne McCaffrey (1969)</li>
+<li><a href="../stories/double-star-heinlein.html">Double Star</a> — Robert A. Heinlein (1956)</li>
+<li><a href="../stories/e-t-kotzwinkle.html">E.T</a> — William Kotzwinkle, Melissa Mathison (1982)</li>
+<li><a href="../stories/earth-unaware-card.html">Earth Unaware</a> — Orson Scott Card, Aaron Johnston (2012)</li>
+<li><a href="../stories/earthfall-walden.html">Earthfall</a> — Mark Walden (2012)</li>
+<li><a href="../stories/eater-benford.html">Eater</a> — Gregory Benford (2000)</li>
+<li><a href="../stories/eden-lem.html">Eden</a> — Stanisław Lem (1968)</li>
+<li><a href="../stories/ender-s-game-card.html">Ender&#x27;s Game</a> — Orson Scott Card (1985)</li>
+<li><a href="../stories/excession-banks.html">Excession</a> — Iain Banks (1996)</li>
+<li><a href="../stories/exordia-dickinson.html">Exordia</a> — Seth Dickinson (2023)</li>
+<li><a href="../stories/fiasko-lem.html">Fiasko</a> — Stanisław Lem (1979)</li>
+<li><a href="../stories/footfall-niven.html">Footfall</a> — Larry Niven, Jerry Pournelle (1985)</li>
+<li><a href="../stories/foreigner-cherryh.html">Foreigner</a> — C. J. Cherryh (1994)</li>
+<li><a href="../stories/grass-tepper.html">Grass</a> — Sheri S. Tepper (1989)</li>
+<li><a href="../stories/great-sky-river-benford.html">Great sky river</a> — Gregory Benford (1984)</li>
+<li><a href="../stories/hunter-s-run-martin.html">Hunter&#x27;s Run</a> — George R. R. Martin, Gardner R. Dozois, Daniel Abraham, Daniel Abraham (2007)</li>
+<li><a href="../stories/in-the-light-of-sigma-draconis-a-woman-of-the-iron-people-part-1-arnason.html">In the Light of Sigma Draconis (A Woman of the Iron People, Part 1)</a> — Eleanor Arnason, Eleanor Arnason (1991)</li>
+<li><a href="../stories/invaders-from-the-infinite-campbell.html">Invaders from the Infinite</a> — John W. Campbell, Campbell, John, John Campbell (1961)</li>
+<li><a href="../stories/iron-cage-norton.html">Iron Cage</a> — Andre Norton (1974)</li>
+<li><a href="../stories/janissaries-pournelle.html">Janissaries</a> — Jerry Pournelle, Keith Szarabajka (1979)</li>
+<li><a href="../stories/jem-pohl.html">Jem</a> — Frederik Pohl (1979)</li>
+<li><a href="../stories/k-pax-brewer.html">K-Pax</a> — Gene Brewer (1995)</li>
+<li><a href="../stories/lizard-music-pinkwater.html">Lizard Music</a> — Daniel Manus Pinkwater (1976)</li>
+<li><a href="../stories/martians-go-home-brown.html">Martians, Go Home!</a> — Fredric Brown (1955)</li>
+<li><a href="../stories/men-martians-and-machines-russell.html">Men, Martians and Machines</a> — Eric Frank Russell (1955)</li>
+<li><a href="../stories/mission-of-gravity-clement.html">Mission of gravity</a> — Hal Clement (1954)</li>
+<li><a href="../stories/moebius-the-exotics-moebius.html">Moebius&#x27; The Exotics</a> — Moebius, Jean &quot;Mobius&quot; Giruad (1987)</li>
+<li><a href="../stories/monsters-of-men-ness.html">Monsters of men</a> — Patrick Ness (2010)</li>
+<li><a href="../stories/nightwings-silverberg.html">Nightwings</a> — Robert Silverberg, Michael Netzer (1969)</li>
+<li><a href="../stories/otherness-brin.html">Otherness</a> — David Brin (1994)</li>
+<li><a href="../stories/out-of-the-silent-planet-lewis.html">Out of the Silent Planet</a> — C. S. Lewis (1938)</li>
+<li><a href="../stories/pandora-s-star-hamilton.html">Pandora&#x27;s Star</a> — Peter F. Hamilton (2004)</li>
+<li><a href="../stories/playing-god-zettel.html">Playing God</a> — Sarah Zettel (1998)</li>
+<li><a href="../stories/rama-ii-clarke.html">Rama II</a> — Arthur C. Clarke, Gentry Lee (1989)</li>
+<li><a href="../stories/rendezvous-with-rama-clarke.html">Rendezvous with Rama</a> — Arthur C. Clarke (1973)</li>
+<li><a href="../stories/rocannon-s-world-guin.html">Rocannon&#x27;s World</a> — Ursula K. Le Guin (1966)</li>
+<li><a href="../stories/rogue-moon-budrys.html">Rogue moon</a> — Algis Budrys (1960)</li>
+<li><a href="../stories/shadows-in-flight-card.html">Shadows in Flight</a> — Orson Scott Card (2012)</li>
+<li><a href="../stories/solaris-lem.html">Solaris</a> — Stanisław Lem (1961)</li>
+<li><a href="../stories/space-paw-dickson.html">Space Paw</a> — Gordon R. Dickson (1969)</li>
+<li><a href="../stories/speaker-for-the-dead-card.html">Speaker for the Dead</a> — Orson Scott Card (1986)</li>
+<li><a href="../stories/star-ka-at-norton.html">Star Ka&#x27;at</a> — Andre Norton, Dorothy Madlee, Dorothy H. Madlee, Bernard Colonna (1976)</li>
+<li><a href="../stories/star-of-danger-bradley.html">Star of Danger</a> — Marion Zimmer Bradley (1964)</li>
+<li><a href="../stories/star-trek-3-blish.html">STAR TREK 3</a> — James Blish (1969)</li>
+<li><a href="../stories/star-trek-the-next-generation-encounter-at-farpoint-gerrold.html">Star Trek The Next Generation - Encounter at Farpoint</a> — David Gerrold (1987)</li>
+<li><a href="../stories/star-wars-outbound-flight-zahn.html">Star Wars - Outbound Flight</a> — Timothy Zahn (2005)</li>
+<li><a href="../stories/star-wars-the-new-jedi-order-vector-prime-salvatore.html">Star Wars - The New Jedi Order - Vector Prime</a> — R. A. Salvatore (1999)</li>
+<li><a href="../stories/storm-over-warlock-norton.html">Storm Over Warlock</a> — Andre Norton (1960)</li>
+<li><a href="../stories/stranger-in-a-strange-land-heinlein.html">Stranger in a Strange Land</a> — Robert A. Heinlein (1961)</li>
+<li><a href="../stories/sundiver-brin.html">Sundiver</a> — David Brin, George Wilson (1980)</li>
+<li><a href="../stories/tales-of-known-space-niven.html">Tales of Known Space</a> — Larry Niven (1975)</li>
+<li><a href="../stories/the-black-cloud-hoyle.html">The Black Cloud</a> — Fred Hoyle (1957)</li>
+<li><a href="../stories/the-black-star-passes-campbell.html">The Black Star Passes</a> — John W. Campbell (1953)</li>
+<li><a href="../stories/the-bromeliad-pratchett.html">The Bromeliad</a> — Terry Pratchett (1996)</li>
+<li><a href="../stories/the-dark-forest-the-three-body-problem-series-book-2-None.html">The Dark Forest (The Three-Body Problem Series Book 2)</a> — 刘慈欣 (2008)</li>
+<li><a href="../stories/the-dark-side-of-nowhere-shusterman.html">The Dark Side of Nowhere</a> — Neal Shusterman (1997)</li>
+<li><a href="../stories/the-deluge-drivers-foster.html">The Deluge Drivers</a> — Alan Dean Foster (1987)</li>
+<li><a href="../stories/the-einstein-intersection-delany.html">The Einstein intersection</a> — Samuel R. Delany (1967)</li>
+<li><a href="../stories/the-forge-of-god-bear.html">The forge of God</a> — Greg Bear, Stephen Bel Davies (1987)</li>
+<li><a href="../stories/the-fresco-tepper.html">The fresco</a> — Sheri S. Tepper, Sheri S. Tepper (2000)</li>
+<li><a href="../stories/the-galaxy-and-the-ground-within-chambers.html">The Galaxy, and the Ground Within</a> — Becky Chambers (2021)</li>
+<li><a href="../stories/the-garden-of-rama-clarke.html">The Garden of Rama</a> — Arthur C. Clarke, Gentry Lee (1991)</li>
+<li><a href="../stories/the-gripping-hand-niven.html">The Gripping Hand</a> — Larry Niven (1993)</li>
+<li><a href="../stories/the-humans-haig.html">The Humans</a> — Matt Haig (2001)</li>
+<li><a href="../stories/the-kraken-wakes-wyndham.html">The Kraken Wakes</a> — John Wyndham (1953)</li>
+<li><a href="../stories/the-last-theorem-clarke.html">The Last Theorem</a> — Arthur C. Clarke, Frederik Pohl (2008)</li>
+<li><a href="../stories/the-left-hand-of-darkness-guin.html">The Left Hand of Darkness</a> — Ursula K. Le Guin (1969)</li>
+<li><a href="../stories/the-long-result-brunner.html">The long result</a> — John Brunner (1965)</li>
+<li><a href="../stories/the-long-way-to-a-small-angry-planet-chambers.html">The Long Way to a Small, Angry Planet</a> — Becky Chambers (2014)</li>
+<li><a href="../stories/the-martian-chronicles-bradbury.html">The Martian Chronicles</a> — Ray Bradbury (1950)</li>
+<li><a href="../stories/the-mote-in-god-s-eye-niven.html">The Mote in God&#x27;s Eye</a> — Larry Niven, Jerry Pournelle, L.J. Ganser (1974)</li>
+<li><a href="../stories/the-ophiuchi-hotline-varley.html">The Ophiuchi Hotline</a> — John Varley (1977)</li>
+<li><a href="../stories/the-puppet-masters-heinlein.html">The Puppet Masters</a> — Robert A. Heinlein (1951)</li>
+<li><a href="../stories/the-rowan-mccaffrey.html">The Rowan</a> — Anne McCaffrey (1990)</li>
+<li><a href="../stories/the-science-fiction-hall-of-fame-volume-one-silverberg.html">The Science Fiction Hall of Fame -- Volume One</a> — Robert Silverberg, Robert A. Heinlein, Arthur C. Clarke, Isaac Asimov, Ray Bradbury (1970)</li>
+<li><a href="../stories/the-sentinel-clarke.html">The Sentinel</a> — Arthur C. Clarke (1983)</li>
+<li><a href="../stories/the-sparrow-russell.html">The Sparrow</a> — Mary Doria Russell (1996)</li>
+<li><a href="../stories/the-things-peter-watts.html">The Things</a> — Peter Watts (2010)</li>
+<li><a href="../stories/the-three-body-problem-cixin.html">The Three-Body Problem</a> — Liu Cixin (2015)</li>
+<li><a href="../stories/the-trouble-twisters-anderson.html">The Trouble Twisters</a> — Poul Anderson, Paul Anderson (1966)</li>
+<li><a href="../stories/the-truce-at-bakura-tyers.html">The Truce at Bakura</a> — Kathy Tyers (1993)</li>
+<li><a href="../stories/the-voyage-of-the-space-beagle-vogt.html">The Voyage of the Space Beagle</a> — A. E. van Vogt (1950)</li>
+<li><a href="../stories/the-war-of-the-worlds-the-time-machine-wells.html">The War Of The Worlds/The Time Machine</a> — H. G. Wells (1946)</li>
+<li><a href="../stories/the-war-of-the-worlds-wells.html">The War of the Worlds</a> — H. G. Wells (1898)</li>
+<li><a href="../stories/this-immortal-zelazny.html">This Immortal</a> — Roger Zelazny (1966)</li>
+<li><a href="../stories/voyagers-bova.html">Voyagers</a> — Ben Bova (1981)</li>
+<li><a href="../stories/who-goes-there-campbell.html">Who Goes There?</a> — John W. Campbell, William F. Nolan (1948)</li>
+<li><a href="../stories/world-of-ptavvs-niven.html">World of Ptavvs</a> — Larry Niven (1966)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="multi-level-civilization-contact.html">Multi-Level Civilization Contact</a></li>
+<li><a href="planetary-romance-adventure.html">Planetary Romance and Cultural Encounter</a></li>
+<li><a href="interstellar-mission-governance.html">Interstellar Mission Governance</a></li>
+<li><a href="displaced-alien-identity.html">Displaced Non-Human Identity Search</a></li>
+<li><a href="parallel-neanderthal-civilization.html">Parallel Neanderthal Civilization Contact</a></li>
+<li><a href="orbital-education.html">Orbital Education Institution</a></li>
+<li><a href="consciousness-as-evolutionary-overhead.html">Consciousness as Evolutionary Overhead</a></li>
+<li><a href="non-self-aware-intelligence.html">Non-Self-Aware Intelligence</a></li>
+<li><a href="alien-contact-spanning-millennia.html">Alien Contact Spanning Millennia</a></li>
+<li><a href="uncontrollable-breeding-species.html">First Contact with Uncontrollably Breeding Species</a></li>
+<li><a href="galactic-pawn.html">Humanity as Galactic Pawn</a></li>
+<li><a href="sentient-planet.html">Sentient Planet Communication</a></li>
+<li><a href="alien-body-swap.html">Involuntary Alien Body Transfer</a></li>
+<li><a href="near-future-collapse-new-religion.html">Near-Future Collapse and Founding a New Religion</a></li>
+<li><a href="alien-guided-evolution.html">Alien-Guided Human Evolution</a></li>
+<li><a href="alien-evaluation-of-earth.html">Alien Evaluation of Earth for Galactic Decision</a></li>
+<li><a href="multi-phase-alien-invasion.html">Multi-Phase Alien Invasion Strategy</a></li>
+<li><a href="future-warfare.html">Future Warfare Scenario</a></li>
+<li><a href="alien-communication-barrier.html">Alien Communication Impossibility</a></li>
+<li><a href="total-surveillance-society.html">Total Surveillance Society</a></li>
+<li><a href="covert-replacement-invasion.html">Covert Individual Replacement Invasion</a></li>
+<li><a href="population-control-regime.html">Population Control Regime</a></li>
+<li><a href="alien-consciousness-passenger.html">Alien Consciousness Passenger</a></li>
+<li><a href="engineered-social-partition.html">Engineered Social Partition</a></li>
+<li><a href="intellectual-isolation.html">Intellectual Monastic Isolation</a></li>
+<li><a href="persecuted-ability-minority.html">Persecuted Ability Minority</a></li>
+<li><a href="extreme-gravity-exploration.html">Extreme Gravity Planet Exploration</a></li>
+<li><a href="alien-signal-decryption.html">Alien Signal Decryption Risk</a></li>
+<li><a href="biotech-creature-personhood.html">Bioengineered Creature Personhood</a></li>
+<li><a href="personality-cloning.html">Personality Cloning Through Controlled Environment</a></li>
+<li><a href="collective-ancestral-memory.html">Collective Ancestral Memory Bearer</a></li>
+<li><a href="sapience-classification-debate.html">Sapience Classification Debate</a></li>
+<li><a href="church-monopoly-on-resurrection.html">Church Monopoly on Resurrection Technology</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/1698/interplanetary" target="_blank" rel="noopener">interplanetary</a> &middot; <a href="https://sfdictionary.com/view/455/first-contact" target="_blank" rel="noopener">first contact</a> &middot; <a href="https://sfdictionary.com/view/1368/shapeshifting" target="_blank" rel="noopener">shapeshifting</a> &middot; <a href="https://sfdictionary.com/view/1620/catastrophe" target="_blank" rel="noopener">catastrophe</a> &middot; <a href="https://sfdictionary.com/view/583/non-human" target="_blank" rel="noopener">non-human</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+First+Contact+Protocols&entry-type=Idea&entry-id=first-contact-protocols" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

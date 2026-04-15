@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Youth Resistance Movement Against Government Suppression — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Youth Resistance Movement Against Government Suppression</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>Young people with special abilities, suppressed and imprisoned by the government, organize a resistance movement, testing whether youthful idealism can overcome institutional power.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Models youth activist movements, relevant to climate strikes, pro-democracy student movements, and the dynamics of youth organizing against entrenched power structures.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a><a class="tag" href="../index.html#domain=warfare">Warfare and Weapons Technology</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=cautionary-tale">Cautionary tale</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=aspirational">Aspirational</a><a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=dystopian">Dystopian</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=youth-resistance">youth-resistance</a><a class="tag" href="../index.html#search=government-suppression">government-suppression</a><a class="tag" href="../index.html#search=special-abilities">special-abilities</a><a class="tag" href="../index.html#search=split-nation-dystopia">split-nation-dystopia</a><a class="tag" href="../index.html#search=split-nation">split-nation</a><a class="tag" href="../index.html#search=manufactured-enemy">manufactured-enemy</a><a class="tag" href="../index.html#search=prodigy-criminal">prodigy-criminal</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (85)</h3>
+  <ul class="related-list"><li><a href="../stories/angel-patterson.html">Angel</a> — James Patterson (1998)</li>
+<li><a href="../stories/before-tomorrow-dunn.html">Before Tomorrow</a> — Pintip Dunn (2017)</li>
+<li><a href="../stories/broken-sky-wooding.html">Broken Sky</a> — Chris Wooding (1999)</li>
+<li><a href="../stories/calamity-sanderson.html">Calamity</a> — Brandon Sanderson (2016)</li>
+<li><a href="../stories/catching-fire-collins.html">Catching Fire</a> — Suzanne Collins (2009)</li>
+<li><a href="../stories/champion-lu.html">Champion</a> — Marie Lu, Steven Kaplan, Mariel Stern (2013)</li>
+<li><a href="../stories/crazy-house-patterson.html">Crazy House</a> — James Patterson (2017)</li>
+<li><a href="../stories/cress-meyer.html">Cress</a> — Marissa Meyer (2014)</li>
+<li><a href="../stories/crisis-on-conshelf-ten-hughes.html">Crisis on Conshelf Ten</a> — Monica Hughes         (1975)</li>
+<li><a href="../stories/delirium-oliver.html">Delirium</a> — Lauren Oliver (2011)</li>
+<li><a href="../stories/fang-patterson.html">Fang</a> — James Patterson (1998)</li>
+<li><a href="../stories/final-strife-el-arifi.html">Final Strife</a> — Saara El-Arifi (2022)</li>
+<li><a href="../stories/firestarter-king.html">Firestarter</a> — Stephen King (1980)</li>
+<li><a href="../stories/glass-sword-aveyard.html">Glass Sword</a> — Victoria Aveyard (2016)</li>
+<li><a href="../stories/harry-potter-and-the-deathly-hallows-rowling.html">Harry Potter and the Deathly Hallows</a> — J. K. Rowling (2007)</li>
+<li><a href="../stories/harry-potter-and-the-order-of-the-phoenix-rowling.html">Harry Potter and the Order of the Phoenix</a> — J. K. Rowling (2003)</li>
+<li><a href="../stories/heartsease-dickinson.html">Heartsease</a> — Peter Dickinson (1969)</li>
+<li><a href="../stories/homeland-doctorow.html">Homeland</a> — Cory Doctorow (2013)</li>
+<li><a href="../stories/ignite-me-mafi.html">Ignite Me</a> — Tahereh Mafi (2014)</li>
+<li><a href="../stories/in-the-afterlight-bracken.html">In The Afterlight</a> — Alexandra Bracken (2014)</li>
+<li><a href="../stories/insurgent-roth.html">Insurgent</a> — Veronica Roth (2011)</li>
+<li><a href="../stories/king-s-cage-aveyard.html">King&#x27;s Cage</a> — Victoria Aveyard (2017)</li>
+<li><a href="../stories/legend-lu.html">Legend</a> — Marie Lu (2011)</li>
+<li><a href="../stories/little-brother-doctorow.html">Little Brother</a> — Cory Doctorow (2008)</li>
+<li><a href="../stories/mockingjay-collins.html">Mockingjay</a> — Suzanne Collins (2010)</li>
+<li><a href="../stories/never-fade-bracken.html">Never fade</a> — Alexandra Bracken, Alexander Bracken (2013)</li>
+<li><a href="../stories/pandemonium-oliver.html">Pandemonium</a> — Lauren Oliver (2012)</li>
+<li><a href="../stories/pirate-cinema-doctorow.html">Pirate Cinema</a> — Cory Doctorow (2012)</li>
+<li><a href="../stories/prodigy-lu.html">Prodigy</a> — Marie Lu (2012)</li>
+<li><a href="../stories/red-queen-aveyard.html">Red Queen</a> — Victoria Aveyard (2015)</li>
+<li><a href="../stories/restore-me-mafi.html">Restore me</a> — Tahereh Mafi (2018)</li>
+<li><a href="../stories/runaways-vaughan.html">Runaways</a> — Brian K. Vaughan, Adrian Alphona (2004)</li>
+<li><a href="../stories/scarlet-meyer.html">Scarlet</a> — Marissa Meyer (2013)</li>
+<li><a href="../stories/shade-s-children-nix.html">Shade&#x27;s children</a> — Garth Nix (1997)</li>
+<li><a href="../stories/shadows-bick.html">Shadows</a> — Ilsa J. Bick (2012)</li>
+<li><a href="../stories/shatter-me-mafi.html">Shatter Me</a> — Tahereh Mafi (2011)</li>
+<li><a href="../stories/skyward-sanderson.html">Skyward</a> — Brandon Sanderson (2018)</li>
+<li><a href="../stories/some-desperate-glory-tesh.html">Some Desperate Glory</a> — Emily Tesh (2022)</li>
+<li><a href="../stories/specials-westerfeld.html">Specials</a> — Scott Westerfeld (2006)</li>
+<li><a href="../stories/star-wars-ahsoka-johnston.html">Star Wars - Ahsoka</a> — E. K. Johnston (2016)</li>
+<li><a href="../stories/star-wars-episode-vii-the-force-awakens-foster.html">Star Wars Episode VII - The Force Awakens</a> — Alan Dean Foster (2001)</li>
+<li><a href="../stories/star-wars-episode-viii-the-last-jedi-fry.html">Star Wars Episode VIII - The Last Jedi</a> — Jason Fry (2018)</li>
+<li><a href="../stories/star-wars-from-the-adventures-of-luke-skywalker-lucas.html">Star Wars - From the Adventures of Luke Skywalker</a> — George Lucas, Alan Dean Foster (1976)</li>
+<li><a href="../stories/star-wars-jedi-prince-the-lost-city-of-the-jedi-davids.html">Star Wars - Jedi Prince - The Lost City of the Jedi</a> — Paul Davids, Hollace Davids (1992)</li>
+<li><a href="../stories/star-wars-legacy-of-the-force-exile-allston.html">Star Wars - Legacy of the Force - Exile</a> — Aaron Allston (2007)</li>
+<li><a href="../stories/star-wars-young-jedi-knights-jedi-under-siege-anderson.html">Star Wars - Young Jedi Knights - Jedi Under Siege</a> — Kevin J. Anderson, Rebecca Moesta (1995)</li>
+<li><a href="../stories/steelheart-sanderson.html">Steelheart</a> — Brandon Sanderson (2001)</li>
+<li><a href="../stories/supernova-meyer.html">Supernova</a> — Marissa Meyer (2019)</li>
+<li><a href="../stories/swarm-westerfeld.html">Swarm</a> — Scott Westerfeld (2016)</li>
+<li><a href="../stories/the-5th-wave-the-5th-wave-1-yancey.html">The 5th wave (The 5th Wave #1)</a> — Richard Yancey (2013)</li>
+<li><a href="../stories/the-angel-experiment-patterson.html">The Angel Experiment</a> — James Patterson (2001)</li>
+<li><a href="../stories/the-ask-and-the-answer-ness.html">The Ask and the Answer</a> — Patrick Ness (2009)</li>
+<li><a href="../stories/the-chrysalids-wyndham.html">The Chrysalids</a> — John Wyndham (1955)</li>
+<li><a href="../stories/the-city-of-gold-and-lead-youd.html">The CITY OF GOLD AND LEAD</a> — Sam Youd, John Christopher (1967)</li>
+<li><a href="../stories/the-darkest-minds-bracken.html">The Darkest Minds</a> — Alexandra Bracken, Amy McFadden, Montserrat Triviño Gonzalez (2012)</li>
+<li><a href="../stories/the-hunger-games-collins.html">The Hunger Games</a> — Suzanne Collins (2008)</li>
+<li><a href="../stories/the-infinite-sea-yancey.html">The Infinite Sea</a> — Richard Yancey (2014)</li>
+<li><a href="../stories/the-institute-king.html">The Institute</a> — Stephen King (2019)</li>
+<li><a href="../stories/the-knife-of-never-letting-go-ness.html">The Knife of Never Letting Go</a> — Patrick Ness, Nick Podehl (2008)</li>
+<li><a href="../stories/the-long-tomorrow-brackett.html">The Long Tomorrow</a> — Leigh Brackett (1955)</li>
+<li><a href="../stories/the-pool-of-fire-youd.html">The pool of fire</a> — Sam Youd (1968)</li>
+<li><a href="../stories/the-predator-applegate.html">The Predator</a> — Katherine Applegate (1996)</li>
+<li><a href="../stories/the-resistance-malley.html">The Resistance</a> — Gemma Malley (2008)</li>
+<li><a href="../stories/the-reunion-applegate.html">The Reunion</a> — Katherine Applegate (1994)</li>
+<li><a href="../stories/the-secret-applegate.html">The Secret</a> — Katherine Applegate (1996)</li>
+<li><a href="../stories/the-secret-hour-westerfeld.html">The Secret Hour</a> — Scott Westerfeld (2004)</li>
+<li><a href="../stories/the-separation-applegate.html">The Separation</a> — Katherine Applegate (1999)</li>
+<li><a href="../stories/the-sickness-applegate.html">The Sickness</a> — Katherine Applegate (1999)</li>
+<li><a href="../stories/the-solution-applegate.html">The Solution</a> — Katherine Applegate (1998)</li>
+<li><a href="../stories/the-stars-are-ours-norton.html">The Stars Are Ours</a> — Andre Norton (1954)</li>
+<li><a href="../stories/the-stranger-applegate.html">The Stranger</a> — Katherine Applegate (1997)</li>
+<li><a href="../stories/the-supernaturalist-colfer.html">The Supernaturalist</a> — Eoin Colfer (2004)</li>
+<li><a href="../stories/the-suspicion-applegate.html">The Suspicion</a> — Katherine Applegate (1998)</li>
+<li><a href="../stories/the-testaments-atwood.html">The Testaments</a> — Margaret Atwood (2019)</li>
+<li><a href="../stories/the-true-meaning-of-smekday-rex.html">The True Meaning of Smekday</a> — Adam Rex (2001)</li>
+<li><a href="../stories/the-white-mountains-the-tripods-1-youd.html">The White Mountains (The Tripods #1)</a> — Sam Youd (1967)</li>
+<li><a href="../stories/the-young-unicorns-austin-family-chronicles-3-l-engle.html">The Young Unicorns (Austin Family Chronicles #3)</a> — Madeleine L&#x27;Engle (1968)</li>
+<li><a href="../stories/unravel-me-mafi.html">Unravel me</a> — Tahereh Mafi (2013)</li>
+<li><a href="../stories/unwind-shusterman.html">Unwind</a> — Neal Shusterman (2007)</li>
+<li><a href="../stories/war-storm-aveyard.html">War Storm</a> — Victoria Aveyard (2018)</li>
+<li><a href="../stories/when-the-tripods-came-the-tripods-0-5-youd.html">When the Tripods Came (The Tripods #0.5)</a> — Sam Youd, Joe Burleson (1988)</li>
+<li><a href="../stories/wild-jack-youd.html">Wild Jack</a> — Sam Youd, John Christopher (1974)</li>
+<li><a href="../stories/wildcard-lu.html">Wildcard</a> — Marie Lu (2018)</li>
+<li><a href="../stories/winter-meyer.html">Winter</a> — Marissa Meyer (2015)</li>
+<li><a href="../stories/witch-wizard-patterson.html">Witch &amp; wizard</a> — James Patterson, Gabrielle Charbonnet (1999)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="cyborg-fairy-tale.html">Cyborg Fairy Tale Resistance</a></li>
+<li><a href="periodic-apocalypse-oppressed-saviors.html">Periodic Apocalypse with Oppressed Saviors</a></li>
+<li><a href="persecuted-ability-minority.html">Persecuted Ability Minority</a></li>
+<li><a href="nuclear-wasteland-survival.html">Nuclear Wasteland Survival Dynamics</a></li>
+<li><a href="engineered-pandemic-civilization-collapse.html">Engineered Pandemic Civilization Collapse</a></li>
+<li><a href="totalitarian-spectacle-games.html">Totalitarian Spectacle Games</a></li>
+<li><a href="authoritarian-governance.html">Authoritarian Governance Model</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/2228/dystopia" target="_blank" rel="noopener">dystopia</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Youth+Resistance+Movement+Against+Government+Suppression&entry-type=Idea&entry-id=youth-resistance-movement" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

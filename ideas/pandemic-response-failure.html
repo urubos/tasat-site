@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pandemic Response Failure — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Pandemic Response Failure</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>A rapidly spreading pathogen overwhelms public health systems, exposing institutional fragilities and social fault lines under biological crisis.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Directly relevant to pandemic preparedness, biosecurity policy, and public health system resilience.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=pandemics">Pandemics and Biological Threats</a><a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=existential-risk">Existential Risk and Civilizational Collapse</a><a class="tag" href="../index.html#domain=medicine">Medicine and Human Enhancement</a><a class="tag" href="../index.html#domain=warfare">Warfare and Weapons Technology</a><a class="tag" href="../index.html#domain=comms-info">Communication and Information Technology</a><a class="tag" href="../index.html#domain=economics">Economics and Resource Allocation</a><a class="tag" href="../index.html#domain=space">Space Exploration and Colonization</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=cautionary-tale">Cautionary tale</a><a class="tag" href="../index.html#scenario=prediction">Prediction / Extrapolation</a><a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=catastrophic">Catastrophic</a><a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=dystopian">Dystopian</a><a class="tag" href="../index.html#outcome=aspirational">Aspirational</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=pandemic">pandemic</a><a class="tag" href="../index.html#search=biosecurity">biosecurity</a><a class="tag" href="../index.html#search=public-health">public-health</a><a class="tag" href="../index.html#search=alien-microorganism-containment">alien-microorganism-containment</a><a class="tag" href="../index.html#search=alien-microorganism">alien-microorganism</a><a class="tag" href="../index.html#search=containment">containment</a><a class="tag" href="../index.html#search=biosafety">biosafety</a><a class="tag" href="../index.html#search=evolving-pathogen">evolving-pathogen</a><a class="tag" href="../index.html#search=alternate-history-plague">alternate-history-plague</a><a class="tag" href="../index.html#search=alternate-history">alternate-history</a><a class="tag" href="../index.html#search=persistent-plague">persistent-plague</a><a class="tag" href="../index.html#search=pandemic-society">pandemic-society</a><a class="tag" href="../index.html#search=counterfactual">counterfactual</a><a class="tag" href="../index.html#search=global-infertility-extinction">global-infertility-extinction</a><a class="tag" href="../index.html#search=global-infertility">global-infertility</a><a class="tag" href="../index.html#search=last-generation">last-generation</a><a class="tag" href="../index.html#search=demographic-extinction">demographic-extinction</a><a class="tag" href="../index.html#search=global-zombie-pandemic-aftermath">global-zombie-pandemic-aftermath</a><a class="tag" href="../index.html#search=pandemic-response">pandemic-response</a><a class="tag" href="../index.html#search=institutional-failure">institutional-failure</a><a class="tag" href="../index.html#search=geopolitics">geopolitics</a><a class="tag" href="../index.html#search=memory-plague">memory-plague</a><a class="tag" href="../index.html#search=cognitive-collapse">cognitive-collapse</a><a class="tag" href="../index.html#search=identity-erasure">identity-erasure</a><a class="tag" href="../index.html#search=pandemic-gathering-prohibition">pandemic-gathering-prohibition</a><a class="tag" href="../index.html#search=pandemic-policy">pandemic-policy</a><a class="tag" href="../index.html#search=gathering-ban">gathering-ban</a><a class="tag" href="../index.html#search=virtual-culture">virtual-culture</a><a class="tag" href="../index.html#search=live-music">live-music</a><a class="tag" href="../index.html#search=spaceship-quarantine">spaceship-quarantine</a><a class="tag" href="../index.html#search=weaponized-quarantine">weaponized-quarantine</a><a class="tag" href="../index.html#search=trade-embargo">trade-embargo</a><a class="tag" href="../index.html#search=space-commerce">space-commerce</a><a class="tag" href="../index.html#search=last-survivor-psychology">last-survivor-psychology</a><a class="tag" href="../index.html#search=solitude">solitude</a><a class="tag" href="../index.html#search=last-survivor">last-survivor</a><a class="tag" href="../index.html#search=identity-dissolution">identity-dissolution</a><a class="tag" href="../index.html#search=agricultural-apocalypse-triage">agricultural-apocalypse-triage</a><a class="tag" href="../index.html#search=agricultural-collapse">agricultural-collapse</a><a class="tag" href="../index.html#search=triage">triage</a><a class="tag" href="../index.html#search=billionaire-salvation">billionaire-salvation</a><a class="tag" href="../index.html#search=civilizational-selection">civilizational-selection</a><a class="tag" href="../index.html#search=post-pandemic-cultural-preservation">post-pandemic-cultural-preservation</a><a class="tag" href="../index.html#search=post-pandemic">post-pandemic</a><a class="tag" href="../index.html#search=cultural-preservation">cultural-preservation</a><a class="tag" href="../index.html#search=traveling-players">traveling-players</a><a class="tag" href="../index.html#search=survival-meaning">survival-meaning</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (42)</h3>
+  <ul class="related-list"><li><a href="../stories/a-song-for-a-new-day-pinsker.html">A Song for a New Day</a> — Sarah Pinsker (2020)</li>
+<li><a href="../stories/american-war-akkad.html">American War</a> — Omar El Akkad (2017)</li>
+<li><a href="../stories/ammonite-griffith.html">Ammonite</a> — Nicola Griffith (1993)</li>
+<li><a href="../stories/archangel-conner.html">Archangel</a> — Michael Conner (1995)</li>
+<li><a href="../stories/blade-runner-burroughs.html">Blade runner</a> — William S. Burroughs, Oliver Harris, Daniel Ortiz Peñate (1979)</li>
+<li><a href="../stories/breed-to-come-norton.html">Breed to Come</a> — Andre Norton (1972)</li>
+<li><a href="../stories/cad-ver-exquisito-bazterrica.html">Cadáver exquisito</a> — Agustina Bazterrica (2015)</li>
+<li><a href="../stories/chasm-city-reynolds.html">Chasm City</a> — Alastair Reynolds (2001)</li>
+<li><a href="../stories/cinder-meyer.html">Cinder</a> — Marissa Meyer (2011)</li>
+<li><a href="../stories/clay-s-ark-butler.html">Clay&#x27;s ark</a> — Octavia E. Butler, Neal Ghant (1984)</li>
+<li><a href="../stories/damnation-alley-zelazny.html">Damnation Alley</a> — Roger Zelazny (1969)</li>
+<li><a href="../stories/darwin-s-radio-bear.html">Darwin&#x27;s radio</a> — Greg Bear (1999)</li>
+<li><a href="../stories/defy-the-worlds-gray.html">Defy the Worlds</a> — Claudia Gray (2018)</li>
+<li><a href="../stories/doomsday-book-willis.html">Doomsday book</a> — Connie Willis (1992)</li>
+<li><a href="../stories/grass-tepper.html">Grass</a> — Sheri S. Tepper (1989)</li>
+<li><a href="../stories/her-body-and-other-parties-machado.html">Her Body and Other Parties</a> — Carmen Maria Machado (2017)</li>
+<li><a href="../stories/illuminae-kaufman.html">Illuminae</a> — Amie Kaufman, Jay Kristoff (2013)</li>
+<li><a href="../stories/moreta-mccaffrey.html">Moreta</a> — Anne McCaffrey (1983)</li>
+<li><a href="../stories/no-blade-of-grass-youd.html">No blade of grass</a> — Sam Youd (1956)</li>
+<li><a href="../stories/nordenholt-s-million-stewart.html">Nordenholt&#x27;s Million</a> — Alfred Walter Stewart (1923)</li>
+<li><a href="../stories/plague-ship-norton.html">Plague Ship</a> — Andre Norton (1956)</li>
+<li><a href="../stories/raising-the-stones-tepper.html">Raising the Stones</a> — Sheri S. Tepper (1990)</li>
+<li><a href="../stories/redemption-ark-reynolds.html">Redemption Ark</a> — Alastair Reynolds (2002)</li>
+<li><a href="../stories/sideshow-tepper.html">Sideshow</a> — Sheri S. Tepper (1992)</li>
+<li><a href="../stories/sleeping-beauties-king.html">Sleeping Beauties</a> — Stephen King, Owen King (2014)</li>
+<li><a href="../stories/star-wars-legacy-of-the-force-betrayal-allston.html">Star Wars - Legacy of the Force - Betrayal</a> — Aaron Allston (2006)</li>
+<li><a href="../stories/station-eleven-mandel.html">Station Eleven</a> — Emily St. John Mandel (2014)</li>
+<li><a href="../stories/the-andromeda-strain-crichton.html">The Andromeda Strain</a> — Michael Crichton (1969)</li>
+<li><a href="../stories/the-boy-on-the-bridge-carey.html">The boy on the bridge</a> — M. R. Carey (2017)</li>
+<li><a href="../stories/the-children-of-men-james.html">The Children of Men</a> — P. D. James (1992)</li>
+<li><a href="../stories/the-death-cure-dashner.html">The Death Cure</a> — James Dashner, James Dashner (2011)</li>
+<li><a href="../stories/the-deep-cutter.html">The Deep</a> — Nick Cutter (2015)</li>
+<li><a href="../stories/the-fever-code-dashner.html">The Fever Code</a> — James Dashner (2016)</li>
+<li><a href="../stories/the-kill-order-dashner.html">The Kill Order</a> — James Dashner (2012)</li>
+<li><a href="../stories/the-last-man-shelley.html">The Last Man</a> — Mary Shelley (1826)</li>
+<li><a href="../stories/the-legacy-malley.html">The Legacy</a> — Gemma Malley (2010)</li>
+<li><a href="../stories/the-sickness-applegate.html">The Sickness</a> — Katherine Applegate (1999)</li>
+<li><a href="../stories/the-stand-king.html">The Stand</a> — Stephen King (1978)</li>
+<li><a href="../stories/the-x-files-anderson.html">The X-Files</a> — Kevin J. Anderson, Ben Mezrich, Chris Carter (1995)</li>
+<li><a href="../stories/web-of-the-romulans-murdock.html">Web of the Romulans</a> — M. S. Murdock (1983)</li>
+<li><a href="../stories/white-plague-can-herbert.html">White Plague Can</a> — Frank Herbert (1982)</li>
+<li><a href="../stories/world-war-z-brooks.html">World War Z</a> — Max Brooks (2006)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="engineered-pandemic-civilization-collapse.html">Engineered Pandemic Civilization Collapse</a></li>
+<li><a href="children-only-society.html">Children-Only Post-Plague Society</a></li>
+<li><a href="locative-information-warfare.html">Locative Technology and Information Warfare</a></li>
+<li><a href="plague-civilization-restart.html">Plague-Era Civilization Restart</a></li>
+<li><a href="alien-evaluation-of-earth.html">Alien Evaluation of Earth for Galactic Decision</a></li>
+<li><a href="superhuman-power-ceiling.html">Superhuman Power Ceiling</a></li>
+<li><a href="ai-control-problem.html">AI Control Problem</a></li>
+<li><a href="isolated-evolutionary-hotspot.html">Isolated Evolutionary Hotspot</a></li>
+<li><a href="totalitarian-spectacle-games.html">Totalitarian Spectacle Games</a></li>
+<li><a href="stub-future-economic-collapse.html">Stub Future Economic Collapse</a></li>
+<li><a href="space-station-political-crisis.html">Space Station Political Crisis</a></li>
+<li><a href="space-station-ai-crisis.html">Space Station AI Crisis During Attack</a></li>
+<li><a href="space-tourism-disaster.html">Space Tourism Disaster Response</a></li>
+<li><a href="mind-shaped-soldiers.html">Mind-Shaped Soldiers Against Cosmic Threat</a></li>
+<li><a href="alien-consciousness-passenger.html">Alien Consciousness Passenger</a></li>
+<li><a href="surveillance-tech-worker-ethics.html">Surveillance Technology Worker Ethics</a></li>
+<li><a href="mandatory-precognition.html">Mandatory Precognitive Vision at Coming-of-Age</a></li>
+<li><a href="free-amazons-gender-autonomy.html">Free Amazons: Gender Autonomy Movement</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/1586/counterfactual" target="_blank" rel="noopener">counterfactual</a> &middot; <a href="https://sfdictionary.com/view/111/spaceship" target="_blank" rel="noopener">spaceship</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Pandemic+Response+Failure&entry-type=Idea&entry-id=pandemic-response-failure" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

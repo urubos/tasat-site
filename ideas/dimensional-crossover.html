@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dimensional Crossover — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Dimensional Crossover</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>A person discovers they can travel to a parallel reality where a single pivotal event went differently, resulting in a radically different life. The alternate version of themselves has what they lost (or vice versa), forcing a confrontation with whether identity is defined by choices or circumstances.
+
+The scenario explores determinism, grief, and the ethics of intervening in an alternate self&#x27;s life.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>THE canonical &#x27;too-cheap-to-meter&#x27; energy trap. Models fossil fuel dependency: a power source whose side effects are existential but whose benefits are too great for anyone to voluntarily stop. Directly relevant to climate change economics.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=energy-physics">Energy and Physics</a><a class="tag" href="../index.html#domain=existential-risk">Existential Risk and Civilizational Collapse</a><a class="tag" href="../index.html#domain=economics">Economics and Resource Allocation</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=aspirational">Aspirational</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=extra-dimensional">extra-dimensional</a><a class="tag" href="../index.html#search=lost-civilization">lost-civilization</a><a class="tag" href="../index.html#search=containment-breach">containment-breach</a><a class="tag" href="../index.html#search=incompatible-realities">incompatible-realities</a><a class="tag" href="../index.html#search=extra-dimensional-lost-civilization">extra-dimensional-lost-civilization</a><a class="tag" href="../index.html#search=dimensional-exchange">dimensional-exchange</a><a class="tag" href="../index.html#search=energy-addiction">energy-addiction</a><a class="tag" href="../index.html#search=mutual-destruction">mutual-destruction</a><a class="tag" href="../index.html#search=inter-dimensional-energy-exchange">inter-dimensional-energy-exchange</a><a class="tag" href="../index.html#search=dimensional-travel">dimensional-travel</a><a class="tag" href="../index.html#search=tesseract">tesseract</a><a class="tag" href="../index.html#search=family-bonds">family-bonds</a><a class="tag" href="../index.html#search=cosmic-scale">cosmic-scale</a><a class="tag" href="../index.html#search=dimensional-travel-rescue">dimensional-travel-rescue</a><a class="tag" href="../index.html#search=multiverse">multiverse</a><a class="tag" href="../index.html#search=identity-theft">identity-theft</a><a class="tag" href="../index.html#search=parallel-lives">parallel-lives</a><a class="tag" href="../index.html#search=choice-and-identity">choice-and-identity</a><a class="tag" href="../index.html#search=multiverse-identity-theft">multiverse-identity-theft</a><a class="tag" href="../index.html#search=parallel-universe">parallel-universe</a><a class="tag" href="../index.html#search=alternate-self">alternate-self</a><a class="tag" href="../index.html#search=identity">identity</a><a class="tag" href="../index.html#search=determinism">determinism</a><a class="tag" href="../index.html#search=parallel-universe-alternate-self">parallel-universe-alternate-self</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (38)</h3>
+  <ul class="related-list"><li><a href="../stories/a-crack-in-the-line-lawrence.html">A Crack in the Line</a> — Michael Lawrence (2003)</li>
+<li><a href="../stories/a-wrinkle-in-time-l-engle.html">A Wrinkle in Time</a> — Madeleine L&#x27;Engle (1962)</li>
+<li><a href="../stories/cat-a-lyst-foster.html">Cat-A-Lyst</a> — Alan Dean Foster, Alan Foster (1991)</li>
+<li><a href="../stories/city-of-masks-hoffman.html">City of Masks</a> — Mary Hoffman (2002)</li>
+<li><a href="../stories/dark-matter-crouch.html">Dark Matter</a> — Blake Crouch (2016)</li>
+<li><a href="../stories/drawing-of-the-three-king.html">The Drawing of the Three</a> — Stephen King (1987)</li>
+<li><a href="../stories/gemina-kaufman.html">Gemina</a> — Amie Kaufman, Jay Kristoff (2016)</li>
+<li><a href="../stories/humans-sawyer.html">Humans</a> — Robert J. Sawyer (2003)</li>
+<li><a href="../stories/inside-the-illusion-applegate.html">Inside the Illusion</a> — Katherine Applegate (2000)</li>
+<li><a href="../stories/into-the-out-of-foster.html">Into the out of</a> — Alan Dean Foster (1986)</li>
+<li><a href="../stories/john-dies-at-the-end-wong.html">John Dies at the End</a> — David Wong (2007)</li>
+<li><a href="../stories/madeleine-l-engle-s-time-quartet-boxed-set-4-vols-l-engle.html">Madeleine L&#x27;Engle&#x27;s Time Quartet-Boxed Set 4 Vols</a> — Madeleine L&#x27;Engle (1990)</li>
+<li><a href="../stories/northern-lights-pullman.html">Northern Lights</a> — Philip Pullman (1995)</li>
+<li><a href="../stories/phaze-doubt-anthony.html">Phaze doubt</a> — Piers Anthony (1990)</li>
+<li><a href="../stories/prism-kellerman.html">Prism</a> — Faye Kellerman, Aliza Kellerman (2009)</li>
+<li><a href="../stories/sleeping-beauties-king.html">Sleeping Beauties</a> — Stephen King, Owen King (2014)</li>
+<li><a href="../stories/small-eternities-lawrence.html">Small Eternities</a> — Michael Lawrence (2004)</li>
+<li><a href="../stories/song-of-susannah-king.html">Song of Susannah</a> — Stephen King (2004)</li>
+<li><a href="../stories/special-deliverance-simak.html">Special deliverance</a> — Clifford D. Simak (1982)</li>
+<li><a href="../stories/star-gate-norton.html">Star Gate</a> — Andre Norton (1958)</li>
+<li><a href="../stories/star-trek-mirror-universe-spectre-shatner.html">Star Trek - Mirror Universe - Spectre</a> — William Shatner (1998)</li>
+<li><a href="../stories/star-trek-the-next-generation-dark-mirror-duane.html">Star Trek The Next Generation - Dark Mirror</a> — Diane Duane (1993)</li>
+<li><a href="../stories/the-abyss-beyond-dreams-hamilton.html">The Abyss Beyond Dreams</a> — Peter F. Hamilton (2014)</li>
+<li><a href="../stories/the-amber-spyglass-pullman.html">The Amber Spyglass</a> — Philip Pullman, The Amber Spyglass (1999)</li>
+<li><a href="../stories/the-beginning-place-guin.html">The Beginning Place</a> — Ursula K. Le Guin (1980)</li>
+<li><a href="../stories/the-dark-tower-king.html">The Dark Tower</a> — Stephen King (2004)</li>
+<li><a href="../stories/the-drawing-of-the-three-king.html">The Drawing of the Three</a> — Stephen King (1987)</li>
+<li><a href="../stories/the-female-man-russ.html">The Female Man</a> — Joanna Russ (1975)</li>
+<li><a href="../stories/the-gods-themselves-asimov.html">The Gods Themselves</a> — Isaac Asimov (1972)</li>
+<li><a href="../stories/the-looking-glass-wars-beddor.html">The Looking Glass Wars</a> — Frank Beddor (2004)</li>
+<li><a href="../stories/the-rose-field-pullman.html">The Rose Field</a> — Philip Pullman (2025)</li>
+<li><a href="../stories/the-secret-commonwealth-pullman.html">The Secret Commonwealth</a> — Philip Pullman (2019)</li>
+<li><a href="../stories/the-silver-dream-gaiman.html">The Silver Dream</a> — Neil Gaiman (2013)</li>
+<li><a href="../stories/the-sky-is-falling-rey.html">The Sky Is Falling</a> — Lester del Rey (1974)</li>
+<li><a href="../stories/the-steel-remains-morgan.html">The Steel Remains</a> — Richard K. Morgan (2008)</li>
+<li><a href="../stories/the-subtle-knife-pullman.html">The Subtle Knife</a> — Philip Pullman (1997)</li>
+<li><a href="../stories/the-underwood-see-withern-rise-lawrence.html">The Underwood See (Withern Rise)</a> — Michael Lawrence, Michael Lawrence (2006)</li>
+<li><a href="../stories/worlds-within-phillips.html">Worlds Within</a> — Rog Phillips (1950)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="magic-technology-convergence.html">Magic-Technology Convergence Crisis</a></li>
+<li><a href="heat-death-survival.html">Civilization at the End of Time</a></li>
+<li><a href="ancestral-guilt-persecution.html">Ancestral Guilt Persecution</a></li>
+<li><a href="warship-ai-personhood.html">Military AI Personhood Claim</a></li>
+<li><a href="neurodiversity-cure-dilemma.html">Neurodiversity Cure Dilemma</a></li>
+<li><a href="cover-identity-becomes-real.html">Cover Identity Becomes Real Identity</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/1486/dimensional" target="_blank" rel="noopener">dimensional</a> &middot; <a href="https://sfdictionary.com/view/70/multiverse" target="_blank" rel="noopener">multiverse</a> &middot; <a href="https://sfdictionary.com/view/2373/tesseract" target="_blank" rel="noopener">tesseract</a> &middot; <a href="https://sfdictionary.com/view/1208/universe" target="_blank" rel="noopener">universe</a> &middot; <a href="https://sfdictionary.com/view/2171/energy" target="_blank" rel="noopener">energy</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Dimensional+Crossover&entry-type=Idea&entry-id=dimensional-crossover" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

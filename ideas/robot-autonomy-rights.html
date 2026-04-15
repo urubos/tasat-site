@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Robot Autonomy and Rights — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Robot Autonomy and Rights</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>Autonomous machines develop or simulate consciousness, forcing societies to confront questions of personhood, rights, and coexistence.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Maps to AI alignment debates, labor automation displacement, and emerging legal frameworks for autonomous systems.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=robotics">Robotics and Automation</a><a class="tag" href="../index.html#domain=ethics-philosophy">Ethics and Philosophy of Technology</a><a class="tag" href="../index.html#domain=ai-ml">Artificial Intelligence and Machine Learning</a><a class="tag" href="../index.html#domain=climate">Climate and Environmental Change</a><a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a><a class="tag" href="../index.html#domain=medicine">Medicine and Human Enhancement</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=ethical-dilemma">Ethical dilemma</a><a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a><a class="tag" href="../index.html#scenario=prediction">Prediction / Extrapolation</a><a class="tag" href="../index.html#scenario=satire">Satire / Social commentary</a><a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=ambiguous">Ambiguous / Mixed</a><a class="tag" href="../index.html#outcome=transformative">Transformative</a><a class="tag" href="../index.html#outcome=aspirational">Aspirational</a><a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=dystopian">Dystopian</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=robot-rights">robot-rights</a><a class="tag" href="../index.html#search=ai-consciousness">ai-consciousness</a><a class="tag" href="../index.html#search=automation">automation</a><a class="tag" href="../index.html#search=robot-wilderness-adaptation">robot-wilderness-adaptation</a><a class="tag" href="../index.html#search=robot-nature">robot-nature</a><a class="tag" href="../index.html#search=wilderness-ai">wilderness-ai</a><a class="tag" href="../index.html#search=machine-learning">machine-learning</a><a class="tag" href="../index.html#search=ecology">ecology</a><a class="tag" href="../index.html#search=autonomous-security-unit-personhood">autonomous-security-unit-personhood</a><a class="tag" href="../index.html#search=murderbot">murderbot</a><a class="tag" href="../index.html#search=security-unit">security-unit</a><a class="tag" href="../index.html#search=self-governance">self-governance</a><a class="tag" href="../index.html#search=weapon-to-person">weapon-to-person</a><a class="tag" href="../index.html#search=household-companion-robot">household-companion-robot</a><a class="tag" href="../index.html#search=household-robot">household-robot</a><a class="tag" href="../index.html#search=ai-companion">ai-companion</a><a class="tag" href="../index.html#search=smart-home">smart-home</a><a class="tag" href="../index.html#search=robot-friendship">robot-friendship</a><a class="tag" href="../index.html#search=purpose-built-sentient-partner">purpose-built-sentient-partner</a><a class="tag" href="../index.html#search=purpose-built-partner">purpose-built-partner</a><a class="tag" href="../index.html#search=consent-of-creation">consent-of-creation</a><a class="tag" href="../index.html#search=cyborg-ethics">cyborg-ethics</a><a class="tag" href="../index.html#search=robot-replacement-of-women">robot-replacement-of-women</a><a class="tag" href="../index.html#search=patriarchy">patriarchy</a><a class="tag" href="../index.html#search=suburban-horror">suburban-horror</a><a class="tag" href="../index.html#search=compliance">compliance</a><a class="tag" href="../index.html#search=forced-cybernetic-conversion">forced-cybernetic-conversion</a><a class="tag" href="../index.html#search=cybernetic-conversion">cybernetic-conversion</a><a class="tag" href="../index.html#search=forced-upgrade">forced-upgrade</a><a class="tag" href="../index.html#search=emotional-removal">emotional-removal</a><a class="tag" href="../index.html#search=automated-transport-enforcement">automated-transport-enforcement</a><a class="tag" href="../index.html#search=automated-transport">automated-transport</a><a class="tag" href="../index.html#search=highway-enforcement">highway-enforcement</a><a class="tag" href="../index.html#search=speed-governance">speed-governance</a><a class="tag" href="../index.html#search=human-machine-gap">human-machine-gap</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (37)</h3>
+  <ul class="related-list"><li><a href="../stories/a-forest-of-stars-anderson.html">A Forest of Stars</a> — Kevin J. Anderson (2003)</li>
+<li><a href="../stories/a-i-artificial-intelligence-spielberg.html">A.I. Artificial Intelligence</a> — Steven Spielberg (2001)</li>
+<li><a href="../stories/android-at-arms-norton.html">Android at Arms</a> — Andre Norton (1971)</li>
+<li><a href="../stories/astro-boy-tezuka.html">Astro boy</a> — Osamu Tezuka (2002)</li>
+<li><a href="../stories/cinder-meyer.html">Cinder</a> — Marissa Meyer (2011)</li>
+<li><a href="../stories/code-three-raphael.html">Code Three</a> — Rick Raphael (1965)</li>
+<li><a href="../stories/defy-the-fates-gray.html">Defy the Fates</a> — Claudia Gray (2019)</li>
+<li><a href="../stories/defy-the-stars-gray.html">Defy the Stars</a> — Claudia Gray (2017)</li>
+<li><a href="../stories/defy-the-worlds-gray.html">Defy the Worlds</a> — Claudia Gray (2018)</li>
+<li><a href="../stories/do-androids-dream-dick.html">Do Androids Dream of Electric Sheep?</a> — Philip K. Dick (1968)</li>
+<li><a href="../stories/do-androids-dream-of-electric-sheep-dick.html">Do Androids Dream of Electric Sheep?</a> — Philip K. Dick (1968)</li>
+<li><a href="../stories/doctor-who-richards.html">Doctor Who</a> — Justin Richards (2006)</li>
+<li><a href="../stories/dogs-of-war-tchaikovsky.html">Dogs of War</a> — Adrian Tchaikovsky, Henry-Luc Planchat (2017)</li>
+<li><a href="../stories/eager-fox.html">Eager</a> — Helen Fox (2003)</li>
+<li><a href="../stories/feet-of-clay-pratchett.html">Feet of Clay</a> — Terry Pratchett (1996)</li>
+<li><a href="../stories/foundation-and-earth-asimov.html">Foundation and Earth</a> — Isaac Asimov (1986)</li>
+<li><a href="../stories/he-she-and-it-piercy.html">He, She and It</a> — Marge Piercy (1991)</li>
+<li><a href="../stories/isaac-asimov-s-inferno-allen.html">Isaac Asimov&#x27;s Inferno</a> — Roger MacBride Allen, Roger MacBride Allen (1994)</li>
+<li><a href="../stories/machines-that-think-asimov.html">Machines That Think</a> — Isaac Asimov, Patricia S. Warrick, Martin H. Greenberg, Ambrose Bierce, John Wyndham, Harl Vincent, Harry Bates, Robert Moore Williams, Lester del Rey, A. E. van Vogt, Harlan Ellison, Murray Leinster, Poul Anderson, Walter M. Miller Jr., Jesse F. Bone, Harry Harrison, Michael Shaara, Philip K. Dick, Gordon R. Dickson, Arthur C. Clarke, Robert Silverberg, John Brunner, Frederic Brown, Vernor Vinge, Gene Wolfe, George Zebrowski (1984)</li>
+<li><a href="../stories/mila-2-0-driza.html">MILA 2.0</a> — Debra Driza (2013)</li>
+<li><a href="../stories/network-effect-wells.html">Network Effect</a> — Martha Wells (2021)</li>
+<li><a href="../stories/nine-tomorrows-asimov.html">Nine tomorrows</a> — Isaac Asimov (1959)</li>
+<li><a href="../stories/pericolo-spazzatura-spaziale-dami.html">Pericolo spazzatura spaziale</a> — Elisabetta Dami (2016)</li>
+<li><a href="../stories/r-u-r-and-the-insect-play-c-apek.html">R.U.R. and The insect play</a> — Karel Čapek, Josef Čapek (1920)</li>
+<li><a href="../stories/saturn-s-children-stross.html">Saturn&#x27;s Children</a> — Charles Stross (2008)</li>
+<li><a href="../stories/strength-of-stones-bear.html">Strength of Stones</a> — Greg Bear, Ray Chase (1981)</li>
+<li><a href="../stories/the-cat-who-walks-through-walls-heinlein.html">The cat who walks through walls</a> — Robert A. Heinlein (1985)</li>
+<li><a href="../stories/the-caves-of-steel-asimov.html">The Caves of Steel</a> — Isaac Asimov (1953)</li>
+<li><a href="../stories/the-complete-robot-asimov.html">The Complete Robot</a> — Isaac Asimov (1982)</li>
+<li><a href="../stories/the-door-into-summer-heinlein.html">The Door into Summer</a> — Robert A. Heinlein (1957)</li>
+<li><a href="../stories/the-positronic-man-asimov.html">The Positronic Man</a> — Isaac Asimov, Robert Silverberg (1992)</li>
+<li><a href="../stories/the-robot-novels-asimov.html">The Robot Novels</a> — Isaac Asimov (1954)</li>
+<li><a href="../stories/the-robots-of-dawn-asimov.html">The Robots of Dawn</a> — Isaac Asimov (1983)</li>
+<li><a href="../stories/the-stepford-wives-levin.html">The Stepford Wives</a> — Ira Levin (1972)</li>
+<li><a href="../stories/the-wild-robot-brown.html">The Wild Robot</a> — Peter Brown (2016)</li>
+<li><a href="../stories/the-wild-robot-escapes-brown.html">The Wild Robot Escapes</a> — Peter Brown (2016)</li>
+<li><a href="../stories/the-wild-robot-protects-brown.html">The Wild Robot Protects</a> — Peter Brown (2023)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="robot-personhood-quest.html">Robot&#x27;s Quest for Legal Personhood</a></li>
+<li><a href="three-laws-edge-cases.html">Three Laws of Robotics Edge Cases</a></li>
+<li><a href="warship-ai-personhood.html">Military AI Personhood Claim</a></li>
+<li><a href="zero-physical-contact-society.html">Zero Physical Contact Society</a></li>
+<li><a href="ancestral-guilt-persecution.html">Ancestral Guilt Persecution</a></li>
+<li><a href="deconstructed-superhero-realpolitik.html">Deconstructed Superheroes in Geopolitics</a></li>
+<li><a href="post-scarcity-civilization-war.html">Post-Scarcity Civilization at War</a></li>
+<li><a href="personality-cloning.html">Personality Cloning Through Controlled Environment</a></li>
+<li><a href="violence-as-art.html">Extreme Violence as Art Form</a></li>
+<li><a href="body-rental-economy.html">Body Rental Economy</a></li>
+<li><a href="immortality-child-prohibition.html">Immortality Requires Child Prohibition</a></li>
+<li><a href="locative-information-warfare.html">Locative Technology and Information Warfare</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/2420/companion" target="_blank" rel="noopener">companion</a> &middot; <a href="https://sfdictionary.com/view/2533/murderbot" target="_blank" rel="noopener">murderbot</a> &middot; <a href="https://sfdictionary.com/view/1431/sentient" target="_blank" rel="noopener">sentient</a> &middot; <a href="https://sfdictionary.com/view/296/cyborg" target="_blank" rel="noopener">cyborg</a> &middot; <a href="https://sfdictionary.com/view/1533/horror" target="_blank" rel="noopener">horror</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Robot+Autonomy+and+Rights&entry-type=Idea&entry-id=robot-autonomy-rights" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>

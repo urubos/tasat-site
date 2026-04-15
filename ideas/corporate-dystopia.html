@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corporate Dystopia — Extrapolated Futures Archive</title>
+<style>:root {
+  --bg: #0d1117; --surface: #161b22; --border: #30363d;
+  --text: #e6edf3; --text-muted: #8b949e; --accent: #58a6ff;
+  --accent-hover: #79c0ff; --tag-bg: #1f6feb22; --tag-border: #1f6feb55;
+  --success: #3fb950; --warn: #d29922;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+h2 { font-size: 1.3rem; margin: 1.5rem 0 0.5rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.3rem; }
+.subtitle { color: var(--text-muted); margin-bottom: 1.5rem; }
+.stats { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem 1.2rem; min-width: 120px; }
+.stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+.stat-label { color: var(--text-muted); font-size: 0.85rem; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.filter-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.filter-group label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.filter-group select, .search-box {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.9rem;
+}
+.search-box { width: 300px; }
+.tag { display: inline-block; background: var(--tag-bg); border: 1px solid var(--tag-border); border-radius: 4px; padding: 0.15rem 0.5rem; margin: 0.1rem; font-size: 0.8rem; color: var(--accent); text-decoration: none; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.tag:hover { background: var(--tag-border); border-color: var(--accent); text-decoration: none; }
+.bar-row:hover { background: var(--surface); border-radius: 4px; }
+.bar-row:hover span { color: var(--accent) !important; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; margin: 1rem 0; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 1rem; transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-title { font-weight: 600; margin-bottom: 0.3rem; }
+.card-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+.card-desc { font-size: 0.9rem; line-height: 1.5; }
+.back-link { display: inline-block; margin: 0.5rem 0 1rem; font-size: 0.9rem; }
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; margin: 1.5rem 0 0.5rem;
+}
+.section-header h2 { margin: 0; }
+.section-toggle { font-size: 1.2rem; color: var(--text-muted); transition: transform 0.2s; }
+.section-toggle.collapsed { transform: rotate(-90deg); }
+.section-controls {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;
+}
+.section-controls label { font-size: 0.8rem; color: var(--text-muted); }
+.sort-select {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 0.8rem;
+}
+.section-body.collapsed { display: none; }
+.results-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 1rem 0; }
+.results-columns .card-grid { grid-template-columns: 1fr; }
+@media (max-width: 900px) { .results-columns { grid-template-columns: 1fr; } }
+.detail-section { margin: 1rem 0; }
+.related-list { list-style: none; padding: 0; }
+.related-list li { padding: 0.3rem 0; border-bottom: 1px solid var(--border); }
+.related-list li:last-child { border-bottom: none; }
+.export-links { margin: 1rem 0; }
+.export-links + .export-links { margin-top: -0.5rem; }
+.export-links a { margin-right: 1rem; }
+table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+.hidden { display: none !important; }
+.tristate-toggle {
+  display: inline-flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 2px; cursor: pointer; width: 56px; height: 24px; position: relative;
+  margin-left: 4px; flex-shrink: 0; user-select: none;
+}
+.tristate-x, .tristate-check {
+  font-size: 0.7rem; width: 16px; text-align: center; z-index: 1; transition: color 0.2s;
+}
+.tristate-knob {
+  position: absolute; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--border); transition: left 0.2s, background 0.2s;
+  left: 2px; top: 2px;
+}
+.tristate-toggle[data-state="multi"] .tristate-knob { left: 2px; background: var(--text-muted); }
+.tristate-toggle[data-state="multi"] .tristate-x { color: #e03131; font-weight: bold; }
+.tristate-toggle[data-state="multi"] .tristate-check { color: var(--border); }
+.tristate-toggle[data-state="all"] .tristate-knob { left: 18px; background: var(--text-muted); }
+.tristate-toggle[data-state="all"] .tristate-x { color: var(--accent); }
+.tristate-toggle[data-state="all"] .tristate-check { color: var(--accent); }
+.tristate-toggle[data-state="single"] .tristate-knob { left: 34px; background: var(--text-muted); }
+.tristate-toggle[data-state="single"] .tristate-x { color: var(--border); }
+.tristate-toggle[data-state="single"] .tristate-check { color: #2f9e44; font-weight: bold; }
+.tristate-label { font-size: 0.7rem; color: var(--text-muted); margin-left: 4px; min-width: 50px; }
+.tristate-wrap { position: relative; display: inline-flex; align-items: center; }
+.tristate-wrap .tristate-tip { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; z-index: 10; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.tristate-wrap:hover .tristate-tip { display: block; }
+.tristate-toggle:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tristate-wrap:focus-within .tristate-tip { display: block; }
+footer { margin-top: 3rem; padding: 1rem 0; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; }
+.bc-tab { padding: 0.5rem 1rem; border: 1px solid var(--border); border-radius: 6px 6px 0 0; background: var(--surface); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); transition: all 0.2s; border-bottom: 2px solid transparent; }
+.bc-tab:hover { background: var(--bg); color: var(--text); }
+.bc-tab:focus-visible, .bc-tab.active:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bc-tab.active { background: var(--bg); color: var(--accent); border-bottom: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">&larr; Back to catalog</a>
+<h1>Corporate Dystopia</h1>
+
+<div class="detail-section">
+  <h3>Description</h3>
+  <p>Advertising mega-corporations have replaced governments as the dominant power, with congressional seats allocated by company size. Citizens are manipulated through engineered addiction and relentless marketing into consuming ever more. Venus is being terraformed as a new market. The story satirizes consumerism, corporate power, and the commodification of everything, including people and planets.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Real-World Relevance</h3>
+  <p>Satirizes corporate competition taken to its logical extreme: relevant to executive compensation, hostile takeovers, and the violence inherent in &#x27;competitive&#x27; economic language made literal.</p>
+</div>
+
+<div class="detail-section">
+  <h3>Classification</h3>
+  <p><strong>Domains:</strong> <a class="tag" href="../index.html#domain=economics">Economics and Resource Allocation</a><a class="tag" href="../index.html#domain=warfare">Warfare and Weapons Technology</a><a class="tag" href="../index.html#domain=governance">Governance and Political Systems</a><a class="tag" href="../index.html#domain=social-engineering">Social Engineering and Psychology</a><a class="tag" href="../index.html#domain=surveillance">Surveillance and Privacy</a></p>
+  <p><strong>Scenario Types:</strong> <a class="tag" href="../index.html#scenario=satire">Satire / Social commentary</a><a class="tag" href="../index.html#scenario=warning">Warning / Self-preventing prophecy</a><a class="tag" href="../index.html#scenario=cautionary-tale">Cautionary tale</a><a class="tag" href="../index.html#scenario=thought-experiment">Thought experiment / What-if</a></p>
+  <p><strong>Outcomes:</strong> <a class="tag" href="../index.html#outcome=dystopian">Dystopian</a><a class="tag" href="../index.html#outcome=cautionary">Cautionary</a><a class="tag" href="../index.html#outcome=transformative">Transformative</a></p>
+  <p><strong>Tags:</strong> <a class="tag" href="../index.html#search=corporate-combat">corporate-combat</a><a class="tag" href="../index.html#search=vehicular-gladiator">vehicular-gladiator</a><a class="tag" href="../index.html#search=competition-violence">competition-violence</a><a class="tag" href="../index.html#search=corporate-gladiatorial-competition">corporate-gladiatorial-competition</a><a class="tag" href="../index.html#search=corporate-justice">corporate-justice</a><a class="tag" href="../index.html#search=gladiatorial-law">gladiatorial-law</a><a class="tag" href="../index.html#search=commodified-justice">commodified-justice</a><a class="tag" href="../index.html#search=corporate-gladiatorial-justice">corporate-gladiatorial-justice</a><a class="tag" href="../index.html#search=advertising">advertising</a><a class="tag" href="../index.html#search=corporate-power">corporate-power</a><a class="tag" href="../index.html#search=consumerism">consumerism</a><a class="tag" href="../index.html#search=terraforming">terraforming</a><a class="tag" href="../index.html#search=corporate-ruled-consumerist-dystopia">corporate-ruled-consumerist-dystopia</a><a class="tag" href="../index.html#search=private-security">private-security</a><a class="tag" href="../index.html#search=stratification">stratification</a><a class="tag" href="../index.html#search=corporate-dystopia">corporate-dystopia</a><a class="tag" href="../index.html#search=corporate-bodyguard-society">corporate-bodyguard-society</a><a class="tag" href="../index.html#search=corporate-colonialism">corporate-colonialism</a><a class="tag" href="../index.html#search=space-exploitation">space-exploitation</a><a class="tag" href="../index.html#search=military-contractor">military-contractor</a><a class="tag" href="../index.html#search=corporate-space-exploitation">corporate-space-exploitation</a></p>
+</div>
+
+<div class="detail-section">
+  <h3>Stories (34)</h3>
+  <ul class="related-list"><li><a href="../stories/ambient-womack.html">Ambient</a> — Jack Womack (1987)</li>
+<li><a href="../stories/blade-runner-burroughs.html">Blade runner</a> — William S. Burroughs, Oliver Harris, Daniel Ortiz Peñate (1979)</li>
+<li><a href="../stories/cad-ver-exquisito-bazterrica.html">Cadáver exquisito</a> — Agustina Bazterrica (2015)</li>
+<li><a href="../stories/cloud-atlas-mitchell.html">Cloud Atlas</a> — David Mitchell (2004)</li>
+<li><a href="../stories/count-zero-gibson.html">Count Zero</a> — William Gibson (1986)</li>
+<li><a href="../stories/dead-astronauts-vandermeer.html">Dead Astronauts</a> — Jeff VanderMeer (2019)</li>
+<li><a href="../stories/fallen-dragon-hamilton.html">Fallen Dragon</a> — Peter F. Hamilton (2001)</li>
+<li><a href="../stories/feed-anderson.html">Feed</a> — M. T. Anderson (2002)</li>
+<li><a href="../stories/fight-club-palahniuk.html">Fight Club</a> — Chuck Palahniuk (1996)</li>
+<li><a href="../stories/futureland-mosley.html">Futureland</a> — Walter Mosley (2001)</li>
+<li><a href="../stories/gladiator-at-law-pohl.html">Gladiator-at-law</a> — Frederik Pohl, Cyril M. Kornbluth (1955)</li>
+<li><a href="../stories/he-she-and-it-piercy.html">He, She and It</a> — Marge Piercy (1991)</li>
+<li><a href="../stories/market-forces-morgan.html">Market Forces</a> — Richard K. Morgan (2004)</li>
+<li><a href="../stories/neuromancer-gibson.html">Neuromancer</a> — William Gibson (1984)</li>
+<li><a href="../stories/oryx-and-crake-atwood.html">Oryx and Crake</a> — Margaret Atwood (2002)</li>
+<li><a href="../stories/qualityland-kling.html">QualityLand</a> — Marc-Uwe Kling (2017)</li>
+<li><a href="../stories/snow-crash-stephenson.html">Snow Crash</a> — Neal Stephenson (1992)</li>
+<li><a href="../stories/stand-on-zanzibar-brunner.html">Stand on Zanzibar</a> — John Brunner (1968)</li>
+<li><a href="../stories/star-wars-canto-bight-ahmed.html">Star Wars - Canto Bight</a> — Saladin Ahmed, Seanan McGuire, Rae Carson, John Jackson Miller, Mira Jackson (2017)</li>
+<li><a href="../stories/star-wars-shadows-of-the-empire-perry.html">Star Wars - Shadows of the Empire</a> — Steve Perry (1996)</li>
+<li><a href="../stories/stark-elton.html">Stark</a> — Ben Elton (1989)</li>
+<li><a href="../stories/the-bachman-books-long-walk-rage-roadwork-running-man-king.html">The Bachman Books (Long Walk / Rage / Roadwork / Running Man)</a> — Stephen King (1985)</li>
+<li><a href="../stories/the-gold-coast-robinson.html">The Gold Coast</a> — Kim Stanley Robinson (1988)</li>
+<li><a href="../stories/the-heart-goes-last-atwood.html">The Heart Goes Last</a> — Margaret Atwood (2015)</li>
+<li><a href="../stories/the-iron-heel-london.html">The Iron Heel</a> — Jack London (1907)</li>
+<li><a href="../stories/the-merchants-war-pohl.html">The merchants&#x27; war</a> — Frederik Pohl (1984)</li>
+<li><a href="../stories/the-sheep-look-up-brunner.html">The Sheep Look Up</a> — John Brunner (1972)</li>
+<li><a href="../stories/the-space-merchants-pohl.html">The Space Merchants</a> — Frederik Pohl, Cyril M. Kornbluth (1952)</li>
+<li><a href="../stories/the-supernaturalist-colfer.html">The Supernaturalist</a> — Eoin Colfer (2004)</li>
+<li><a href="../stories/the-three-stigmata-of-palmer-eldritch-dick.html">The three stigmata of Palmer Eldritch</a> — Philip K. Dick (1965)</li>
+<li><a href="../stories/the-windup-girl-bacigalupi.html">The Windup Girl</a> — Paolo Bacigalupi (2009)</li>
+<li><a href="../stories/the-year-of-the-flood-atwood.html">The Year of the Flood</a> — Margaret Atwood (2009)</li>
+<li><a href="../stories/when-the-sleeper-awakes-wells.html">When the Sleeper Awakes</a> — H. G. Wells (1899)</li>
+<li><a href="../stories/zero-history-gibson.html">Zero History</a> — William Gibson (2010)</li>
+</ul>
+</div>
+
+<div class='detail-section'><h3>Related Ideas</h3><ul class='related-list'><li><a href="prohibition-commodity-control.html">Commodity Prohibition Dystopia</a></li>
+<li><a href="privatized-prison-utopia.html">Privatized Prison-Utopia</a></li>
+<li><a href="corporate-information-control.html">Corporate Information Monopoly</a></li>
+<li><a href="population-control-regime.html">Population Control Regime</a></li>
+<li><a href="productive-withdrawal.html">Productive Class Withdrawal</a></li>
+<li><a href="technology-theft-across-civilizations.html">Cross-Civilization Technology Theft</a></li>
+<li><a href="total-surveillance-society.html">Total Surveillance Society</a></li>
+<li><a href="space-station-ai-crisis.html">Space Station AI Crisis During Attack</a></li>
+<li><a href="alien-technology-exploitation.html">Alien Legacy Technology Exploitation</a></li>
+<li><a href="resource-monopoly-messianic-politics.html">Resource Monopoly and Messianic Politics</a></li>
+</ul></div>
+
+<div class='detail-section'><h3>SF Dictionary</h3><p class='export-links'><a href="https://sfdictionary.com/view/125/terraforming" target="_blank" rel="noopener">terraforming</a> &middot; <a href="https://sfdictionary.com/view/1116/terraformed" target="_blank" rel="noopener">terraformed</a> &middot; <a href="https://sfdictionary.com/view/2228/dystopia" target="_blank" rel="noopener">dystopia</a></p></div>
+
+<footer>
+  <p style="margin-bottom:0.5rem"><a href="https://github.com/urubos/efa-catalog/issues/new?template=feedback.yml&title=%5BFeedback%5D+Corporate+Dystopia&entry-type=Idea&entry-id=corporate-dystopia" target="_blank" rel="noopener" style="color:var(--accent)">Suggest an edit</a> to this idea</p>
+  Extrapolated Futures Archive
+</footer>
+</body>
+</html>
